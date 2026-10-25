@@ -97,6 +97,7 @@ export class View3D {
       .observe(document.documentElement, { attributes: true, attributeFilter: ['data-space'] });
     this.resizeObserver = new ResizeObserver(() => this.resize());
     this.resizeObserver.observe(canvas.parentElement);
+    this.resizeObserver.observe(canvas);   // a workspace layout (0.7 WS.13) insets the canvas inside its stage
     this.resize();
     this.bindPointer();
   }
@@ -176,7 +177,8 @@ export class View3D {
   }
 
   resize() {
-    const host = this.canvas.parentElement;
+    // the canvas's own box (it fills the stage in classic; a workspace layout insets it between its blocks), else the stage's
+    const host = this.canvas.clientWidth && this.canvas.clientHeight ? this.canvas : this.canvas.parentElement;
     const w = Math.max(1, host.clientWidth), h = Math.max(1, host.clientHeight);
     this.renderer.setSize(w, h, false);
     this.persp.aspect = w / h;

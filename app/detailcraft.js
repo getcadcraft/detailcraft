@@ -104,6 +104,7 @@ async function start(root) {
   let viewMode = '3d';
   let reportTab = 'problems';
   let analysis = null;                 // the Analysis tab (0.6 LC.4, analysis-ui.js), mounted with the reports below
+  let workspace = null;                // the workspace layouts (0.7 WS.13, workspace-detailcraft.js): told after every redraw
   const opts = {
     beam: { ...defaultsFor('beam') }, column: { ...defaultsFor('column'), to: '' }, brace: { ...defaultsFor('brace') },
     plate: { t: 20, w: 200, material: 'A36', position: 'middle', rotation: 0 },
@@ -345,11 +346,9 @@ async function start(root) {
   });
   // the More menu closes on a click anywhere else
   document.addEventListener('click', (e) => { for (const d of root.querySelectorAll('details.dc-menu[open]')) if (!d.contains(e.target)) d.open = false; });
-  root.querySelector('.dc-viewbar').addEventListener('click', (e) => {
-    const v = e.target.closest('[data-view]');
-    if (v) setView(v.dataset.view);
-    if (e.target.closest('[data-act="fit"]')) view?.fit();
-  });
+  // on the controls themselves, not the bar: a workspace layout moves the 3D / Plan / Elevation picker into its info box (0.7 WS.13)
+  root.querySelector('.dc-viewbar .dc-seg').addEventListener('click', (e) => { const v = e.target.closest('[data-view]'); if (v) setView(v.dataset.view); });
+  root.querySelector('.dc-viewbar [data-act="fit"]').addEventListener('click', () => view?.fit());
   function act(a) {
     if (a.startsWith('tool:')) return setTool(a.slice(5));
     switch (a) {
@@ -376,6 +375,7 @@ async function start(root) {
       case 'select-all': return selectAll();
       case 'select-none': { const had = selected().length; setSelection([]); print(tr(had ? 'app.sel.none.done' : 'app.sel.none.already')); return; }
       case 'ifc': return exportIfc();
+      case 'usd': return exportUsd();   // 0.7 XF.8 (session usd)
       case 'nc': return exportNc();
       case 'bom': return exportBom();
       case 'bending': return exportBending();
@@ -424,6 +424,7 @@ async function start(root) {
     const steel = built.parts.reduce((s, p) => s + p.weight, 0), bars = schedule.rows.reduce((s, r) => s + r.totalWeight, 0);
     ui.counts.textContent = tr('app.bar.counts', { parts: built.parts.length, bolts: built.bolts.length, steel: kg(steel) }) + (bars ? ' ' + tr('app.bar.counts.rebar', { rebar: kg(bars) }) : '');
     document.title = (model.dirty ? '• ' : '') + model.state.name + ' — DetailCraft';
+    workspace?.refresh();
   }
 
   function setTool(t) {
@@ -465,6 +466,7 @@ async function start(root) {
     if (mode === 'plan' && level) ui.vlevel.value = level.name;
     if (mode === 'elevation' && grid) ui.vgrid.value = grid.label;
     view?.setMode(mode, { level, grid });
+    workspace?.refresh();
   }
   ui.vlevel.addEventListener('change', () => setView('plan'));
   ui.vgrid.addEventListener('change', () => setView('elevation'));
@@ -1496,6 +1498,12 @@ async function start(root) {
     select: (refs) => { setTool('select'); setSelection(refs); return selected().length; },
     busy: () => (pending ? 'placing a member' : moveRefs ? 'moving parts' : tool === 'paste' ? 'pasting' : null),   // i18n-ignore: read by the assistant
     save: () => saveModel(),
+    usd: async (format) => {   // 0.7 AS.6: as Output › USD (exportUsd) makes it
+      const { steelUsd } = await import('./usd-detailcraft.js');
+      const r = steelUsd(built, marks, { format, name: safeName() });
+      return { data: r.data, report: r.report, name: safeName(), type: format === 'usda' ? 'model/vnd.usda' : format === 'usdz' ? 'model/vnd.usdz+zip' : 'application/octet-stream' };
+    },
+    download: (name, data, type) => download(name, data, type),
     exports: { ifc: () => exportIfc(), nc: () => exportNc(), bom: () => exportBom(), bending: () => exportBending(), kiss: () => exportKiss(), cutlist: () => exportNest() },
   });
   async function saveModel() {
@@ -1575,6 +1583,18 @@ async function start(root) {
     const txt = writeIfc(model.state, built, marks, schedule, {});
     download(safeName() + '.ifc', txt, 'application/x-step');
     print(tr('app.export.ifc', { parts: built.parts.length, bolts: built.bolts.length, footings: model.state.footings.length, bars: built.footings.reduce((s, f) => s + f.bars.reduce((t, g) => t + g.count, 0), 0) }));
+  }
+  // 0.7 XF.8 (session usd): the steel model as USD — usd-detailcraft.js on cc-usd (./usd/, lib/usd synced)
+  async function exportUsd() {
+    if (!built.parts.length) { print(tr('app.export.nothing')); return; }
+    const k = await ask({ title: tr('usd.dialog.title'), text: tr('usd.export.lede'), buttons: [['cancel', tr('app.ask.cancel'), 'btn-line'], ['usda', tr('usd.dialog.format.usda'), 'btn-line'], ['usdc', tr('usd.dialog.format.usdc'), 'btn-line'], ['usdz', tr('usd.dialog.format.usdz'), 'btn-plot']] });
+    if (!['usda', 'usdc', 'usdz'].includes(k)) return;
+    try {
+      const { steelUsd } = await import('./usd-detailcraft.js');
+      const r = steelUsd(built, marks, { format: k, name: safeName() });
+      download(safeName() + '.' + k, new Blob([r.data], { type: k === 'usda' ? 'model/vnd.usda' : k === 'usdz' ? 'model/vnd.usdz+zip' : 'application/octet-stream' }));
+      print(tr('usd.done', { name: safeName() + '.' + k, n: r.report.parts }) + (r.report.notes.length ? ' ' + tr('usd.steel.not_in') : ''));
+    } catch (err) { print(tr('usd.export.failed', { why: String(err.message || err) })); }
   }
   function exportNc() {
     const files = [], skipped = [];
@@ -1965,7 +1985,7 @@ async function start(root) {
 
   window.detailcraft = {
     get model() { return model; }, get built() { return built; }, get marks() { return marks; }, get schedule() { return schedule; },
-    get view() { return view; }, get selection() { return sel; }, get selected() { return selected(); }, get tool() { return tool; },
+    get view() { return view; }, get viewMode() { return viewMode; }, get selection() { return sel; }, get selected() { return selected(); }, get tool() { return tool; },
     get settings() { return settings; }, get toolOptions() { return opts; }, clipboard: () => currentClip(),
     get viewCube() { return viewCube; }, get axisIcon() { return axisIcon; }, cubeView: () => cubeOpts?.getView(),
     setTool, select, setSelection, setView, act, nodeScreen: (p) => view?.toScreen(p),
@@ -2004,6 +2024,9 @@ async function start(root) {
   refresh();
   setView('3d');
   print(tr('app.status.ready'));
+  // workspace layouts (Settings › Global › Layout; 0.7 WS.13): the shell's engine builds the chosen layout, workspace-detailcraft.js fills it
+  import('./workspace-detailcraft.js').then((m) => m.mountDetailcraftWorkspace({ root, dc: window.detailcraft })).then((w) => { workspace = w; })
+    .catch((err) => { console.warn('DetailCraft: no workspace layouts —', err?.message || err); document.documentElement.removeAttribute('data-cc-ws-boot'); });   // i18n-ignore: a console note
   // desktop: the file the app was started with (double-click, "Open with")
   fileHost.launchFiles().then((files) => { if (files?.[0]) openFile(files[0]); }).catch(() => {});
   // Studio Live from a link (#live=<code> on a host's LAN page, ?live=<ROOM>#<secret> from an invite): join; the model comes from the host

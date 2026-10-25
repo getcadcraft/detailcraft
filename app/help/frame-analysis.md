@@ -1,6 +1,6 @@
 ---
 title: Analyse the frame
-summary: Forces, reactions and deflections of the beams, columns and braces as drawn, under load cases and combinations you set. An analysis aid, not a code check.
+summary: Forces, reactions and deflections of the beams, columns and braces as drawn, under load cases and combinations you set. An analysis aid, not a code check; the design checks are a separate step.
 section: tasks
 order: 40
 keywords: analysis, structural analysis, frame analysis, stiffness method, loads, load case, combination, dead load, live load, self weight, own weight, reactions, bending moment, shear, axial force, deflection, deflected shape, supports, pinned, fixed, release, report, pdf, csv, craftscript, frame3d
@@ -9,7 +9,7 @@ keywords: analysis, structural analysis, frame analysis, stiffness method, loads
 The {{ui:Analysis}} tab at the bottom finds the forces in every beam, column and brace of the model, the reactions at the column bases and how far the members bend, for the loads you give it.
 
 :::warning
-It is an **analysis aid, not a code check**. It applies no design code: it does not size members, check capacities or connections, or pick load factors. An engineer checks the model, its loads and supports, and decides what the numbers mean.
+It is an **analysis aid, not a code check**. The analysis applies no design code: it does not size members, check capacities or connections, or pick load factors. An engineer checks the model, its loads and supports, and decides what the numbers mean. For member checks to ASCE 7 / AISC 360 or EN 1990 / EN 1993-1-1 see [Check steel members to a design code](topic:design-checks), a separate step that is an aid too.
 :::
 
 ## Run it
@@ -24,7 +24,7 @@ Every load, case and setting is one undo step ({{key:Mod+Z}}) and is saved in th
 
 ## Load cases and combinations
 
-The analysis starts with three: **Dead** (the members' own weight, from their drawn sections and 7850 kg/m³), **Live** (empty) and **Dead + live**. Add cases of your own (wind, snow …) and combinations: a combination adds the cases up with the factors you type. The analysis is linear, so each case is solved once and combinations are sums. Type the factors your design code asks for; DetailCraft does not choose them.
+The analysis starts with three: **Dead** (the members' own weight, from their drawn sections and 7850 kg/m³), **Live** (empty) and **Dead + live**. Add cases of your own (wind, snow …) and combinations: a combination adds the cases up with the factors you type. The analysis is linear, so each case is solved once and combinations are sums. Type the factors yourself, or choose a design code and let {{ui:Make combinations}} write the code's ([Check steel members to a design code](topic:design-checks)).
 
 ## What the frame is made of
 
@@ -49,4 +49,4 @@ N > 0 is tension. My > 0 puts the member's local −z side in tension: a beam sa
 
 The direct stiffness method, first order and linear: two-node beam-columns with axial, torsion and two bending stiffnesses (no shear deformation, no warping), end releases by static condensation, loads along members through the members' own shape functions. Its answers are checked against the classic textbook cases (cantilevers, simple, fixed and continuous beams, a portal frame, a grid in torsion, a truss).
 
-Not built yet: second-order (P-Δ) effects, buckling, dynamic and seismic analysis, area and wind loads made for you, member offsets, tension-only braces, design code checks. See [Not built yet](topic:not-built-yet).
+Not built yet: second-order (P-Δ) effects, buckling analysis, dynamic and seismic analysis, area and wind loads made for you, member offsets, tension-only braces. See [Not built yet](topic:not-built-yet).

@@ -58,6 +58,7 @@ export const COMMANDS = [
   C('edit.select-none', 'edit', 'bi-x-square', M('data-edit-menu', 'select-none'), { defKeys: ['Escape'], fixed: true }),
 
   C('output.ifc', 'output', 'bi-box', T('ifc')),
+  C('output.usd', 'output', 'bi-box-arrow-up-right', T('usd')),   // 0.7 XF.8 (session usd)
   C('output.nc', 'output', 'bi-gear-wide-connected', T('nc')),
   C('output.bom', 'output', 'bi-list-columns', T('bom')),
   C('output.shop', 'output', 'bi-file-earmark-ruled', T('shop')),
@@ -82,7 +83,9 @@ const DEFAULT_KEYS = Object.fromEntries(COMMANDS.filter((c) => c.defKeys.length 
 const CTRL_KEYS = Object.fromEntries(Object.entries(DEFAULT_KEYS).filter(([, k]) => k.every((x) => /^(Ctrl|F\d)/.test(x))));
 
 const m = (label, items) => ({ label: 'input.m.' + label, items });
-const tab = (label, panels) => ({ label: 'input.m.' + label, panels: panels.map(([l, items]) => ({ label: 'input.m.' + l, items })) });
+// A panel is [name, items, more?]: items are ids or { id, size: 'lg' | 'sm' } / { split: [ids] } (0.7 RIBBON-COMPACT, docs/apps/app-input.md); `more` = the group's extra tools (its arrow).
+const tab = (label, panels) => ({ label: 'input.m.' + label, panels: panels.map(([l, items, more]) => ({ label: 'input.m.' + l, items, ...(more ? { more } : {}) })) });
+const sm = (id) => ({ id, size: 'sm' });
 
 const FILE_MENU = ['file.new', 'file.open', 'file.import', 'file.sample', '-', 'file.save', '-', 'app.settings', 'app.palette', 'app.help'];
 
@@ -104,7 +107,7 @@ export const STYLES = {
         ['clipboard', ['edit.cut', 'edit.paste-in-place', 'edit.select-all', 'edit.select-none']],
       ]),
       tab('view', [['views', ['view.3d', 'view.plan', 'view.elevation', 'view.fit']]]),
-      tab('output', [['plot', ['output.drawings', 'output.shop']], ['export', ['output.ifc', 'output.nc', 'output.kiss']], ['reports', ['output.bom', 'output.bending', 'output.report']]]),
+      tab('output', [['plot', ['output.drawings', 'output.shop']], ['export', ['output.ifc', 'output.usd', 'output.nc', 'output.kiss']], ['reports', ['output.bom', 'output.bending', 'output.report']]]),
     ],
     labels: { 'output.drawings': 'input.lbl.drafting.drawings' },
     keys: { ...CTRL_KEYS },
@@ -115,7 +118,7 @@ export const STYLES = {
       'connect.splice': ['SPLICE'], 'connect.gusset': ['GUSSET'], 'connect.similar': ['SIMILAR', 'MATCH'],
       'edit.undo': ['U', 'UNDO'], 'edit.redo': ['REDO'], 'edit.copy': ['COPYCLIP', 'CP'], 'edit.paste': ['PASTECLIP'], 'edit.cut': ['CUTCLIP'],
       'edit.paste-in-place': ['PASTEORIG'], 'edit.duplicate': ['DUPLICATE', 'DUP'], 'edit.move': ['MOVE', 'M'], 'edit.delete': ['ERASE', 'E'], 'edit.select-all': ['SELECTALL', 'AI_SELALL'],
-      'output.ifc': ['IFCOUT', 'IFC'], 'output.nc': ['NC', 'DSTV'], 'output.bom': ['BOM'], 'output.shop': ['SHOP', 'SHOPDRAWING'],
+      'output.ifc': ['IFCOUT', 'IFC'], 'output.usd': ['USDOUT', 'USD'], 'output.nc': ['NC', 'DSTV'], 'output.bom': ['BOM'], 'output.shop': ['SHOP', 'SHOPDRAWING'],
       'output.drawings': ['DRAWINGS', 'PLOT'], 'output.bending': ['BENDING'], 'output.report': ['REPORT'], 'output.kiss': ['KISS'],
       'view.3d': ['3D'], 'view.plan': ['PLAN'], 'view.elevation': ['ELEVATION', 'ELEV'], 'view.fit': ['ZOOM', 'Z', 'ZE'],
       'file.new': ['NEW'], 'file.open': ['OPEN'], 'file.import': ['IMPORT', 'IFCIN'], 'file.save': ['SAVE', 'QSAVE'], 'file.sample': ['SAMPLE'],
@@ -129,11 +132,11 @@ export const STYLES = {
     menus: [m('file', FILE_MENU)],
     quick: ['file.open', 'file.save', 'edit.undo', 'edit.redo'],
     tabs: [
-      tab('modeling', [['select', ['place.select']], ['members', ['place.beam', 'place.column', 'place.brace', 'place.plate']], ['concrete', ['place.footing']], ['stairs', ['place.stair']]]),
-      tab('detailing', [['connections', ['connect.endplates', 'connect.baseplate', 'connect.sheartabs', 'connect.splice', 'connect.gusset']], ['apply', ['connect.similar']]]),
-      tab('edit', [['clipboard', ['edit.cut', 'edit.copy', 'edit.paste', 'edit.paste-in-place', 'edit.duplicate', 'edit.delete']], ['transform', ['edit.move']], ['selection', ['edit.select-all', 'edit.select-none']]]),
+      tab('modeling', [['select', ['place.select']], ['members', ['place.beam', sm('place.column'), sm('place.brace'), sm('place.plate')]], ['concrete', ['place.footing']], ['stairs', ['place.stair']]]),
+      tab('detailing', [['connections', ['connect.endplates', sm('connect.baseplate'), sm('connect.sheartabs'), { split: ['connect.splice', 'connect.gusset'], size: 'sm' }]], ['apply', ['connect.similar']]]),
+      tab('edit', [['clipboard', ['edit.paste', sm('edit.cut'), sm('edit.copy'), sm('edit.delete')], ['edit.paste-in-place', 'edit.duplicate']], ['transform', ['edit.move']], ['selection', ['edit.select-all', 'edit.select-none']]]),
       tab('drawings', [['drawings', ['output.drawings', 'output.shop']], ['reports', ['output.bom', 'output.bending', 'output.report']]]),
-      tab('fabrication', [['nc', ['output.nc', 'output.kiss']], ['exchange', ['output.ifc', 'file.import']]]),
+      tab('fabrication', [['nc', ['output.nc', 'output.kiss']], ['exchange', ['output.ifc', 'output.usd', 'file.import']]]),
       tab('view', [['views', ['view.3d', 'view.plan', 'view.elevation']], ['navigate', ['view.fit']]]),
     ],
     labels: { 'place.select': 'input.lbl.steel.select' },

@@ -1980,11 +1980,13 @@ section('Assistants and scripts: DetailCraft\'s live tools (X.12)');
 {
   const AG = await load('agents.js');
   const { createDispatcher } = await load('host.js');
-  let model = sampleModel(), sel = [], saved = 0, exported = [];
+  let model = sampleModel(), sel = [], saved = 0, exported = [], downloaded = [];
   const cache = { v: -1 };
   const cur = () => { if (cache.v !== model.version || cache.m !== model) { cache.b = build(model.state); cache.k = Object.assign(Mk.markParts(cache.b), { footingMark: Mk.markFootings(model.state.footings) }); cache.v = model.version; cache.m = model; } return cache; };
   const app = {
     model: () => model, built: () => cur().b, marks: () => cur().k, selected: () => sel, select: (r) => { sel = r; return sel.length; }, busy: () => null,
+    usd: async (format) => { const { steelUsd } = await load('usd-detailcraft.js'); const r = steelUsd(cur().b, cur().k, { format, name: 'frame' }); return { data: r.data, report: r.report, name: 'frame', type: 'model/vnd.usda' }; },
+    download: (name, data) => { downloaded.push(name); },
     save: async () => { saved++; model.markSaved(); }, exports: Object.fromEntries(['ifc', 'nc', 'bom', 'bending', 'kiss', 'cutlist'].map((f) => [f, async () => { exported.push(f); }])),
   };
   let allowed = ['read'];
@@ -1993,7 +1995,7 @@ section('Assistants and scripts: DetailCraft\'s live tools (X.12)');
   const call = async (name, a = {}) => { const r = await d.call(name, a); return { r, v: r.structuredContent, text: r.content?.[0]?.text || '' }; };
   ok(d.list().map((t) => t.name).join() === 'app_info,model_describe,parts_list,problems_list,clash_check,selection_get', 'read: app_info, model_describe, parts_list, problems_list, clash_check, selection_get');
   allowed = ['read', 'edit', 'save', 'export'];
-  ok(d.list().length === 12, 'with edit, save and export: 12 tools');
+  ok(d.list().length === 13, 'with edit, save and export: 13 tools (0.7 AS.6: + usd_export)');
   allowed = ['read'];
   let x = await call('member_add', { type: 'beam', start: [0, 0, 0], end: [1000, 0, 0] });
   ok(x.r.isError && /edit permission/.test(x.text) && model.undoStack.length === 0, 'member_add refused without edit; nothing changes');
@@ -2035,6 +2037,12 @@ section('Assistants and scripts: DetailCraft\'s live tools (X.12)');
   allowed = ['read', 'edit', 'save', 'export'];
   x = await call('model_export', { format: 'nc' });
   ok(!x.r.isError && exported.join() === 'nc', 'model_export nc: the app\'s own export');
+  x = await call('usd_export', {});
+  ok(!x.r.isError && x.v.format === 'usda' && x.v.downloaded === 'frame.usda' && downloaded.join() === 'frame.usda' && x.v.report.parts > 0, 'usd_export: the steel model as OpenUSD (a download without a path)', x.v);
+  x = await call('usd_export', { path: 'frame.usda' });
+  ok(x.r.isError && /Studio/.test(x.text), 'usd_export with a path needs Studio (no folder grant in the browser)');
+  x = await call('usd_export', { format: 'usdc', path: 'frame.usda' });
+  ok(x.r.isError, 'usd_export: the file name must match the format');
   x = await call('model_save');
   ok(!x.r.isError && saved === 1 && x.v.unsaved === false, 'model_save: the app\'s own Save');
   const all = [];

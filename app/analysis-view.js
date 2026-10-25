@@ -7,10 +7,13 @@
  *
  *   showResults(view, frame, sol, setKey, { mode, scale, labels }) → { max, scale }
  *   clearResults(view)
+ *   showUtilisation(view, frame, Map(drawn member id → utilisation | null))   members as coloured bars (0.7 SU.878)
+ *   clearUtilisation(view)
  */
 import * as THREE from 'three';
 import { resultGeometry } from './frame/frame-draw.js';
 import { KN, KNM } from './frame/frame-report.js';
+import { utilRamp } from './frame/frame-design.js';
 
 const MM = 0.001;
 
@@ -60,4 +63,41 @@ export function showResults(view, frame, sol, setKey, { mode = 'deflected', scal
   }
   view.render();
   return { max: geo.max, scale: geo.scale };
+}
+
+/** The design check's utilisation on the model: each analysed piece as a bar coloured by frame-design.js utilRamp (grey = not checked). */
+export function showUtilisation(view, frame, map) {
+  if (!view) return;
+  const g = utilGroup(view);
+  view.clearGroup(g);
+  const nodes = new Map(frame.model.nodes.map((n) => [n.id, n]));
+  for (const [id, list] of frame.parts) {
+    const u = map.get(id);
+    const [r, gr, b] = utilRamp(u ?? NaN);
+    const mat = new THREE.MeshBasicMaterial({ color: new THREE.Color(r, gr, b), transparent: true, opacity: 0.8, depthTest: false, depthWrite: false });
+    for (const q of list) {
+      const m = frame.model.members[q.k], a = nodes.get(m.i), c = nodes.get(m.j);
+      if (!a || !c) continue;
+      const A = new THREE.Vector3(a.x, a.y, a.z), B = new THREE.Vector3(c.x, c.y, c.z), len = A.distanceTo(B);
+      const bar = new THREE.Mesh(new THREE.CylinderGeometry(35, 35, len, 8, 1), mat);
+      bar.position.copy(A).add(B).multiplyScalar(0.5);
+      bar.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), B.clone().sub(A).normalize());
+      bar.renderOrder = 9;
+      g.add(bar);
+    }
+  }
+  view.render();
+}
+export function clearUtilisation(view) {
+  if (!view?._analysisUtil) return;
+  view.clearGroup(view._analysisUtil);
+  view.render();
+}
+function utilGroup(view) {
+  if (!view._analysisUtil) {
+    view._analysisUtil = new THREE.Group();
+    view._analysisUtil.scale.setScalar(MM);
+    view.scene.add(view._analysisUtil);
+  }
+  return view._analysisUtil;
 }

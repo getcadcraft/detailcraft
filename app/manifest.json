@@ -21,5 +21,13 @@
     "handoff",
     "live"
   ],
-  "input": "input-detailcraft.js"
+  "input": "input-detailcraft.js",
+  "workspaces": {
+    "layouts": [
+      "docked",
+      "toolbox"
+    ],
+    "adapter": "workspace-detailcraft.js"
+  },
+  "hardware": true
 }

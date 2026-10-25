@@ -59,6 +59,7 @@ $__tools = [
     ]],
     'output' => [Lang::t('page.group.output'), [
         ['ifc', 'box', Lang::t('page.tool.ifc'), Lang::t('page.tool.ifc.title')],
+        ['usd', 'box-arrow-up-right', Lang::t('usd.export.button'), Lang::t('usd.export.title')],   // 0.7 XF.8 (session usd)
         ['nc', 'gear-wide-connected', Lang::t('page.tool.nc'), Lang::t('page.tool.nc.title')],
         ['bom', 'list-columns', Lang::t('page.tool.bom'), Lang::t('page.tool.bom.title')],
         ['shop', 'file-earmark-ruled', Lang::t('page.tool.shop'), Lang::t('page.tool.shop.title')],

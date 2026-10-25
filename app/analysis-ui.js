@@ -12,7 +12,7 @@ import { el } from './ui-util.js';
 import { t } from './i18n.js';
 import { ANALYSIS_DEFAULTS, cleanAnalysis, analyse, MEMBER_KINDS } from './analysis.js';
 import { framePanel } from './frame/frame-panel.js';
-import { showResults, clearResults } from './analysis-view.js';
+import { showResults, clearResults, showUtilisation, clearUtilisation } from './analysis-view.js';
 
 export function mountAnalysis(app) {
   const model = () => app.getModel();
@@ -34,6 +34,8 @@ export function mountAnalysis(app) {
     fileName: app.safeName,
     show: (frame, sol, key, o) => showResults(app.getView(), frame, sol, key, o),
     hide: () => clearResults(app.getView()),
+    design: true,       // sections carry an I shape (analysis.js shapeOf), so the Design checks block shows
+    showUtil: (frame, map) => (map ? showUtilisation(app.getView(), frame, map) : clearUtilisation(app.getView())),
     rerender: app.rerender,
   });
 }

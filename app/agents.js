@@ -25,6 +25,8 @@
  *   undo             edit    undoes the assistant's last steps (others' only with any: true)
  *   model_save       save    the app's own Save
  *   model_export     export  IFC, NC files, BOM, bending schedule, KISS or cut list: the app's own download
+ *   usd_export       export  the steel model as OpenUSD (.usda, .usdc, .usdz), to a path in Studio or a download (0.7 AS.6)
+ * (app.usd(format) → { data, report, name, type } and app.download(name, data, type) are the page's)
  */
 import { getHost } from './host.js';
 import { findJoints, freeSplices, freeBraceEnds, isBeamEnd } from './connections.js';
@@ -208,6 +210,21 @@ export function detailTools(app) {
       description: 'One of DetailCraft\'s own exports, downloaded as the Output buttons do: ifc (IFC4), nc (DSTV NC files, zipped), bom (CSV), bending (bending schedule CSV), kiss (KISS file), cutlist (cut list CSV).',
       inputSchema: obj({ format: { type: 'string', enum: ['ifc', 'nc', 'bom', 'bending', 'kiss', 'cutlist'] } }, ['format']),
       run: async (a) => { await app.exports[a.format](); return { exported: a.format }; },
+    },
+    {
+      name: 'usd_export', group: 'export', title: 'Export USD',
+      description: 'The steel model as OpenUSD (parts and assemblies as prims, with marks, profiles and weights), .usda (default), .usdc or .usdz, as Output › USD writes it. With a path (Studio) it is written there, else it downloads.',
+      inputSchema: obj({ format: { type: 'string', enum: ['usda', 'usdc', 'usdz'] }, path: { type: 'string', minLength: 1, maxLength: 4096, description: 'Studio: a file inside the folders the person allowed (Settings › Assistants › Folders); without it the file downloads.' }, overwrite: { type: 'boolean', default: false } }),
+      run: async (a) => {
+        const F = getHost({ app: 'detailcraft' }).control.files;
+        const fmt = a.format || (a.path && /\.(usd[acz])$/i.exec(a.path)?.[1].toLowerCase()) || 'usda';
+        if (a.path && !new RegExp('\\.' + fmt + '$', 'i').test(a.path)) throw new Error('A .' + fmt + ' file ends in .' + fmt + '.');
+        const r = await app.usd(fmt);
+        const bytes = typeof r.data === 'string' ? new TextEncoder().encode(r.data) : r.data;
+        if (a.path) { if (!F.available) throw new Error('File paths work only in CadCraft Studio (the desktop app).'); return { format: fmt, bytes: bytes.length, report: r.report, path: await F.write(a.path, bytes, { overwrite: a.overwrite }) }; }
+        app.download(r.name + '.' + fmt, new Blob([bytes], { type: r.type }), r.type);
+        return { format: fmt, bytes: bytes.length, report: r.report, downloaded: r.name + '.' + fmt };
+      },
     },
   ];
 }

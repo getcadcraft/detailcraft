@@ -46,6 +46,8 @@ export const SPLIT_TOL = 2;        // mm: a point this close to a member's line 
 export const MERGE_TOL = 1;        // mm: points this close are one node
 export const MEMBER_KINDS = ['beam', 'column', 'brace'];
 
+/** The I-shape a design check reads (0.7 SU.878): catalogue shapes as rolled; a custom one is marked welded (not checked). */
+const shapeOf = (p) => (p.kind === 'I' && p.d > 0 && p.bf > 0 && p.tw > 0 && p.tf > 0 ? { kind: 'I', d: p.d, bf: p.bf, tw: p.tw, tf: p.tf, r: p.r || 0, ...(p.source === 'custom' || p.family === 'custom' ? { welded: true } : {}) } : null);
 export const ANALYSIS_DEFAULTS = (tr = t) => defaultAnalysis(tr);
 export { cleanAnalysis };   // shared with BimCraft (frame/frame-panel.js)
 
@@ -80,7 +82,7 @@ export function frameOf(state, analysis) {
   const sections = new Map();
   const secOf = (p) => {
     const key = p.name.toUpperCase();
-    if (!sections.has(key)) { const s = sectionOf({ ...p, loops: outline(p, 16) }); sections.set(key, { id: 's' + (sections.size + 1), ...s }); }   // fillets in 16 steps: I to 0.01 %
+    if (!sections.has(key)) { const s = sectionOf({ ...p, loops: outline(p, 16) }); sections.set(key, { id: 's' + (sections.size + 1), ...s, shape: shapeOf(p) }); }   // fillets in 16 steps: I to 0.01 %
     return sections.get(key);
   };
   const materials = new Map();
@@ -187,7 +189,7 @@ export function frameOf(state, analysis) {
     format: FORMAT, version: VERSION, name: state.name || '',
     nodes: nodes.map((n) => ({ id: n.id, x: n.p[0], y: n.p[1], z: n.p[2] })),
     materials: [...materials.values()].map(({ id, name, E, G, rho }) => ({ id, name, E, G, rho })),
-    sections: [...sections.values()].map(({ id, name, A: Ar, Iy, Iz, J }) => ({ id, name, A: Ar, Iy, Iz, J })),
+    sections: [...sections.values()].map(({ id, name, A: Ar, Iy, Iz, J, shape }) => ({ id, name, A: Ar, Iy, Iz, J, ...(shape ? { shape } : {}) })),
     members, supports: [...supports].map(([node, fix]) => ({ node, fix })), cases, combos: A.combos,
   };
   const { model, warnings } = cleanFrame(raw);

@@ -1,6 +1,6 @@
 ---
 title: Use DetailCraft with an AI assistant
-summary: Let your own AI assistant or script read the model, its parts, problems and clashes, add members and connections, save and export: permissions, connecting through CadCraft Studio, and the activity log.
+summary: Let your own AI assistant or script read the model, its parts, problems and clashes, add members and connections, save and export (USD too): permissions, connecting through CadCraft Studio, and the activity log.
 section: tasks
 order: 118
 keywords: ai, assistant, agent, mcp, model context protocol, script, automation, parts, clashes, connections, permissions, disconnect, activity, undo
@@ -52,6 +52,7 @@ All lengths are millimetres, points `[x, y, z]` with z up, as in the model.
 | `undo` | Edit | Takes back the assistant's last steps |
 | `model_save` | Save | DetailCraft's own Save |
 | `model_export` | Export | IFC, NC files, BOM, bending schedule, KISS file or cut list, as the {{ui:Output}} buttons make them |
+| `usd_export` | Export | The steel model as USD (.usda, .usdc or .usdz), as {{ui:Output}} › {{ui:USD}} writes it (see [Export the steel model as USD](topic:usd)); in Studio it can write the file to a folder you allowed |
 
 ## If something doesn't work
 
@@ -59,3 +60,7 @@ All lengths are millimetres, points `[x, y, z]` with z up, as in the model.
 - **"needs the edit permission"** (or save, export): tick it under {{ui:Assistants}}, then ask again.
 - **"The person is placing a member":** finish what you are doing (or press {{key:Esc}}), then let the assistant try again.
 - **"401" or "token" errors:** the token changed (Studio restarted, or {{ui:New token}}). Copy the new one into the assistant's settings.
+
+## See also
+
+- [Recipes for AI assistants](common:assistants-recipes): worked examples, each with the tools it calls.

@@ -46,8 +46,9 @@ DetailCraft builds five connections: a brace gusset (see [Brace gussets](topic:b
 
 | Not yet | Instead, today |
 |---|---|
-| Design code checks (member sizes, capacities, connections) | The {{ui:Analysis}} tab gives forces, reactions and deflections; an engineer checks them against the code; see [Analyse the frame](topic:frame-analysis) |
+| Design checks beyond steel I-shapes: tubes, angles, channels, welded shapes, slender or class 4 parts, torsion, connections, concrete | The {{ui:Analysis}} tab checks steel I-shapes to AISC 360 or EN 1993-1-1 ([Check steel members to a design code](topic:design-checks)); the rest it leaves marked "not checked"; an engineer reviews it all |
 | Second-order (P-Δ) analysis, buckling, vibration, earthquake | First-order linear analysis only |
+| Design checks that an engineer has reviewed | They are an aid until then: check two or three members by hand or in your engineer's own software before you rely on them |
 | Floor, wind and snow loads made for you from areas | Put loads on members by hand, in kN/m or kN |
 | Member offsets, eccentric joints, tension-only braces, plates and footings in the frame | Members are analysed on their work lines; braces carry tension and compression |
 
@@ -71,6 +72,7 @@ DetailCraft builds five connections: a brace gusset (see [Brace gussets](topic:b
 | Drawings as DWG with dimension objects, or the model at full scale in model space with the sheets as layouts | Each sheet is a full-size DWG or DXF of the paper, dimensions as lines and figures ([General-arrangement and assembly drawings](topic:drawings#download)) |
 | NC holes in round tubes, copes on angles and round tubes in NC files | Not written; see [NC file fields](topic:nc1-fields) |
 | Bevels, markings and inner contours in NC files | None today |
+| Bolt holes, bolts, welds and footings in the USD export | They are in the IFC, NC and BOM outputs; see [Export the steel model as USD](topic:usd) |
 | Bringing connections, footings, rebar, slotted or rectangular holes and holes in round tubes in from an IFC file | {{ui:Import IFC}} brings in beams, columns, members, plates, grids, levels, round holes, copes and bolts, and its report lists what it left out |
 | Custom report layouts | The three CSV files |
 
