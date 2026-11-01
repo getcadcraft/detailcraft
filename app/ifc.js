@@ -18,6 +18,9 @@
  * Grids: IfcGrid with IfcGridAxis polylines. Materials: IfcMaterial per grade. Properties: a "DetailCraft"
  * property set (part mark, assembly mark, profile, weight).
  * GlobalIds are derived from the model name + part ids, so exporting the same model twice gives the same ids.
+ * A plane-cut end (a mitre, 0.7.1 71.20): the extrusion runs the overall length and each cut is an IfcBooleanClippingResult
+ * (.DIFFERENCE.) with an IfcHalfSpaceSolid on an IfcPlane (normal out of the part, AgreementFlag .F.: the half space taken away
+ * is on the side the normal points to); the body representation is then 'Clipping'.
  */
 import { add, mul, sub, cross, norm, dot, toWorld } from './geom.js';
 import { centerline2d, BARS } from './rebar.js';
@@ -143,10 +146,18 @@ export function writeIfc(state, built, marks, schedule, { name = state.name || '
     const st = storeyFor(Math.min(part.start[2], part.end[2]));   // lowest point of the part's reference line
     const f = part.frame;
     const lp = place(st, f.o, f.x, f.u);
-    const solid = extrude(profileDef(part.profile, part.voff), part.length);
+    let solid = extrude(profileDef(part.profile, part.voff), part.length);
+    // mitre ends: clip the extrusion by each cut plane (local X = u, Y = v + voff, Z = x; the face is x = x0 + ku·u + kv·v)
+    for (const end of ['start', 'end']) {
+      const c = part.endCuts && part.endCuts[end];
+      if (!c) continue;
+      const sg = end === 'start' ? -1 : 1, nrm = norm([-sg * c.ku, -sg * c.kv, sg]);
+      const pl = w.add('IFCPLANE(' + w.add('IFCAXIS2PLACEMENT3D(' + w.pt([0, part.voff, c.x0]) + ',' + w.dir(nrm) + ',' + w.dir(anyPerp(nrm)) + ')') + ')');
+      solid = w.add('IFCBOOLEANCLIPPINGRESULT(.DIFFERENCE.,' + solid + ',' + w.add('IFCHALFSPACESOLID(' + pl + ',.F.)') + ')');
+    }
     const mark = marks.partMark.get(part.id) || '';
     const nm = part.name ? part.name : part.role;
-    const id = w.add(part.ifc.toUpperCase() + '(' + S(seed('part' + part.id)) + ',$,' + S(nm) + ',$,' + S(part.profileName) + ',' + lp + ',' + shape([solid]) + ',' + S(mark) + ',' + PRED[part.ifc] + ')');
+    const id = w.add(part.ifc.toUpperCase() + '(' + S(seed('part' + part.id)) + ',$,' + S(nm) + ',$,' + S(part.profileName) + ',' + lp + ',' + shape([solid], part.endCuts ? 'Clipping' : 'SweptSolid') + ',' + S(mark) + ',' + PRED[part.ifc] + ')');
     elementOf.set(part.id, { id, st, lp });
     if (!materials.has(part.material)) materials.set(part.material, []);
     materials.get(part.material).push(id);

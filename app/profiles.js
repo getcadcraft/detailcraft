@@ -96,6 +96,8 @@ export function cleanCustom(c, { saved = false } = {}) {
     if (kind === 'I' && p.tw / 2 + p.r > p.bf / 2) return { ok: false, error: t('prof.err.fillet-flange') };
     if (kind === 'I' && 2 * (p.tf + p.r) >= p.d) return { ok: false, error: t('prof.err.fillet-depth') };
   }
+  const dn = Number(c.density);   // 0.8 round 3: a profile of another material (a placed timber panel, EG.6) says its density in kg/m³
+  if (c.density !== undefined && Number.isFinite(dn) && dn >= 100 && dn <= 8000) p.density = dn;
   if (kind === 'L' && p.t >= p.b) return { ok: false, error: t('prof.err.leg') };
   if (kind === 'RHS') { if (2 * p.t >= Math.min(p.h, p.b)) return { ok: false, error: t('prof.err.wall') }; p.ro = 2 * p.t; p.ri = p.t; }
   if (kind === 'CHS' && 2 * p.t >= p.D) return { ok: false, error: t('prof.err.wall') };
@@ -129,8 +131,9 @@ function withDerived(p) {
   const q = { ...p };
   q.loops = outline(q);
   q.area = exactArea(q);
-  q.mass = q.massPub ?? q.area * 1e-6 * STEEL_DENSITY;        // kg/m: published where there is one
-  q.massFrom = q.massPub !== undefined ? SOURCES[q.source] : 'Area × ' + STEEL_DENSITY + ' kg/m³';
+  const rho = q.density || STEEL_DENSITY;
+  q.mass = q.massPub ?? q.area * 1e-6 * rho;        // kg/m: published where there is one
+  q.massFrom = q.massPub !== undefined ? SOURCES[q.source] : 'Area × ' + rho + ' kg/m³';
   const bb = bbox(q.loops[0]);
   q.width = bb.w; q.depth = bb.h;
   q.perimeter = loopLength(q.loops[0]);

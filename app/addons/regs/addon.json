@@ -1,0 +1,19 @@
+{
+  "id": "regs",
+  "name": "Building regulations",
+  "version": "0.1.0",
+  "apps": [
+    "detailcraft"
+  ],
+  "api": "1.4",
+  "license": "Apache-2.0",
+  "entry": "./main.js",
+  "permissions": [
+    "settings",
+    "storage"
+  ],
+  "description": "Check the bolted connections of a model against the connection standard of a place, from a regulation pack: the edge distance and the spacing of bolts as multiples of the hole diameter, with the clause for each rule. Packs hold numbers and clause numbers, never the standard's text. A guide only: the registered professional and the local authority decide.",
+  "author": "CadCraft",
+  "lang": "./lang/",
+  "default": "off"
+}

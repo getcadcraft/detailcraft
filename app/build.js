@@ -2,7 +2,8 @@
 /**
  * build.js — turns the stored model into the parts a fabricator gets. No DOM. Millimeters.
  *
- *   build(state) → { parts, bolts, welds, footings, problems, byId }
+ *   build(state) → { parts, bolts, welds, footings, problems, byId, infos (connection id → what its generator reports: a shear
+ *                  tab's face/skew/slope, a gusset's mode, a mitre's angle and joint frame) }
  *
  * part = { id, member (stored member id or null), conn (connection id or null), type, role, ifc,
  *          name, profile (resolved), profileName, material, frame (o = the cut start; x, u, v; len = cut
@@ -15,10 +16,13 @@
  * Hole x is measured along the part from its cut start; y is across the face (u on flanges and
  * plates, v on webs: both from the section's center). Connections cut parts back (setbacks) and
  * add plates, holes, bolts and welds; nothing they make is stored.
+ * A mitre (0.7.1 71.20) cuts an end on a plane instead (`planes`): the part then runs from the nearest to the farthest
+ * point of its section box between its end faces (length = overall length, its smallest x is 0), and `part.endCuts`
+ * { start, end } holds each cut face as { x0, ku, kv } (geom.js endX); a square end is null.
  */
 import { getProfile } from './profiles.js';
-import { frame, voffFor, toLocal, add, mul } from './geom.js';
-import { buildEndPlate, buildBasePlate, buildShearTab, buildSplice, buildGusset, mainOf } from './connections.js';
+import { frame, voffFor, toLocal, add, mul, sub, dot } from './geom.js';
+import { buildEndPlate, buildBasePlate, buildShearTab, buildSplice, buildGusset, buildMitre, mainOf } from './connections.js';
 import { footingBars, footingProblems } from './rebar.js';
 import { stairGeometry } from './stair.js';
 import { t } from './i18n.js';
@@ -33,14 +37,16 @@ export function build(state) {
     const profile = getProfile(m.profile, state.profiles);
     if (!profile) { problems.push({ ref: m.id, text: t('build.err.profile', { name: m.profile }) }); continue; }
     const f = frame(m.start, m.end, m.rotation);
-    drafts.set(m.id, { m, profile, frame: f, voff: voffFor(m.position, profile.depth), setback: { start: 0, end: 0 }, extraHoles: [] });
+    drafts.set(m.id, { m, profile, frame: f, voff: voffFor(m.position, profile.depth), setback: { start: 0, end: 0 }, plane: { start: null, end: null }, extraHoles: [] });
   }
-  const plates = [], worldHoles = [], bolts = [], welds = [];
+  const plates = [], worldHoles = [], bolts = [], welds = [], infos = new Map();
   for (const c of state.connections) {
-    const r = c.type === 'endplate' ? buildEndPlate(c, { parts: drafts }) : c.type === 'sheartab' ? buildShearTab(c, { parts: drafts }) : c.type === 'baseplate' ? buildBasePlate(c, { parts: drafts }) : c.type === 'splice' ? buildSplice(c, { parts: drafts }) : c.type === 'gusset' ? buildGusset(c, { parts: drafts, conns: state.connections }) : { problems: [t('build.err.connection')] };
+    const r = c.type === 'endplate' ? buildEndPlate(c, { parts: drafts }) : c.type === 'sheartab' ? buildShearTab(c, { parts: drafts }) : c.type === 'baseplate' ? buildBasePlate(c, { parts: drafts }) : c.type === 'splice' ? buildSplice(c, { parts: drafts }) : c.type === 'gusset' ? buildGusset(c, { parts: drafts, conns: state.connections }) : c.type === 'mitre' ? buildMitre(c, { parts: drafts }) : { problems: [t('build.err.connection')] };
     for (const text of r.problems || []) problems.push({ ref: c.id, text, hard: !r.plates });
+    if (r.info) infos.set(c.id, r.info);
     if (!r.plates) continue;
     for (const s of r.setbacks) { const d = drafts.get(s.member); if (d) d.setback[s.end] = Math.max(d.setback[s.end], s.by); }
+    for (const pl of r.planes || []) { const d = drafts.get(pl.member); if (d) d.plane[pl.end] = pl; }
     for (const p of r.plates) plates.push({ ...p, conn: c.id });
     for (const h of r.holes) worldHoles.push({ ...h, conn: c.id });
     const main = drafts.get(mainOf(c));
@@ -52,16 +58,32 @@ export function build(state) {
   const byId = new Map();
   const finish = (part) => { parts.push(part); byId.set(part.id, part); };
   for (const [id, d] of drafts) {
-    const L0 = d.frame.len, a = d.setback.start, b = d.setback.end;
-    if (L0 - a - b < 1) { problems.push({ ref: id, text: t('build.err.cut-to-nothing'), hard: true }); continue; }
+    const L0 = d.frame.len;
+    // each end: square at its setback, or on a cut plane (the face's x along the full line at section point u, v = c + ku·u + kv·v)
+    const faces = {};
+    let a = d.setback.start, b = L0 - d.setback.end;
+    const w2 = d.profile.width / 2, h2 = d.profile.depth / 2, box = [[-w2, -h2], [w2, -h2], [w2, h2], [-w2, h2]];
+    for (const end of ['start', 'end']) {
+      const pl = d.plane[end];
+      if (!pl) continue;
+      const nx = dot(pl.n, d.frame.x);
+      if (end === 'start' ? nx > -0.1 : nx < 0.1) { problems.push({ ref: id, text: t('build.err.cut-plane'), hard: true }); continue; }
+      const F = { c: (dot(pl.n, sub(pl.p, d.frame.o)) - d.voff * dot(pl.n, d.frame.v)) / nx, ku: -dot(pl.n, d.frame.u) / nx, kv: -dot(pl.n, d.frame.v) / nx };
+      const xs = box.map(([u, v]) => F.c + F.ku * u + F.kv * v);
+      if (end === 'start') a = Math.min(...xs); else b = Math.max(...xs);
+      faces[end] = F;
+    }
+    if (b - a < 1) { problems.push({ ref: id, text: t('build.err.cut-to-nothing'), hard: true }); continue; }
     const o = add(d.frame.o, mul(d.frame.x, a));
-    const f = { ...d.frame, o, len: L0 - a - b };
+    const f = { ...d.frame, o, len: b - a };
+    const endCuts = faces.start || faces.end ? { start: faces.start ? { x0: faces.start.c - a, ku: faces.start.ku, kv: faces.start.kv } : null,
+      end: faces.end ? { x0: faces.end.c - a, ku: faces.end.ku, kv: faces.end.kv } : null } : null;
     finish({
       id, member: id, conn: null, type: d.m.type, role: ROLE[d.m.type] && t(ROLE[d.m.type]), ifc: IFC_CLASS[d.m.type], name: d.m.name,
       profile: d.profile, profileName: d.profile.name, material: d.m.material, frame: f, voff: d.voff, length: f.len,
       start: o, end: add(o, mul(f.x, f.len)), position: d.m.position, rotation: d.m.rotation, phase: d.m.phase || 1,
       holes: d.m.holes.map((h) => ({ face: h.face, x: h.x, y: h.y, d: h.d, id: h.id })), cuts: d.m.cuts.map((c) => ({ ...c })),
-      setback: { ...d.setback }, attachTo: null,
+      setback: { ...d.setback }, endCuts, attachTo: null,
     });
   }
   for (const p of plates) {
@@ -104,5 +126,5 @@ export function build(state) {
   }
   const footings = state.footings.map((f) => ({ f, bars: footingBars(f), problems: footingProblems(f) }));
   for (const ft of footings) for (const pr of ft.problems) problems.push({ ref: ft.f.id, text: pr.text });
-  return { parts, byId, bolts, welds, footings, problems };
+  return { parts, byId, bolts, welds, footings, problems, infos };
 }

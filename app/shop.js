@@ -16,6 +16,7 @@
 import { textWidth } from './pdf.js';
 import { paperOf } from './paper.js';
 import { t } from './i18n.js';
+import { endX } from './geom.js';
 
 const SCALES = [1, 2, 2.5, 5, 10, 15, 20, 25, 30, 40, 50, 75, 100, 150, 200];
 const pickScale = (size, room) => SCALES.find((n) => size / n <= room) || SCALES[SCALES.length - 1];
@@ -85,15 +86,17 @@ export function shopDrawing(part, info = {}) {
   const out = [];
   const h2 = H / 2;
   const bs = cope('start', 'bottom'), be = cope('end', 'bottom'), te = cope('end', 'top'), ts = cope('start', 'top');
-  if (bs) out.push([0, -h2 + bs.depth], [bs.length, -h2 + bs.depth], [bs.length, -h2]); else out.push([0, -h2]);
-  if (be) out.push([L - be.length, -h2], [L - be.length, -h2 + be.depth], [L, -h2 + be.depth]); else out.push([L, -h2]);
-  if (te) out.push([L, h2 - te.depth], [L - te.length, h2 - te.depth], [L - te.length, h2]); else out.push([L, h2]);
-  if (ts) out.push([ts.length, h2], [ts.length, h2 - ts.depth], [0, h2 - ts.depth]); else out.push([0, h2]);
+  // a mitre's ends (0.7.1 71.20) where the cut face crosses the web's plane; square ends at 0 and L
+  const xs0 = (v) => (isPlate ? 0 : endX(part, 'start', 0, v)), xs1 = (v) => (isPlate ? L : endX(part, 'end', 0, v));
+  if (bs) out.push([0, -h2 + bs.depth], [bs.length, -h2 + bs.depth], [bs.length, -h2]); else out.push([xs0(-h2), -h2]);
+  if (be) out.push([L - be.length, -h2], [L - be.length, -h2 + be.depth], [L, -h2 + be.depth]); else out.push([xs1(-h2), -h2]);
+  if (te) out.push([L, h2 - te.depth], [L - te.length, h2 - te.depth], [L - te.length, h2]); else out.push([xs1(h2), h2]);
+  if (ts) out.push([ts.length, h2], [ts.length, h2 - ts.depth], [0, h2 - ts.depth]); else out.push([xs0(h2), h2]);
   P(out.map(([x, y]) => [ex(x), ey(y)]), { w: 0.5, closed: true });
   if (!isPlate) {
     for (const [side, y] of [['top', h2 - p.tf], ['bottom', -h2 + p.tf]]) {
       const a = cope('start', side), b = cope('end', side);
-      const x0 = a && a.depth > p.tf ? a.length : 0, x1 = b && b.depth > p.tf ? L - b.length : L;
+      const x0 = a && a.depth > p.tf ? a.length : xs0(y), x1 = b && b.depth > p.tf ? L - b.length : xs1(y);
       if (x1 > x0) P([[ex(x0), ey(y)], [ex(x1), ey(y)]], { w: 0.3 });
     }
   }
@@ -171,6 +174,14 @@ export function shopDrawing(part, info = {}) {
   if (!groups.size) { ly -= 4.5; T(t('shopdwg.holes.none'), 30, ly, 2.5); }
   for (const [k, n] of groups) { ly -= 4.5; const [where, d] = k.split('|'); T(HOLES_IN[where] ? t(HOLES_IN[where], { n, d }) : n + ' x Ø' + d + ' ' + where, 30, ly, 2.5); }
   if (info.weld) { ly -= 6; T(t('shopdwg.weld', { weld: info.weld }), 30, ly, 2.5); }
+  // mitre cuts (0.7.1 71.20): each cut end's angle from square, in the web's plane and across the flanges
+  const deg = (k) => (Math.atan(Math.abs(k)) * 180 / Math.PI).toFixed(1);
+  for (const end of ['start', 'end']) {
+    const c = !isPlate && part.endCuts && part.endCuts[end];
+    if (!c) continue;
+    ly -= 4.5;
+    T(t('shopdwg.endcut', { end: t('shopdwg.end.' + end), web: deg(c.kv), flange: deg(c.ku) }), 30, ly, 2.5);
+  }
 
   // title block
   const tb = [SHEET.w - 190, 10, SHEET.w - 10, 64];

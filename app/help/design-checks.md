@@ -40,7 +40,7 @@ The checks, with the clause each one follows (they are listed in the report):
 
 ## What is not checked
 
-A member shows **not checked**, with the reason, instead of a number when its section is not an I-shape the checks know (tubes, angles, channels), when it is a custom (welded) shape, or when a part is slender (AISC) or class 4 (Eurocode) in bending. A slender part in compression leaves the compression checks out and the member reads *passes, partly checked*. Also not built: second-order effects, torsion, shear buckling together with bending, connections, fatigue, fire, seismic detailing, concrete and slabs. See [Not built yet](topic:not-built-yet).
+A member shows **not checked**, with the reason, instead of a number when its section is not an I-shape the checks know (tubes, angles, channels), when it is a custom (welded) shape, or when a part is slender (AISC) or class 4 (Eurocode) in bending. A slender part in compression leaves the compression checks out and the member reads *passes, partly checked*. Also not built: second-order effects, torsion, shear buckling together with bending, connections, fatigue, fire and seismic detailing. Concrete members and seismic loads have [their own checks](topic:concrete-and-seismic). See [Not built yet](topic:not-built-yet).
 
 ## The report
 

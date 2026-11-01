@@ -37,7 +37,7 @@
  * Not drawn: hidden-line removal (outlines overlap), bolts (listed, their holes drawn).
  */
 import { textWidth } from './pdf.js';
-import { toWorld, toLocal, dot, add, mul } from './geom.js';
+import { toWorld, toLocal, dot, add, mul, endX } from './geom.js';
 import { faceThickness } from './profiles.js';
 import { crc32 } from './zip.js';
 import { cloudBase } from './issues.js';
@@ -245,7 +245,9 @@ function drawHidden(S, pts, style, closed, occluders, hidden) {
 
 function boxCorners(part, t0 = 0, t1 = part.length) {
   const w = part.profile.width / 2, d = part.profile.depth / 2, out = [];
-  for (const t of [t0, t1]) for (const [u, v] of [[-w, -d], [w, -d], [w, d], [-w, d]]) out.push(toWorld(part.frame, t, u, v, part.voff));
+  // a plane-cut end (mitre) puts each corner on its cut face
+  const at = (t, u, v) => (part.endCuts?.start && Math.abs(t) < 1e-9 ? endX(part, 'start', u, v) : part.endCuts?.end && Math.abs(t - part.length) < 1e-9 ? endX(part, 'end', u, v) : t);
+  for (const t of [t0, t1]) for (const [u, v] of [[-w, -d], [w, -d], [w, d], [-w, d]]) out.push(toWorld(part.frame, at(t, u, v), u, v, part.voff));
   return out;
 }
 
@@ -553,17 +555,19 @@ export function assemblySheet(built, marks, row, i) {
   const h2 = p.depth / 2;
   const out = [];
   const bs = cope('start', 'bottom'), be = cope('end', 'bottom'), te = cope('end', 'top'), ts = cope('start', 'top');
-  if (bs) out.push([0, -h2 + bs.depth], [bs.length, -h2 + bs.depth], [bs.length, -h2]); else out.push([0, -h2]);
-  if (be) out.push([L - be.length, -h2], [L - be.length, -h2 + be.depth], [L, -h2 + be.depth]); else out.push([L, -h2]);
-  if (te) out.push([L, h2 - te.depth], [L - te.length, h2 - te.depth], [L - te.length, h2]); else out.push([L, h2]);
-  if (ts) out.push([ts.length, h2], [ts.length, h2 - ts.depth], [0, h2 - ts.depth]); else out.push([0, h2]);
+  // square ends at 0 and L; a mitre's (0.7.1 71.20) where its cut face crosses the web's plane
+  const xs0 = (v) => endX(main, 'start', 0, v), xs1 = (v) => endX(main, 'end', 0, v);
+  if (bs) out.push([0, -h2 + bs.depth], [bs.length, -h2 + bs.depth], [bs.length, -h2]); else out.push([xs0(-h2), -h2]);
+  if (be) out.push([L - be.length, -h2], [L - be.length, -h2 + be.depth], [L, -h2 + be.depth]); else out.push([xs1(-h2), -h2]);
+  if (te) out.push([L, h2 - te.depth], [L - te.length, h2 - te.depth], [L - te.length, h2]); else out.push([xs1(h2), h2]);
+  if (ts) out.push([ts.length, h2], [ts.length, h2 - ts.depth], [0, h2 - ts.depth]); else out.push([xs0(h2), h2]);
   S.P(out.map(([x, v]) => [X(x), Yf(v)]), { ...STYLE.thick, closed: true });
   S.region('part:' + main.id, out.map(([x, v]) => [X(x), Yf(v)]));
   const inner = p.kind === 'I' || p.kind === 'C' ? p.tf : p.kind === 'RHS' || p.kind === 'CHS' ? p.t : 0;
   if (inner) for (const side of ['top', 'bottom']) {
     const v = side === 'top' ? h2 - inner : -h2 + inner;
     const a = cope('start', side), b = cope('end', side);
-    const x0 = a && a.depth > inner ? a.length : 0, x1 = b && b.depth > inner ? L - b.length : L;
+    const x0 = a && a.depth > inner ? a.length : xs0(v), x1 = b && b.depth > inner ? L - b.length : xs1(v);
     if (x1 > x0) S.P([[X(x0), Yf(v)], [X(x1), Yf(v)]], p.kind === 'I' || p.kind === 'C' ? STYLE.outline : STYLE.hidden);
   }
   S.P([[X(ex[0]) - 3, Yf(0)], [X(ex[1]) + 3, Yf(0)]], STYLE.center);
@@ -612,8 +616,10 @@ export function assemblySheet(built, marks, row, i) {
   S.T(t('sheet.view.front') + '  ' + fTitle, X0, Yf(ev[1]) + 4 + 5 * Math.min(k, 1), 2.8, { bold: true });
 
   // ---- top view (from above the main part's v): flange holes, plate widths ----
-  S.rect(X(0), Yt(-p.width / 2), X(L), Yt(p.width / 2), STYLE.thick);
-  if (p.kind === 'I') for (const sg of [-1, 1]) S.P([[X(0), Yt(sg * p.tw / 2)], [X(L), Yt(sg * p.tw / 2)]], STYLE.hidden);
+  // the top flange's outline (a mitre's ends where its cut face crosses the top of the section)
+  const topOut = [[endX(main, 'start', -p.width / 2, h2), -p.width / 2], [endX(main, 'end', -p.width / 2, h2), -p.width / 2], [endX(main, 'end', p.width / 2, h2), p.width / 2], [endX(main, 'start', p.width / 2, h2), p.width / 2]];
+  S.P(topOut.map(([x, u]) => [X(x), Yt(u)]), { ...STYLE.thick, closed: true });
+  if (p.kind === 'I') for (const sg of [-1, 1]) S.P([[X(endX(main, 'start', sg * p.tw / 2, h2)), Yt(sg * p.tw / 2)], [X(endX(main, 'end', sg * p.tw / 2, h2)), Yt(sg * p.tw / 2)]], STYLE.hidden);
   S.region('part:' + main.id, [[X(0), Yt(-p.width / 2)], [X(L), Yt(p.width / 2)]]);
   const topOcc = flangeUnder === null ? [] : [[[X(0), Yt(-p.width / 2)], [X(L), Yt(-p.width / 2)], [X(L), Yt(p.width / 2)], [X(0), Yt(p.width / 2)]]];
   const underFlange = (b) => flangeUnder !== null && Math.max(...b.pts.map((q) => q[2])) <= flangeUnder + 0.01;

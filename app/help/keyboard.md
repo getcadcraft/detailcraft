@@ -117,3 +117,7 @@ Buttons, lists and fields are larger when the screen is touch only. Selection wi
 Some shortcuts belong to the browser and no page can use them, for example {{key:Mod+W}} (close tab), {{key:Mod+T}} (new tab) and {{key:Mod+N}} (new window). If {{key:Mod+Y}} opens your browser's history instead of redoing, use {{key:Mod+Shift+Z}}.
 
 Shortcuts reach DetailCraft only when the page has the keyboard. If a key does nothing, or the browser acts on it instead, click an empty part of the DetailCraft window first (for example after typing in the address bar).
+
+## Where Move lives
+
+There is no Move command: select a part and drag it across the level (hold {{key:Mod}} to drag up and down), or edit its {{ui:Start}} and {{ui:End}} in {{ui:Properties}}.

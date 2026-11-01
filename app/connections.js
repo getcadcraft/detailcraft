@@ -17,12 +17,17 @@
  *   splice    — two I-shapes of one profile end to end (beam or column, 0.4 D21): bolted flange cover plates outside both
  *               flanges and web cover plates on both sides of the web; each piece is cut back so the ends are jointGap apart. Stored as
  *               { a, aEnd (a's end at the joint), b }; the plates ship bolted to a (its assembly), not welded.
+ *   mitre     — two I-shapes meeting at an angle (0.7.1 71.20, DC-AUTO-CONNECTIONS): both ends cut on the plane that halves the
+ *               angle (a plane cut, `planes` below, not a setback), and optionally an end plate welded to each end, the two plates
+ *               bolted together, and a pair of web stiffeners in each member. Stored as { a, aEnd, b, bEnd }; each plate and its
+ *               stiffeners belong to their own member's assembly; the bolts are site bolts of the connection.
  *
  * The defaults are starting values to edit, not design values: DetailCraft does not design
  * connections (no strength checks). Spacing and edge checks use EN 1993-1-8:2005 Table 3.3 minimums
  * (e1, e2 ≥ 1.2·d0; p1 ≥ 2.2·d0; p2 ≥ 2.4·d0, d0 = hole diameter) and are warnings.
  */
-import { frame, add, sub, mul, dot, norm, len } from './geom.js';
+import { frame, add, sub, mul, dot, norm, len, cross } from './geom.js';
+import { getProfile } from './profiles.js';
 import { t } from './i18n.js';
 
 export const ENDPLATE_DEFAULTS = Object.freeze({
@@ -48,6 +53,15 @@ export const SPLICE_DEFAULTS = Object.freeze({
   flangeT: 12, flangeRows: 3, flangePitch: 75, flangeGauge: 0, flangeEdge: 40,   // gauge 0 = bf − 2·40 (two lines)
   webT: 8, webRows: 3, webCols: 2, webPitch: 75, webPitchX: 75, webEdge: 40, webH: 0, // webH 0 = the clear web depth less 2 × 10
 });
+/**
+ * Mitre (0.7.1 71.20). The numbers are the dialog's numbered fields: (1) mGap, (2) tp with the plates tick box, (3) the bolt rows,
+ * (4) extOuter, (5) extInner, (6) stiffDist with the stiffeners tick box, (7) stiffT.
+ */
+export const MITRE_DEFAULTS = Object.freeze({
+  mGap: 0, plates: 1, tp: 20, mWidth: 0, extOuter: 0, extInner: 0,     // mWidth 0 = as wide as the cut section (the flange)
+  boltD: 20, hole: 22, grade: 'A325', rows: 4, mPitch: 0, mGauge: 0, outRow: 0, allowance: 30,   // mPitch 0 = spread between the flanges; mGauge 0 = half the plate width
+  weld: 8, stiffs: 0, stiffT: 10, stiffDist: 50, plateGrade: 'A36',
+});
 export const GUSSET_DEFAULTS = Object.freeze({
   tp: 12, braceGap: 25, boltD: 20, hole: 22, grade: 'A325', bolts: 3, bracePitch: 75, braceEdge: 40, braceGauge: 0, allowance: 30,
   lap: 200, weld: 6, plateGrade: 'A36',     // braceGauge 0 = the middle of the leg (angles) or the center (flats); lap = tube over the gusset
@@ -65,12 +79,14 @@ export function dg1Row(rodD) {
   const r = DG1_TABLE_2_3.find(([d]) => d * 25.4 >= rodD - 0.5);
   return r ? { rod: r[0] * 25.4, hole: r[1] * 25.4, washer: r[2] * 25.4, washerT: r[3] * 25.4, inch: r } : null;
 }
-export const PARAM_CHOICES = { stiffeners: [0, 2, 4], washers: [0, 1] };
+export const PARAM_CHOICES = { stiffeners: [0, 2, 4], washers: [0, 1], plates: [0, 1], outRow: [0, 1], stiffs: [0, 1] };
 // labels and help read the language file when asked (the table is looked up by key on the page)
 const byKey = (keys) => Object.defineProperties({}, Object.fromEntries(Object.entries(keys).map(([k, key]) => [k, { get: () => t(key), enumerable: true }])));
 const PARAM_LABEL_KEYS = {
   bolts: 'conn.param.bolts', lap: 'conn.param.lap', braceGap: 'conn.param.brace-gap', braceEdge: 'conn.param.brace-edge', bracePitch: 'conn.param.brace-pitch', braceGauge: 'conn.param.brace-gauge',
   jointGap: 'conn.param.joint-gap',
+  mGap: 'conn.param.m-gap', mWidth: 'conn.param.width', plates: 'conn.param.plates', extOuter: 'conn.param.ext-outer', extInner: 'conn.param.ext-inner', mPitch: 'conn.param.m-pitch',
+  mGauge: 'conn.param.m-gauge', outRow: 'conn.param.out-row', stiffs: 'conn.param.stiffs', stiffDist: 'conn.param.stiff-dist',
   flangeT: 'conn.param.flange-t', flangeRows: 'conn.param.flange-rows', flangePitch: 'conn.param.flange-pitch', flangeGauge: 'conn.param.flange-gauge', flangeEdge: 'conn.param.flange-edge',
   webT: 'conn.param.web-t', webRows: 'conn.param.web-rows', webCols: 'conn.param.web-cols', webPitch: 'conn.param.web-pitch', webPitchX: 'conn.param.web-pitch-x', webEdge: 'conn.param.web-edge', webH: 'conn.param.web-h',
 };
@@ -90,15 +106,17 @@ export const PARAM_HELP = byKey({
   grout: 'conn.help.grout', stiffeners: 'conn.help.stiffeners', lugD: 'conn.help.lug-d', washers: 'conn.help.washers', washerSize: 'conn.help.washer-size', washerT: 'conn.help.washer-size',
   ev: 'conn.help.ev', gap: 'conn.help.gap', eh: 'conn.help.eh',
   lap: 'conn.help.lap', bolts: 'conn.help.gu-bolts', braceGap: 'conn.help.brace-gap', braceGauge: 'conn.help.brace-gauge',
+  mGap: 'conn.help.m-gap', mWidth: 'conn.help.m-width', mPitch: 'conn.help.m-pitch', mGauge: 'conn.help.m-gauge', outRow: 'conn.help.out-row', stiffDist: 'conn.help.stiff-dist',
+  extOuter: 'conn.help.ext-outer', extInner: 'conn.help.ext-inner',
   jointGap: 'conn.help.joint-gap', flangeGauge: 'conn.help.flange-gauge', webH: 'conn.help.web-h', flangeEdge: 'conn.help.sp-edge', webEdge: 'conn.help.sp-edge',
 });
 
 const TOL = 1;   // mm
 /** Connections at a beam's end (they join a beam and a column; the beam is the main member). */
 export const isBeamEnd = (c) => c && (c.type === 'endplate' || c.type === 'sheartab');
-export const DEFAULTS_OF = { endplate: ENDPLATE_DEFAULTS, sheartab: SHEARTAB_DEFAULTS, baseplate: BASEPLATE_DEFAULTS, splice: SPLICE_DEFAULTS, gusset: GUSSET_DEFAULTS };
+export const DEFAULTS_OF = { endplate: ENDPLATE_DEFAULTS, sheartab: SHEARTAB_DEFAULTS, baseplate: BASEPLATE_DEFAULTS, splice: SPLICE_DEFAULTS, gusset: GUSSET_DEFAULTS, mitre: MITRE_DEFAULTS };
 /** The members a connection joins, main first (the one whose assembly its plates join). */
-export const membersOf = (c) => (c.type === 'splice' ? [c.a, c.b] : c.type === 'gusset' ? [c.support, c.brace] : isBeamEnd(c) ? [c.beam, c.column] : [c.column]);
+export const membersOf = (c) => (c.type === 'splice' || c.type === 'mitre' ? [c.a, c.b] : c.type === 'gusset' ? [c.support, c.brace] : isBeamEnd(c) ? [c.beam, c.column] : [c.column]);
 
 /** Distance from point P to the segment a–b. */
 function segDist(P, a, b) {
@@ -666,6 +684,184 @@ export function buildGusset(conn, ctx) {
   plates.push({ key: gkey, role: t('conn.role.gusset'), profileName: 'PL' + num(tg) + 'x' + num(Math.round(w1 - w0)), material: p.plateGrade || 'A36', start: c0, end: c1, rotation: rot, position: 'middle', attachTo: conn.support });
   welds.unshift({ conn: conn.id, kind: 'fillet', size: p.weld, between: [conn.support, gkey], length: 2 * (a1 - a0), where: t('conn.weld.gusset') });
   return { setbacks, plates, holes, bolts, welds, problems: [...new Set(problems)], info: { mode, setback } };
+}
+
+// ---- mitre (0.7.1 71.20) ----
+const otherEnd = (e) => (e === 'start' ? 'end' : 'start');
+const MITRE_MIN_ANGLE = 15;   // degrees between the two members; sharper is refused (the cut would run along the member)
+/**
+ * Where two I-shaped members meet end to end at an angle: [{ a, aEnd, b, bEnd, angle }] — a's end within 1 mm of b's end (their
+ * reference lines share the node), not in line, among `ids` (all members if null). The angle is between the two members (90 = square).
+ */
+export function findMitres(state, ids = null) {
+  const ms = state.members.filter((m) => m.type !== 'plate' && (!ids || ids.includes(m.id)) && getProfile(m.profile, state.profiles)?.kind === 'I');
+  const out = [];
+  for (let i = 0; i < ms.length; i++) for (let j = i + 1; j < ms.length; j++) {
+    const A = ms[i], B = ms[j];
+    for (const aEnd of ['start', 'end']) for (const bEnd of ['start', 'end']) {
+      if (len(sub(A[aEnd], B[bEnd])) > TOL) continue;
+      const eA = norm(sub(A[otherEnd(aEnd)], A[aEnd])), eB = norm(sub(B[otherEnd(bEnd)], B[bEnd]));
+      const c = dot(eA, eB);
+      if (c < -0.9998) continue;                                             // in line: a splice, not a mitre
+      out.push({ a: A.id, aEnd, b: B.id, bEnd, angle: Math.acos(Math.max(-1, Math.min(1, c))) * 180 / Math.PI });
+    }
+  }
+  return out;
+}
+/** Free mitre joints (neither end has a mitre yet) among `ids`. */
+export function freeMitres(state, ids = null) {
+  const taken = new Set(state.connections.filter((c) => c.type === 'mitre').flatMap((c) => [c.a + ':' + c.aEnd, c.b + ':' + c.bEnd]));
+  return findMitres(state, ids).filter((j) => !taken.has(j.a + ':' + j.aEnd) && !taken.has(j.b + ':' + j.bEnd));
+}
+/** Free mitre joints like the given mitre (same two profiles, the same angle within half a degree). */
+export function similarMitres(state, conn) {
+  const byId = new Map(state.members.map((m) => [m.id, m]));
+  const src = findMitres(state, [conn.a, conn.b]).find((j) => j.a === conn.a && j.aEnd === conn.aEnd && j.b === conn.b && j.bEnd === conn.bEnd)
+    || findMitres(state, [conn.a, conn.b]).find((j) => j.b === conn.a && j.a === conn.b);
+  if (!src) return [];
+  const key = (j) => [byId.get(j.a).profile.toUpperCase(), byId.get(j.b).profile.toUpperCase()].sort().join('|');
+  const k = key(src);
+  return freeMitres(state).filter((j) => key(j) === k && Math.abs(j.angle - src.angle) <= 0.5);
+}
+
+/**
+ * Mitre (0.7.1 71.20). ctx: { parts }. The section center lines of the two members must meet (within 1 mm; members on one
+ * node meet there, or wherever their offsets take the center lines in the plane they share). n, the mitre plane's normal, points
+ * from a's side to b's; `out` runs in the plane toward the outside corner; `w` across (the joint plane's normal).
+ * Returns the usual connection result with `planes` [{ member, end, n (outward), p }] in place of setbacks.
+ */
+export function buildMitre(conn, ctx) {
+  const A = ctx.parts.get(conn.a), B = ctx.parts.get(conn.b);
+  const p = conn.params;
+  if (!A || !B) return { problems: [t('conn.err.part-missing')] };
+  if (A.profile.kind !== 'I' || B.profile.kind !== 'I') return { problems: [t('conn.err.mi-i')] };
+  // the section center lines, and where they come closest
+  const oA = add(A.frame.o, mul(A.frame.v, A.voff)), oB = add(B.frame.o, mul(B.frame.v, B.voff));
+  const xA = A.frame.x, xB = B.frame.x;
+  const bxd = dot(xA, xB), den = 1 - bxd * bxd;
+  if (den < 1e-8) return { problems: [t('conn.err.mi-line')] };
+  const r = sub(oA, oB), da = dot(xA, r), db = dot(xB, r);
+  const sA = (bxd * db - da) / den, sB = (db - bxd * da) / den;
+  const PA = add(oA, mul(xA, sA)), PB = add(oB, mul(xB, sB));
+  if (len(sub(PA, PB)) > TOL) return { problems: [t('conn.err.mi-meet', { d: num(len(sub(PA, PB))) })] };
+  const J = mul(add(PA, PB), 0.5);
+  // each member must reach the joint with the end named (its far end on the other side)
+  const reach = 2 * Math.max(A.profile.depth, B.profile.depth) + 50;
+  const eA = conn.aEnd === 'end' ? mul(xA, -1) : xA, eB = conn.bEnd === 'end' ? mul(xB, -1) : xB;   // from the joint into each member
+  for (const [P, e, end, o] of [[A, eA, conn.aEnd, oA], [B, eB, conn.bEnd, oB]]) {
+    const near_ = add(o, mul(P.frame.x, end === 'start' ? 0 : P.frame.len));
+    const far_ = add(o, mul(P.frame.x, end === 'start' ? P.frame.len : 0));
+    if (len(sub(near_, J)) > reach || dot(sub(far_, J), e) <= 0) return { problems: [t('conn.err.mi-meet', { d: num(len(sub(near_, J))) })] };
+  }
+  const cosT = dot(eA, eB), angle = Math.acos(Math.max(-1, Math.min(1, cosT))) * 180 / Math.PI;
+  if (cosT < -0.9998) return { problems: [t('conn.err.mi-line')] };
+  if (angle < MITRE_MIN_ANGLE) return { problems: [t('conn.err.mi-sharp', { a: num(angle), min: MITRE_MIN_ANGLE })] };
+  const n = norm(sub(eB, eA)), out = norm(mul(add(eA, eB), -1)), w = norm(cross(eA, eB));
+  const problems = [];
+  const inWebPlane = (P) => Math.abs(dot(w, P.frame.u)) > 0.9999;
+  const square = (P) => inWebPlane(P) || Math.abs(dot(w, P.frame.v)) > 0.9999;
+  if (!square(A) || !square(B)) problems.push(t('conn.warn.mi-twisted'));
+  const ap = A.profile, bp = B.profile;
+  if (Math.abs(ap.d - bp.d) > 1 || Math.abs(ap.bf - bp.bf) > 1) problems.push(t('conn.warn.mi-size', { a: ap.name, b: bp.name }));
+  const plates = p.plates ? 1 : 0;
+  if (plates && !(inWebPlane(A) && inWebPlane(B))) return { problems: [...problems, t('conn.err.mi-plates-web')] };
+  const off = p.mGap / 2 + (plates ? p.tp : 0);
+  const faceA = sub(J, mul(n, off)), faceB = add(J, mul(n, off));
+  const planes = [{ member: conn.a, end: conn.aEnd, n, p: faceA }, { member: conn.b, end: conn.bEnd, n: mul(n, -1), p: faceB }];
+  // a member's section edge lines (u, v from its center) cut by its face: [along out, across w] from the face's point
+  const cutAt = (P, face, nn, u, v) => {
+    const Q = add(add(P.frame.o, mul(P.frame.u, u)), mul(P.frame.v, v + P.voff));
+    const k = dot(nn, sub(face, Q)) / dot(nn, P.frame.x);
+    const X = sub(add(Q, mul(P.frame.x, k)), face);
+    return [dot(X, out), dot(X, w)];
+  };
+  const corners = (P) => { const u2 = P.profile.width / 2, v2 = P.profile.depth / 2; return [[-u2, -v2], [u2, -v2], [u2, v2], [-u2, v2]]; };
+  const cutA = corners(A).map(([u, v]) => cutAt(A, faceA, n, u, v)), cutB = corners(B).map(([u, v]) => cutAt(B, faceB, n, u, v));
+  const all = [...cutA, ...cutB];
+  const o0 = Math.min(...all.map((q) => q[0])), o1 = Math.max(...all.map((q) => q[0]));
+  const w0 = Math.min(...all.map((q) => q[1])), w1 = Math.max(...all.map((q) => q[1]));
+  const wm = (w0 + w1) / 2;
+  const out_ = { setbacks: [], planes, plates: [], holes: [], bolts: [], welds: [], problems, info: { angle, cut: (180 - angle) / 2, J, n, out, w } };
+  const d0 = p.hole;
+  if (plates) {
+    const width = p.mWidth || Math.round(w1 - w0);
+    const s0 = o0 - p.extInner, s1 = o1 + p.extOuter;
+    const plate = (key, member, face, toward) => {
+      const c = add(add(face, mul(n, toward * p.tp / 2)), mul(w, wm));
+      const st = add(c, mul(out, s0)), en = add(c, mul(out, s1));
+      const f0 = frame(st, en, 0);
+      const rot = Math.atan2(-dot(n, f0.u), dot(n, f0.v)) * 180 / Math.PI;
+      return { key: conn.id + '.' + key, role: t('conn.role.mitre-plate'), profileName: 'PL' + num(p.tp) + 'x' + num(width), material: p.plateGrade || 'A36',
+        start: st, end: en, rotation: rot, position: 'middle', attachTo: member };
+    };
+    const pa = plate('pa', conn.a, faceA, 1), pb = plate('pb', conn.b, faceB, -1);
+    out_.plates.push(pa, pb);
+    // bolt rows along `out`: between the flanges (spread, or at a pitch about the middle), and one in the outside extension
+    const inner = (P, face, nn) => [-1, 1].map((sg) => cutAt(P, face, nn, 0, sg * (P.profile.depth / 2 - P.profile.tf))[0]);
+    const ia = inner(A, faceA, n), ib = inner(B, faceB, mul(n, -1));
+    const c0 = Math.max(Math.min(...ia), Math.min(...ib)), c1 = Math.min(Math.max(...ia), Math.max(...ib));   // clear of both members' flanges
+    const rows = Math.max(1, Math.round(p.rows));
+    const ts = [];
+    if (p.mPitch > 0) for (let i = 0; i < rows; i++) ts.push((c0 + c1) / 2 + ((rows - 1) / 2 - i) * p.mPitch);
+    else {
+      const a = c0 + p.weld + d0, b = c1 - p.weld - d0;
+      for (let i = 0; i < rows; i++) ts.push(rows === 1 ? (a + b) / 2 : a + i * (b - a) / (rows - 1));
+    }
+    if (p.outRow) ts.push(o1 + p.extOuter / 2);
+    const g = p.mGauge || Math.max(Math.ceil(2.4 * d0 / 5) * 5, Math.round(width / 2 / 5) * 5);
+    const grip = 2 * p.tp + p.mGap, boltLen = ceil5(grip + p.allowance);
+    for (const tt of ts) for (const sg of [1, -1]) {
+      const M = add(J, add(mul(out, tt), mul(w, wm + sg * g / 2)));
+      out_.holes.push({ target: pa.key, world: sub(M, mul(n, p.mGap / 2 + p.tp / 2)), face: 'plate', d: d0 });
+      out_.holes.push({ target: pb.key, world: add(M, mul(n, p.mGap / 2 + p.tp / 2)), face: 'plate', d: d0 });
+      out_.bolts.push({ conn: conn.id, d: p.boltD, length: boltLen, grip, grade: p.grade, head: sub(M, mul(n, p.mGap / 2 + p.tp)), axis: n, kind: 'BOLT' });
+    }
+    for (const [P, key] of [[A, pa.key], [B, pb.key]]) {
+      const cosX = Math.abs(dot(n, P.frame.x));
+      out_.welds.push({ conn: conn.id, kind: 'fillet', size: p.weld, between: [P.m.id, key], length: P.profile.perimeter / cosX, where: t('conn.weld.mitre'), allRound: true });
+    }
+    // checks (warnings; EN 1993-1-8 Table 3.3 minimums as for end plates)
+    const e2 = (width - g) / 2;
+    if (e2 < 1.2 * d0) problems.push(t('conn.warn.e2', { e: num(e2), min: num(1.2 * d0) }));
+    if (g < 2.4 * d0) problems.push(t('conn.warn.gauge', { gauge: num(g), min: num(2.4 * d0) }));
+    const sorted = [...ts].sort((x, y) => x - y);
+    for (let i = 1; i < sorted.length; i++) if (sorted[i] - sorted[i - 1] < 2.2 * d0 - 1e-6) { problems.push(t('conn.warn.pitch', { pitch: num(sorted[i] - sorted[i - 1]), min: num(2.2 * d0) })); break; }
+    const e1 = Math.min(sorted[0] - s0, s1 - sorted[sorted.length - 1]);
+    if (e1 < 1.2 * d0) problems.push(t('conn.warn.e1', { e: num(e1), min: num(1.2 * d0) }));
+    const between = ts.slice(0, rows);
+    if (between.some((tt) => tt - d0 / 2 < c0 + p.weld - 1e-6 || tt + d0 / 2 > c1 - p.weld + 1e-6)) problems.push(t('conn.warn.mi-row-flange'));
+    if (g / 2 - d0 / 2 < Math.max(ap.tw, bp.tw) / 2 + p.weld) problems.push(t('conn.warn.gauge-tight'));
+    if (p.outRow && p.extOuter < 2 * 1.2 * d0) problems.push(t('conn.warn.mi-out-row', { min: num(2 * 1.2 * d0) }));
+    if (width < Math.max(ap.bf, bp.bf) - 1e-6) problems.push(t('conn.warn.mi-plate-narrow'));
+  }
+  // web stiffeners: a pair in each member, square to it, stiffDist past the far end of its cut
+  if (p.stiffs) {
+    for (const [P, e, face, nn, tag, end, o] of [[A, eA, faceA, n, 'a', conn.aEnd, oA], [B, eB, faceB, mul(n, -1), 'b', conn.bEnd, oB]]) {
+      const pr = P.profile;
+      const far = Math.max(...corners(P).map(([u, v]) => {
+        const Q = add(add(P.frame.o, mul(P.frame.u, u)), mul(P.frame.v, v + P.voff));
+        const k = dot(nn, sub(face, Q)) / dot(nn, P.frame.x);
+        return dot(sub(add(Q, mul(P.frame.x, k)), J), e);
+      }));
+      const at = far + p.stiffDist + p.stiffT / 2;
+      const reachFar = dot(sub(add(o, mul(P.frame.x, end === 'start' ? P.frame.len : 0)), J), e);   // the member's other end, from the joint
+      if (at + p.stiffT / 2 > reachFar - 1e-6) { problems.push(t('conn.warn.mi-stiff-room')); continue; }
+      const hS = pr.d - 2 * pr.tf, wS = (pr.bf - pr.tw) / 2;
+      const C = add(J, mul(e, at));
+      for (const sg of [1, -1]) {
+        const c = add(C, mul(P.frame.u, sg * (pr.tw / 2 + wS / 2)));
+        const st = sub(c, mul(P.frame.v, hS / 2)), en = add(c, mul(P.frame.v, hS / 2));
+        const f0 = frame(st, en, 0);
+        const rot = Math.atan2(-dot(e, f0.u), dot(e, f0.v)) * 180 / Math.PI;
+        const key = conn.id + '.s' + tag + (sg > 0 ? '1' : '2');
+        out_.plates.push({ key, role: t('conn.role.mitre-stiffener'), profileName: 'PL' + num(p.stiffT) + 'x' + num(wS), material: p.plateGrade || 'A36',
+          start: st, end: en, rotation: rot, position: 'middle', attachTo: P.m.id });
+        out_.welds.push({ conn: conn.id, kind: 'fillet', size: Math.min(p.weld, p.stiffT), between: [P.m.id, key], length: 2 * hS + 4 * wS, where: t('conn.weld.mitre-stiffener') });
+      }
+    }
+  }
+  out_.problems = [...new Set(problems)];
+  return out_;
 }
 
 const num = (v) => String(Number(Number(v).toFixed(1)));

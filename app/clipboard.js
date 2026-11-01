@@ -105,6 +105,7 @@ export function pasteInto(tx, clip, offset = [0, 0, 0]) {
     if (!membersOf(c).every((m) => ids.has(m))) continue;
     const id = c.type === 'splice' ? tx.addConnection({ type: 'splice', a: ids.get(c.a), aEnd: c.aEnd, b: ids.get(c.b), params: c.params })
       : c.type === 'gusset' ? tx.addConnection({ type: 'gusset', brace: ids.get(c.brace), end: c.end, support: ids.get(c.support), params: c.params })
+      : c.type === 'mitre' ? tx.addConnection({ type: 'mitre', a: ids.get(c.a), aEnd: c.aEnd, b: ids.get(c.b), bEnd: c.bEnd, params: c.params })
       : tx.addConnection({ type: c.type, beam: c.beam ? ids.get(c.beam) : undefined, end: c.end, column: ids.get(c.column), params: c.params });
     refs.push({ kind: 'conn', id });
   }

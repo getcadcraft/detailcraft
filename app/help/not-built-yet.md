@@ -32,13 +32,14 @@ DetailCraft is an early build. This page lists what it does not do yet, so you c
 
 ## Connections
 
-DetailCraft builds five connections: a brace gusset (see [Brace gussets](topic:brace-gussets)); a bolted splice between two pieces of one I-shape (see [Splices](topic:splices)); a flush or extended bolted end plate from a level, upright I-shape beam to an I-shape column flange or web; a shear tab from a beam (square, skewed or sloped) to a column flange or web; and a column base plate with four anchor rods.
+DetailCraft builds six connections: a brace gusset (see [Brace gussets](topic:brace-gussets)); a bolted splice between two pieces of one I-shape (see [Splices](topic:splices)); a mitre between two I-shapes meeting at an angle, cut only or with bolted end plates (see [Mitre joints](topic:mitres)); a flush or extended bolted end plate from a level, upright I-shape beam to an I-shape column flange or web; a shear tab from a beam (square, skewed or sloped) to a column flange or web; and a column base plate with four anchor rods.
 
 | Not yet | Instead, today |
 |---|---|
 | Skewed or sloped end plates | Use [shear tabs](topic:shear-tabs), which take skewed and sloped beams |
 | Clip angles; splice fill plates and splices between different sizes; corner gussets welded to beam and column, chamfered gussets | Detail them in other software, or add plates and holes by hand as loose parts; see [Splices](topic:splices), [Brace gussets](topic:brace-gussets) |
 | Chamfered or tapered base stiffeners; grout holes; the footing pocket for a shear lug | Rectangular stiffeners; see [Base plates](topic:base-plates) |
+| Haunches; welded mitres with a butt weld; stiffeners in line with the other member's flanges | A [mitre](topic:mitres) with end plates and web stiffeners, or a plain mitre cut; add other plates by hand as loose parts |
 | Connection design checks (strength) | Check connections with your engineer's calculations; DetailCraft only warns about edge distance and spacing |
 | Slotted holes | Round holes only |
 
@@ -46,7 +47,7 @@ DetailCraft builds five connections: a brace gusset (see [Brace gussets](topic:b
 
 | Not yet | Instead, today |
 |---|---|
-| Design checks beyond steel I-shapes: tubes, angles, channels, welded shapes, slender or class 4 parts, torsion, connections, concrete | The {{ui:Analysis}} tab checks steel I-shapes to AISC 360 or EN 1993-1-1 ([Check steel members to a design code](topic:design-checks)); the rest it leaves marked "not checked"; an engineer reviews it all |
+| Design checks beyond steel I-shapes: tubes, angles, channels, welded shapes, slender or class 4 parts, torsion, connections; concrete: sway slenderness, torsion, seismic detailing, slabs and walls | The {{ui:Analysis}} tab checks steel I-shapes to AISC 360 or EN 1993-1-1 ([Check steel members to a design code](topic:design-checks)); the rest it leaves marked "not checked"; an engineer reviews it all |
 | Second-order (P-Δ) analysis, buckling, vibration, earthquake | First-order linear analysis only |
 | Design checks that an engineer has reviewed | They are an aid until then: check two or three members by hand or in your engineer's own software before you rely on them |
 | Floor, wind and snow loads made for you from areas | Put loads on members by hand, in kN/m or kN |
@@ -87,8 +88,8 @@ DetailCraft builds five connections: a brace gusset (see [Brace gussets](topic:b
 | Not yet | Instead, today |
 |---|---|
 | Cloud saving and sync between computers | Save `.detailcraft.json` files and share them like any file. Cloud saving is not available yet |
-| Other people's cursors and "is editing" labels in a live session; grids, levels and phases merged item by item | Edits still merge (grids, levels and phases go whole, the later change wins); see [Detail one structure together, live](topic:work-live) |
-| Invite links to a live session over the internet | Join with a short code on the same network |
+| Other people's cursors and "is editing" labels in a Live TeamWork session; grids, levels and phases merged item by item | Edits still merge (grids, levels and phases go whole, the later change wins); see [Detail one structure together, live](topic:work-live) |
+| Invite links to a Live TeamWork session over the internet | Join with a short code on the same network |
 
 ## Platforms
 

@@ -13,6 +13,18 @@
     "@noble/ciphers/": "/assets/vendor/noble-ciphers/current/"
   },
   "phone": true,
+  "devices": true,
+  "calc": true,
+  "reasons": true,
+  "teamwork": true,
+  "totals": true,
+  "lessons": true,
+  "ai-suggest": true,
+  "ai-activity": true,
+  "ai-ask": true,
+  "access": true,
+  "fields": true,
+  "propgrid": true,
   "panels": [
     "move",
     "window"
@@ -25,9 +37,12 @@
   "workspaces": {
     "layouts": [
       "docked",
-      "toolbox"
+      "toolbox",
+      "autorev"
     ],
     "adapter": "workspace-detailcraft.js"
   },
-  "hardware": true
+  "hardware": true,
+  "problems": true,
+  "engines": true
 }

@@ -49,4 +49,4 @@ N > 0 is tension. My > 0 puts the member's local −z side in tension: a beam sa
 
 The direct stiffness method, first order and linear: two-node beam-columns with axial, torsion and two bending stiffnesses (no shear deformation, no warping), end releases by static condensation, loads along members through the members' own shape functions. Its answers are checked against the classic textbook cases (cantilevers, simple, fixed and continuous beams, a portal frame, a grid in torsion, a truss).
 
-Not built yet: second-order (P-Δ) effects, buckling analysis, dynamic and seismic analysis, area and wind loads made for you, member offsets, tension-only braces. See [Not built yet](topic:not-built-yet).
+Not built yet: second-order (P-Δ) effects, buckling analysis, dynamic analysis, area and wind loads made for you (earthquake forces on floors are in [Check concrete members and make seismic loads](topic:concrete-and-seismic)), member offsets, tension-only braces. See [Not built yet](topic:not-built-yet).

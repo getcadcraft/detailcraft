@@ -33,6 +33,9 @@
  *   cleanAnalysis(a)    → untrusted → clean (model.js readModel calls it)
  *   frameOf(state, analysis) → { model, parts: Map(memberId → [{ k, s0, s1 }]), skipped: [{ id, why }], notes: [{ key, n }] }
  *   analyse(state, analysis) → { frame, sol } (sol from solveFrame; sol.ok false = sol.error)
+ *   sectionsOf(state) → [{ name, A, Iy, Iz }]  the sections the drawn members use
+ * state.analysis.concrete (0.8 SU.1056, frame/frame-concrete.js): concrete sections, floors (rigid diaphragms by height) and seismic
+ * settings. A floor listed there becomes `diaphragms` of the analytical model; a model with none is analysed exactly as before.
  * Results per drawn member: frame-panel.js partResults(frame.parts, sol, key); the panel itself: analysis-ui.js.
  */
 import { getProfile, outline } from './profiles.js';
@@ -40,6 +43,7 @@ import { isBeamEnd } from './connections.js';
 import { cleanFrame, sectionOf, STEEL, RELEASES, FORMAT, VERSION } from './frame/frame-model.js';
 import { solveFrame } from './frame/frame-solve.js';
 import { defaultAnalysis, cleanAnalysis } from './frame/frame-panel.js';
+import { diaphragmsOf, cleanConcrete, concreteMaterial, stiffnessFactor } from './frame/frame-concrete.js';
 import { t } from './i18n.js';
 
 export const SPLIT_TOL = 2;        // mm: a point this close to a member's line splits it
@@ -58,10 +62,13 @@ const dist = (a, b) => Math.hypot(a[0] - b[0], a[1] - b[1], a[2] - b[2]);
 /** The analytical model of a DetailCraft model. */
 export function frameOf(state, analysis) {
   const A = analysis || ANALYSIS_DEFAULTS();
+  const conc = cleanConcrete(A.concrete);                // 0.8 SU.1056: a profile with a concrete form is analysed as concrete (E, weight, cracked stiffness)
+  const isConc = (p) => !!conc?.forms[p.name.toUpperCase()];
   const skipped = [], notes = [];
   const drawn = [];
   for (const m of state.members) {
     if (!MEMBER_KINDS.includes(m.type)) continue;
+    if (m.panel) continue;   // 0.8 round 3 (EG.6): a framing panel's pieces are not steel frame members
     const p = getProfile(m.profile, state.profiles || []);
     if (!p || !p.loops) { skipped.push({ id: m.id, why: 'profile' }); continue; }
     if (dist(m.start, m.end) < 1) { skipped.push({ id: m.id, why: 'short' }); continue; }
@@ -80,13 +87,19 @@ export function frameOf(state, analysis) {
   for (const c of A.cases) for (const l of c.loads) if (l.type === 'node') points.push(l.at);
   // sections: one per profile name
   const sections = new Map();
-  const secOf = (p) => {
-    const key = p.name.toUpperCase();
-    if (!sections.has(key)) { const s = sectionOf({ ...p, loops: outline(p, 16) }); sections.set(key, { id: 's' + (sections.size + 1), ...s, shape: shapeOf(p) }); }   // fillets in 16 steps: I to 0.01 %
+  const secOf = (p, f = 1) => {
+    const key = p.name.toUpperCase() + (f === 1 ? '' : '|' + f);
+    if (!sections.has(key)) {
+      const s = sectionOf({ ...p, loops: outline(p, 16) });   // fillets in 16 steps: I to 0.01 %
+      if (f !== 1) { s.Iy *= f; s.Iz *= f; }                   // cracked concrete (ACI 318-19 6.6.3.1.1): bending stiffness only
+      sections.set(key, { id: 's' + (sections.size + 1), ...s, shape: shapeOf(p) });
+    }
     return sections.get(key);
   };
   const materials = new Map();
   const matOf = (name) => { const key = name || 'steel'; if (!materials.has(key)) materials.set(key, { id: 'g' + (materials.size + 1), name: key, ...STEEL }); return materials.get(key); };
+  const concOf = () => { if (!materials.has('concrete')) materials.set('concrete', { id: 'g' + (materials.size + 1), name: "f'c " + conc.mat.fc + ' MPa', ...concreteMaterial(conc.mat) }); return materials.get('concrete'); };
+  let nConc = 0, nCracked = 0;
   // end rules
   const endKind = new Map();         // 'memberId:start|end' → 'rigid' | 'pinned'
   const counts = { sheartab: 0, endplate: 0, free: 0, brace: 0, own: 0 };
@@ -116,7 +129,11 @@ export function frameOf(state, analysis) {
     cuts.sort((a, b) => a - b);
     const at = cuts.filter((s, i) => i === 0 || s - cuts[i - 1] > MERGE_TOL);
     if (L - at[at.length - 1] > MERGE_TOL) at.push(L); else at[at.length - 1] = L;
-    const sec = secOf(p), mat = matOf(m.material);
+    const cc = isConc(p);
+    const vertical = Math.abs(m.end[2] - m.start[2]) > 0.999999 * L;
+    const f = cc ? stiffnessFactor(conc.mat, vertical) : 1;
+    if (cc) { nConc++; if (f !== 1) nCracked++; }
+    const sec = secOf(p, f), mat = cc ? concOf() : matOf(m.material);
     const list = [];
     for (let k = 0; k + 1 < at.length; k++) {
       const s0 = at[k], s1 = at[k + 1];
@@ -191,6 +208,7 @@ export function frameOf(state, analysis) {
     materials: [...materials.values()].map(({ id, name, E, G, rho }) => ({ id, name, E, G, rho })),
     sections: [...sections.values()].map(({ id, name, A: Ar, Iy, Iz, J, shape }) => ({ id, name, A: Ar, Iy, Iz, J, ...(shape ? { shape } : {}) })),
     members, supports: [...supports].map(([node, fix]) => ({ node, fix })), cases, combos: A.combos,
+    diaphragms: diaphragmsOf(A.concrete?.floors),         // 0.8 SU.1056: the floors people set up are rigid diaphragms (none → frame-only, unchanged)
   };
   const { model, warnings } = cleanFrame(raw);
   notes.push({ key: A.bases === 'pinned' ? 'frame.note.bases-pinned' : 'frame.note.bases-fixed', n: nBases });
@@ -200,9 +218,25 @@ export function frameOf(state, analysis) {
   if (counts.brace) notes.push({ key: A.braces === 'pinned' ? 'frame.note.braces-pinned' : 'frame.note.braces-rigid', n: counts.brace / 2 });
   if (counts.own) notes.push({ key: 'frame.note.own-ends', n: counts.own });
   if (A.supports.length) notes.push({ key: 'frame.note.own-supports', n: A.supports.length });
-  notes.push({ key: 'frame.note.worklines', n: drawn.length }, { key: 'frame.note.steel', n: 0 });
+  notes.push({ key: 'frame.note.worklines', n: drawn.length }, { key: nConc < drawn.length || !nConc ? 'frame.note.steel' : 'frame.note.concrete', n: 0 });
+  if (nConc) notes.push({ key: nCracked ? 'frame.note.concrete-cracked' : 'frame.note.concrete-gross', n: nConc });
   if (skipped.length) notes.push({ key: 'frame.note.skipped', n: skipped.length });
   return { model, parts, nodes, skipped, notes, warnings };
+}
+
+/** The sections the drawn members use, with their properties (the Concrete block sets up a rectangle from A and Iy). */
+export function sectionsOf(state) {
+  const seen = new Map();
+  for (const m of state.members) {
+    if (!MEMBER_KINDS.includes(m.type) || m.panel) continue;
+    const key = String(m.profile).toUpperCase();
+    if (seen.has(key)) continue;
+    const p = getProfile(m.profile, state.profiles || []);
+    if (!p || !p.loops) continue;
+    const s = sectionOf({ ...p, loops: outline(p, 16) });
+    seen.set(key, { name: p.name, A: s.A, Iy: s.Iy, Iz: s.Iz });
+  }
+  return [...seen.values()];
 }
 
 export function analyse(state, analysis) {

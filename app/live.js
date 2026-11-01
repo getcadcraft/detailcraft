@@ -235,6 +235,37 @@ export function createLive(getModel) {
     apply(ops) { CORE.apply(M().state, ops); changed(); },
     invert(ops) { return CORE.invert(M().state, ops); },
     touched: (ops) => CORE.touched(ops),
+    /** EG.41 (studio_PART_2; the adapter line from detail_PART_3): where a step landed. A DetailCraft model is one place, so the sheet is always ''
+     *  (the model); the area is the plan extent (x, y in mm) of every member, footing, stair, connection or bolt group an op adds, changes or removes
+     *  (an item that is gone, or a connection whose members are, is looked up as it is now; one that cannot be found is unbounded). A step with
+     *  nothing in space (name, levels, settings, phases) has no area: under an area scope it is refused, never let through. */
+    where(ops) {
+      const st = M().state, box = [Infinity, Infinity, -Infinity, -Infinity];
+      let any = false, unbounded = false;
+      const grow = (x, y) => { if (!Number.isFinite(x) || !Number.isFinite(y)) return; if (x < box[0]) box[0] = x; if (y < box[1]) box[1] = y; if (x > box[2]) box[2] = x; if (y > box[3]) box[3] = y; any = true; };
+      const byId = (list, id) => (st[list] || []).find((x) => x && x.id === id);
+      const member = (m) => { if (Array.isArray(m.start)) grow(m.start[0], m.start[1]); if (Array.isArray(m.end)) grow(m.end[0], m.end[1]); };
+      const names = (v, out, depth = 0) => { if (depth > 5) return out; if (typeof v === 'string' && /^m\d+$/.test(v)) out.add(v); else if (Array.isArray(v)) v.forEach((x) => names(x, out, depth + 1)); else if (v && typeof v === 'object') Object.values(v).forEach((x) => names(x, out, depth + 1)); return out; };
+      const item = (list, v) => {
+        if (list === 'members') member(v);
+        else if (list === 'footings') { const r = Math.max(+v.L || 0, +v.B || 0) / 2; grow(v.x - r, v.y - r); grow(v.x + r, v.y + r); }
+        else if (list === 'stairs') grow(v.x, v.y);
+        else { let found = false; for (const id of names({ ...v, id: undefined }, new Set())) { const m = byId('members', id); if (m) { member(m); found = true; } } if (!found && !(Number.isFinite(v.x) && Number.isFinite(v.y))) unbounded = true; else if (Number.isFinite(v.x)) grow(v.x, v.y); }
+      };
+      for (const op of ops || []) {
+        if (!op || !Array.isArray(op.path) || op.o === 'g') continue;
+        const list = op.path[0];
+        if (!['members', 'connections', 'footings', 'stairs', 'bolts'].includes(list)) continue;
+        const hash = op.path.find((x) => typeof x === 'string' && x[0] === '#');
+        const id = hash ? hash.slice(1) : op.id;
+        if (op.v !== undefined && (op.o === 'add' || op.o === 'atom' && !hash) && op.v && typeof op.v === 'object') { item(list, op.v); continue; }
+        const cur = id !== undefined ? byId(list, String(id)) : null;
+        if (cur) item(list, cur); else unbounded = true;
+      }
+      if (!any) return unbounded ? { sheet: '', box: null } : null;
+      return { sheet: '', box: unbounded ? null : [box[0], box[1], box[2], box[3]], cur: [(box[0] + box[2]) / 2, (box[1] + box[3]) / 2] };
+    },
+    sheetLabel() { return t('live.where.model'); },
     /** The host's checks: every member a connection, bolt group or stair names is in the model once the edit is in. */
     validate(ops) {
       const s = CORE.apply(JSON.parse(JSON.stringify(M().state)), ops);

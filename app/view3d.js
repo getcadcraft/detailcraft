@@ -29,11 +29,15 @@
  *   Touch (0.4 S.8): a tap selects or places (a finger may wander 12 px; grid intersections snap from 34 px away), a long
  *     press (0.55 s) calls onLongPress(ref) — the app adds the part to the selection or takes it out, as Shift+click
  *     does — and one finger on a selected part drags it as the mouse does. Two fingers pinch and pan (OrbitControls).
- * ref = { kind: 'member'|'conn'|'footing', id }.
+ *   Reference pictures (0.8 D8.15, picture.js): state.pictures drawn as see-through textured planes lying on their level, under
+ *     the steel (2 mm below the level, no depth writes, drawn first), at the picture's opacity; picked last (anything else
+ *     in front wins); selected = a blue outline. v.pictureSrc = (hash) → PNG data URL (the Model keeps the PNGs, not the
+ *     state); textures are kept by hash between rebuilds and let go when no picture uses them.
+ * ref = { kind: 'member'|'conn'|'footing'|'stair'|'picture', id }.
  */
 import * as THREE from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
-import { clipLoopV } from './geom.js';
+import { clipLoopV, endX } from './geom.js';
 import { nodes as gridNodes } from './model.js';
 import { barPolyline, BARS } from './rebar.js';
 import { lassoMode, nextMode, thin } from './lasso-core.js';
@@ -77,6 +81,9 @@ export class View3D {
     this.hiddenPhases = new Set();
     this.hoverNode = null;
     this.pickables = [];
+    this.pictureSrc = null;
+    this.picTex = new Map();   // hash → THREE.Texture, kept between rebuilds
+    this.picMats = [];
     this.box = new THREE.Box3();
     this._mouse = null;
     this.makeControls();
@@ -171,6 +178,7 @@ export class View3D {
     this.mats.gridFaint = new THREE.LineBasicMaterial({ color: new THREE.Color(this.colors.grid), transparent: true, opacity: 0.3 });
     this.mats.node = new THREE.PointsMaterial({ color: new THREE.Color(this.colors.ink2), size: 5, sizeAttenuation: false });
     this.mats.hover = new THREE.MeshBasicMaterial({ color: new THREE.Color(this.colors.pick), depthTest: false, transparent: true, opacity: 0.9 });
+    this.mats.pickLine = new THREE.LineBasicMaterial({ color: new THREE.Color(this.colors.pick) });
     this.mats.rubber = new THREE.LineDashedMaterial({ color: new THREE.Color(this.colors.pick), dashSize: 150, gapSize: 90, depthTest: false });
     if (this.clipPlanes) this.applyClipping();
     this.render();
@@ -194,7 +202,7 @@ export class View3D {
   renderNow() { this.renderer.render(this.scene, this.camera); }
 
   clearGroup(g) {
-    g.traverse((o) => { if (o.geometry) o.geometry.dispose(); if (o.material?.map) o.material.map.dispose(); });
+    g.traverse((o) => { if (o.geometry) o.geometry.dispose(); if (o.material?.map && !o.material.map.userData.kept) o.material.map.dispose(); });
     g.clear();
   }
 
@@ -311,10 +319,45 @@ export class View3D {
         }
       }
     }
+    this.addPictures(state.pictures || [], addPick);
     this.applySelection();
     this.applyClipping();
     if (!this.fitted && !this.box.isEmpty()) { this.fit(); this.fitted = true; }
     this.render();
+  }
+
+  /** Reference pictures (D8.15): a textured plane per picture, flat on its level, under everything else. */
+  addPictures(list, addPick) {
+    this.picMats = [];
+    const used = new Set();
+    for (const p of list) {
+      const src = this.pictureSrc?.(p.hash);
+      if (!src) continue;
+      used.add(p.hash);
+      let tex = this.picTex.get(p.hash);
+      if (!tex) {
+        tex = new THREE.TextureLoader().load(src, () => this.render());
+        tex.colorSpace = THREE.SRGBColorSpace;
+        tex.userData.kept = true;
+        this.picTex.set(p.hash, tex);
+      }
+      const w = p.px[0] * p.mmPerPx, h = p.px[1] * p.mmPerPx;
+      const mat = new THREE.MeshBasicMaterial({ map: tex, transparent: true, opacity: p.opacity, depthWrite: false, side: THREE.DoubleSide });
+      const m = new THREE.Mesh(new THREE.PlaneGeometry(w, h), mat);
+      m.position.set(p.x, p.y, p.z - 2);   // 2 mm under the level: the grid, the steel and their edges draw over it
+      m.renderOrder = -1;
+      m.userData.picMat = mat;
+      addPick(m, { kind: 'picture', id: p.id }, 'picture');
+      const q = [[-w / 2, -h / 2], [w / 2, -h / 2], [w / 2, h / 2], [-w / 2, h / 2]].flatMap(([a, b]) => [p.x + a, p.y + b, p.z - 1]);
+      const geo = new THREE.BufferGeometry();
+      geo.setAttribute('position', new THREE.Float32BufferAttribute(q, 3));
+      const outline = new THREE.LineLoop(geo, this.mats.gridFaint);
+      m.userData.outline = outline;
+      this.root.add(outline);
+      this.picMats.push(mat);
+      this.box.expandByPoint(new THREE.Vector3(p.x - w / 2, p.y - h / 2, p.z)).expandByPoint(new THREE.Vector3(p.x + w / 2, p.y + h / 2, p.z));
+    }
+    for (const [h, tex] of this.picTex) if (!used.has(h)) { tex.dispose(); this.picTex.delete(h); }
   }
 
   label(text, p, align = 'center', size = 340) {
@@ -364,6 +407,7 @@ export class View3D {
     for (const m of this.pickables) {
       if (!m.userData.ref) continue;
       const on = sel.has(key(m.userData.ref));
+      if (m.userData.mat === 'picture') { m.userData.outline.material = on ? this.mats.pickLine : this.mats.gridFaint; continue; }   // the picture stays itself; its outline shows it is picked
       m.material = on ? (m.userData.mat === 'concrete' ? this.mats.pickGlass : this.mats.pick) : this.mats[m.userData.mat];
     }
   }
@@ -387,6 +431,7 @@ export class View3D {
     }
     this.clipPlanes = planes;
     for (const [k, m] of Object.entries(this.mats || {})) if (!['hover', 'rubber', 'node'].includes(k)) { m.clippingPlanes = planes; m.needsUpdate = true; }
+    for (const m of this.picMats || []) { m.clippingPlanes = planes; m.needsUpdate = true; }
     this.render();
   }
 
@@ -538,8 +583,9 @@ export class View3D {
     ray.setFromCamera(new THREE.Vector2(l.x / l.w * 2 - 1, -(l.y / l.h) * 2 + 1), this.camera);
     const planes = this.clipPlanes;
     const hits = ray.intersectObjects(this.pickables, false).filter((h) => h.object.visible && planes.every((pl) => pl.distanceToPoint(h.point) >= 0));
-    // solid steel before see-through concrete
-    hits.sort((a, b) => (a.object.userData.mat === 'concrete') - (b.object.userData.mat === 'concrete') || a.distance - b.distance);
+    // solid steel before see-through concrete, and a reference picture (under everything) last
+    const rank = (o) => (o.userData.mat === 'picture' ? 2 : o.userData.mat === 'concrete' ? 1 : 0);
+    hits.sort((a, b) => rank(a.object) - rank(b.object) || a.distance - b.distance);
     const h = hits[0];
     if (!h) return { ref: null, point: null };
     let ref;
@@ -751,8 +797,21 @@ export function partGeometry(p) {
     g.translate(0, 0, a);
     geos.push(g);
   }
-  if (geos.length === 1) return geos[0];
-  return mergeSimple(geos);
+  const g = geos.length === 1 ? geos[0] : mergeSimple(geos);
+  if (p.endCuts) cutEnds(g, p);
+  return g;
+}
+
+/** Plane-cut ends (mitres, 0.7.1 71.20): the end caps' vertices moved onto the cut faces, so the solid ends on the plane. */
+function cutEnds(g, p) {
+  const pos = g.attributes.position, L = p.length;
+  for (let i = 0; i < pos.count; i++) {
+    const z = pos.getZ(i);
+    if (p.endCuts.start && Math.abs(z) < 1e-6) pos.setZ(i, endX(p, 'start', pos.getX(i), pos.getY(i)));
+    else if (p.endCuts.end && Math.abs(z - L) < 1e-6) pos.setZ(i, endX(p, 'end', pos.getX(i), pos.getY(i)));
+  }
+  pos.needsUpdate = true;
+  g.computeVertexNormals();
 }
 
 /** Merges non-indexed/indexed position+normal geometries (avoids pulling in BufferGeometryUtils). */

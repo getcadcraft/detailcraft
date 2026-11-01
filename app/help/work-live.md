@@ -1,14 +1,14 @@
 ---
-title: Detail one structure together, live
-summary: What changes in DetailCraft while you are in a CadCraft Studio live session: everyone's members, connections and footings in one model, your own undo, and joining from a browser on the same network.
+title: Detail one structure together with Live TeamWork
+summary: What changes in DetailCraft while you are in a Live TeamWork session from CadCraft Studio: everyone's members, connections and footings in one model, your own undo, and joining from a browser on the same network.
 section: tasks
 order: 135
-keywords: live, studio live, together, collaborate, session, share live, join, members, connections, undo, host
+keywords: live, live teamwork, studio live, together, collaborate, session, share live, join, members, connections, undo, host
 ---
 
 ## What you will learn
 
-What happens to a model while several people detail it at the same time. CadCraft Studio starts and joins the session (Share live, Join); this page is about the model itself.
+What happens to a model while several people detail it at the same time. CadCraft Studio starts and joins the Live TeamWork session (Share, Join); this page is about the model itself.
 
 ## Everyone works at once
 

@@ -21,12 +21,14 @@ $__groupMore = [
         ['sheartabs', Lang::t('page.tool.sheartabs'), Lang::t('page.tool.sheartabs.title')],
         ['splice', Lang::t('page.tool.splice'), Lang::t('page.tool.splice.title')],
         ['gusset', Lang::t('page.tool.gusset'), Lang::t('page.tool.gusset.title')],
+        ['mitre', Lang::t('page.tool.mitre'), Lang::t('page.tool.mitre.title')],
         ['similar', Lang::t('page.tool.similar'), Lang::t('page.tool.similar.title')],
     ]],
     'output' => [Lang::t('tool.out.more.title'), [
         ['bending', Lang::t('page.tool.bending'), Lang::t('page.tool.bending.title')],
         ['report', Lang::t('tool.report'), Lang::t('tool.report.title')],
         ['kiss', Lang::t('tool.kiss'), Lang::t('tool.kiss.title')],
+        ['ids', Lang::t('ids.menu'), Lang::t('ids.menu.title')],   // 0.7.1 71.25: Check against IDS… (ids-ui.js); in More so the toolbar stays one row
     ]],
 ];
 // groups keyed by a stable id; the label is the language file's
@@ -61,6 +63,7 @@ $__tools = [
         ['ifc', 'box', Lang::t('page.tool.ifc'), Lang::t('page.tool.ifc.title')],
         ['usd', 'box-arrow-up-right', Lang::t('usd.export.button'), Lang::t('usd.export.title')],   // 0.7 XF.8 (session usd)
         ['nc', 'gear-wide-connected', Lang::t('page.tool.nc'), Lang::t('page.tool.nc.title')],
+        ['nc-send', 'send', Lang::t('ncsend.button'), Lang::t('ncsend.title')],   // 0.8 round 3 (EG.40): hidden until Studio's machine dialog is there
         ['bom', 'list-columns', Lang::t('page.tool.bom'), Lang::t('page.tool.bom.title')],
         ['shop', 'file-earmark-ruled', Lang::t('page.tool.shop'), Lang::t('page.tool.shop.title')],
         ['drawings', 'files', Lang::t('page.tool.drawings'), Lang::t('page.tool.drawings.title')],
@@ -110,7 +113,7 @@ $__tools = [
         </div>
       </div>
     <?php endforeach; ?>
-    <input type="file" class="visually-hidden" accept=".json,.ifc,application/json" tabindex="-1" aria-hidden="true" data-file>
+    <input type="file" class="visually-hidden" accept=".json,.ifc,.ccbundle,.zip,application/json" tabindex="-1" aria-hidden="true" data-file>
   </div>
 
   <aside class="dc-panel dc-left" aria-label="<?= Lang::e('page.left.model') ?>">
@@ -211,6 +214,12 @@ $__tools = [
       <button type="button" role="tab" class="dc-tab" aria-selected="false" aria-controls="dc-rep" data-tab="nest" tabindex="-1"><?= Lang::e('nest.tab') ?></button>
       <button type="button" role="tab" class="dc-tab" aria-selected="false" aria-controls="dc-rep" data-tab="clashes" tabindex="-1"><?= Lang::e('clash.tab') ?> <span data-count-clashes></span></button>
       <button type="button" role="tab" class="dc-tab" aria-selected="false" aria-controls="dc-rep" data-tab="analysis" tabindex="-1"><?= Lang::e('frame.ui.tab') ?></button>
+      <button type="button" role="tab" class="dc-tab" aria-selected="false" aria-controls="dc-rep" data-tab="erection" tabindex="-1"><?= Lang::e('erect.tab') ?></button>
+      <button type="button" role="tab" class="dc-tab" aria-selected="false" aria-controls="dc-rep" data-tab="autopilot" tabindex="-1"><?= Lang::e('auto.tab') ?></button>
+      <button type="button" role="tab" class="dc-tab" aria-selected="false" aria-controls="dc-rep" data-tab="congestion" tabindex="-1"><?= Lang::e('cong.tab') ?></button>
+      <button type="button" role="tab" class="dc-tab" aria-selected="false" aria-controls="dc-rep" data-tab="foundation" tabindex="-1"><?= Lang::e('fnd.tab') ?></button>
+      <button type="button" role="tab" class="dc-tab" aria-selected="false" aria-controls="dc-rep" data-tab="framing" tabindex="-1"><?= Lang::e('frm.tab') ?></button>
+      <button type="button" role="tab" class="dc-tab" aria-selected="false" aria-controls="dc-rep" data-tab="supply" tabindex="-1"><?= Lang::e('supply.tab') ?></button>
     </div>
     <div class="dc-rep" id="dc-rep" role="tabpanel" tabindex="0" data-report></div>
   </section>

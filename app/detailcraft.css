@@ -175,6 +175,31 @@ body.app-shell .sp-tab { bottom: 15rem; }
 .dc-dlg-foot .dc-note { margin: 0 auto 0 0; }
 .dc-shop-body { position: relative; aspect-ratio: 420 / 297; max-height: calc(100vh - 9rem); background: color-mix(in srgb, var(--ink) 12%, var(--sheet)); }
 .dc-shop-body canvas { position: absolute; inset: 0; width: 100%; height: 100%; }
+/* the Mitre dialog (0.7.1 71.20): our own drawing of the joint beside the numbered fields */
+.dc-mitre-body { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.1fr); gap: 1rem; padding: .75rem 1rem; overflow: auto; }
+.dc-mitre-lede { margin: 0 0 .5rem; color: var(--ink); }
+.dc-mitre-fig { margin: 0; }
+.dc-mitre-svg { display: block; width: 100%; aspect-ratio: 1; background: var(--sheet); border: var(--pen-1) solid var(--line); border-radius: var(--radius); }
+.dc-mitre-svg * { vector-effect: non-scaling-stroke; }
+.dc-mi-member { fill: color-mix(in srgb, var(--layer-blue) 18%, var(--sheet)); stroke: var(--ink); stroke-width: 1.5; }
+.dc-mi-flange { fill: none; stroke: var(--ink-2); stroke-width: 1; }
+.dc-mi-plate { fill: color-mix(in srgb, var(--layer-ochre) 45%, var(--sheet)); stroke: var(--ink); stroke-width: 1.5; }
+.dc-mi-stiffener { fill: color-mix(in srgb, var(--layer-ochre) 30%, var(--sheet)); stroke: var(--ink); stroke-width: 1; }
+.dc-mi-bolt { stroke: var(--layer-red); stroke-width: 2.5; }
+.dc-mi-leader { stroke: var(--ink-2); stroke-width: 1; }
+.dc-mi-callout { fill: var(--layer-ochre); stroke: var(--ink); stroke-width: 1; }
+.dc-mi-num { fill: var(--ink); font-weight: 700; font-family: inherit; }
+.dc-mitre-fields { display: flex; flex-direction: column; gap: .45rem; font-size: .875rem; }
+.dc-mitre-row { display: grid; grid-template-columns: 1.6rem minmax(0, 1fr); column-gap: .5rem; align-items: start; }
+.dc-mitre-n { grid-row: span 2; width: 1.5rem; height: 1.5rem; border-radius: 50%; display: grid; place-items: center; font-weight: 700; background: var(--layer-ochre); color: var(--ink); border: var(--pen-1) solid var(--ink); }
+.dc-mitre-t { font-weight: 700; }
+.dc-mitre-f { display: grid; grid-template-columns: minmax(0, 1fr) 6rem; gap: .25rem .5rem; align-items: center; }
+.dc-mitre-f label { color: var(--ink-2); }
+.dc-mitre-f .dc-mitre-tick { grid-column: 1 / -1; color: var(--ink); }
+.dc-mitre-more summary { cursor: pointer; font-weight: 700; color: var(--ink-2); }
+.dc-mitre-more .dc-props { margin-top: .35rem; }
+.dc-msgs li.is-ok { border-left-color: var(--layer-green); }
+@media (max-width: 760px) { .dc-mitre-body { grid-template-columns: minmax(0, 1fr); } }
 .dc-ask { width: min(30rem, calc(100vw - 2rem)); }
 .dc-ask-text { margin: 0; padding: 1rem; }
 .dc-dwg-sel { flex: 1 1 auto; min-width: 0; max-width: 28rem; }
@@ -276,3 +301,11 @@ body.app-shell .sp-tab { bottom: 15rem; }
 /* the sheet-size picker in a dialog's head: a real control even before a model gives it sizes (owner 2026-10-24, dialog audit: 26 px stub) */
 .dc-dlg-head .dc-paper-sel { min-height: 2.25rem; min-width: 9rem; }
 .dc-dlg-head .dc-x { min-width: 2.25rem; min-height: 2.25rem; font-size: 1rem; }   /* a dialog's close button, not a row's small × */
+/* Check against IDS (0.7.1 71.25): ids-ui.js */
+.dc-ids-body { padding: .75rem 1rem; overflow: auto; }
+.dc-ids-body .dc-h { margin: .5rem 0 0; }
+.dc-ids-specs { list-style: none; padding: 0; margin: .5rem 0 0; display: grid; gap: .4rem; }
+.dc-ids-specs li { border-left: var(--pen-3) solid var(--line); padding-left: .5rem; }
+.dc-ids-specs li[data-ids-spec="fail"] { border-left-color: var(--layer-red); }
+.dc-ids-specs li[data-ids-spec="pass"] { border-left-color: var(--layer-green); }
+.dc-ids-fail { color: var(--layer-red); }

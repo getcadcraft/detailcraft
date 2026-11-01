@@ -43,6 +43,7 @@ export const COMMANDS = [
   C('connect.sheartabs', 'connect', 'bi-layout-three-columns', M('data-connect-menu', 'sheartabs')),
   C('connect.splice', 'connect', 'bi-distribute-horizontal', M('data-connect-menu', 'splice')),
   C('connect.gusset', 'connect', 'bi-triangle', M('data-connect-menu', 'gusset')),
+  C('connect.mitre', 'connect', 'bi-chevron-bar-right', M('data-connect-menu', 'mitre')),   // 0.7.1 71.20
   C('connect.similar', 'connect', 'bi-files', M('data-connect-menu', 'similar')),
 
   C('edit.undo', 'edit', 'bi-arrow-counterclockwise', T('undo'), { defKeys: ['Ctrl+Z'] }),
@@ -58,8 +59,10 @@ export const COMMANDS = [
   C('edit.select-none', 'edit', 'bi-x-square', M('data-edit-menu', 'select-none'), { defKeys: ['Escape'], fixed: true }),
 
   C('output.ifc', 'output', 'bi-box', T('ifc')),
+  C('output.ids', 'output', 'bi-clipboard2-check', M('data-output-menu', 'ids')),   // 0.7.1 71.25: Check against IDS… (ids-ui.js)
   C('output.usd', 'output', 'bi-box-arrow-up-right', T('usd')),   // 0.7 XF.8 (session usd)
   C('output.nc', 'output', 'bi-gear-wide-connected', T('nc')),
+  C('output.nc-send', 'output', 'bi-send', T('nc-send')),   // 0.8 round 3 (EG.40)
   C('output.bom', 'output', 'bi-list-columns', T('bom')),
   C('output.shop', 'output', 'bi-file-earmark-ruled', T('shop')),
   C('output.drawings', 'output', 'bi-files', T('drawings')),
@@ -72,6 +75,7 @@ export const COMMANDS = [
   C('view.plan', 'view', 'bi-grid-3x3', '[data-view="plan"]'),
   C('view.elevation', 'view', 'bi-building', '[data-view="elevation"]'),
   C('view.fit', 'view', 'bi-arrows-fullscreen', '.dc-viewbar [data-act="fit"]'),
+  C('view.problems', 'view', 'bi-exclamation-triangle', '[data-problems-open]', { defKeys: ['Ctrl+Shift+M'], keyOnly: true, optional: true }),   // 0.7.1: the shell's Problems panel (rebindable; docs/0.8-PROBLEMS-SPEC.md)
 
   C('app.settings', 'app', 'bi-gear', '[data-settings-open]', { defKeys: ['Ctrl+,'], keyOnly: true }),
   C('app.palette', 'app', 'bi-search', '[data-palette-open]', { defKeys: ['Ctrl+K'], keyOnly: true }),
@@ -103,11 +107,11 @@ export const STYLES = {
       tab('home', [
         ['draw', ['place.beam', 'place.column', 'place.brace', 'place.plate', 'place.footing', 'place.stair']],
         ['modify', ['place.select', 'edit.move', 'edit.copy', 'edit.paste', 'edit.duplicate', 'edit.delete']],
-        ['connections', ['connect.endplates', 'connect.baseplate', 'connect.sheartabs', 'connect.splice', 'connect.gusset', 'connect.similar']],
+        ['connections', ['connect.endplates', 'connect.baseplate', 'connect.sheartabs', 'connect.splice', 'connect.gusset', 'connect.mitre', 'connect.similar']],
         ['clipboard', ['edit.cut', 'edit.paste-in-place', 'edit.select-all', 'edit.select-none']],
       ]),
       tab('view', [['views', ['view.3d', 'view.plan', 'view.elevation', 'view.fit']]]),
-      tab('output', [['plot', ['output.drawings', 'output.shop']], ['export', ['output.ifc', 'output.usd', 'output.nc', 'output.kiss']], ['reports', ['output.bom', 'output.bending', 'output.report']]]),
+      tab('output', [['plot', ['output.drawings', 'output.shop']], ['export', ['output.ifc', 'output.ids', 'output.usd', 'output.nc', 'output.nc-send', 'output.kiss']], ['reports', ['output.bom', 'output.bending', 'output.report']]]),
     ],
     labels: { 'output.drawings': 'input.lbl.drafting.drawings' },
     keys: { ...CTRL_KEYS },
@@ -115,10 +119,10 @@ export const STYLES = {
       'place.select': ['SELECT'], 'place.beam': ['BEAM', 'BM'], 'place.column': ['COLUMN', 'COL'], 'place.brace': ['BRACE', 'BR'],
       'place.plate': ['PLATE', 'PL'], 'place.footing': ['FOOTING', 'FTG'], 'place.stair': ['STAIR'],
       'connect.endplates': ['ENDPLATE', 'EP'], 'connect.baseplate': ['BASEPLATE', 'BP'], 'connect.sheartabs': ['SHEARTAB', 'ST'],
-      'connect.splice': ['SPLICE'], 'connect.gusset': ['GUSSET'], 'connect.similar': ['SIMILAR', 'MATCH'],
+      'connect.splice': ['SPLICE'], 'connect.gusset': ['GUSSET'], 'connect.mitre': ['MITRE', 'MITER'], 'connect.similar': ['SIMILAR', 'MATCH'],
       'edit.undo': ['U', 'UNDO'], 'edit.redo': ['REDO'], 'edit.copy': ['COPYCLIP', 'CP'], 'edit.paste': ['PASTECLIP'], 'edit.cut': ['CUTCLIP'],
       'edit.paste-in-place': ['PASTEORIG'], 'edit.duplicate': ['DUPLICATE', 'DUP'], 'edit.move': ['MOVE', 'M'], 'edit.delete': ['ERASE', 'E'], 'edit.select-all': ['SELECTALL', 'AI_SELALL'],
-      'output.ifc': ['IFCOUT', 'IFC'], 'output.usd': ['USDOUT', 'USD'], 'output.nc': ['NC', 'DSTV'], 'output.bom': ['BOM'], 'output.shop': ['SHOP', 'SHOPDRAWING'],
+      'output.ifc': ['IFCOUT', 'IFC'], 'output.ids': ['IDS', 'IDSCHECK'], 'output.usd': ['USDOUT', 'USD'], 'output.nc': ['NC', 'DSTV'], 'output.bom': ['BOM'], 'output.shop': ['SHOP', 'SHOPDRAWING'],
       'output.drawings': ['DRAWINGS', 'PLOT'], 'output.bending': ['BENDING'], 'output.report': ['REPORT'], 'output.kiss': ['KISS'],
       'view.3d': ['3D'], 'view.plan': ['PLAN'], 'view.elevation': ['ELEVATION', 'ELEV'], 'view.fit': ['ZOOM', 'Z', 'ZE'],
       'file.new': ['NEW'], 'file.open': ['OPEN'], 'file.import': ['IMPORT', 'IFCIN'], 'file.save': ['SAVE', 'QSAVE'], 'file.sample': ['SAMPLE'],
@@ -133,10 +137,10 @@ export const STYLES = {
     quick: ['file.open', 'file.save', 'edit.undo', 'edit.redo'],
     tabs: [
       tab('modeling', [['select', ['place.select']], ['members', ['place.beam', sm('place.column'), sm('place.brace'), sm('place.plate')]], ['concrete', ['place.footing']], ['stairs', ['place.stair']]]),
-      tab('detailing', [['connections', ['connect.endplates', sm('connect.baseplate'), sm('connect.sheartabs'), { split: ['connect.splice', 'connect.gusset'], size: 'sm' }]], ['apply', ['connect.similar']]]),
+      tab('detailing', [['connections', ['connect.endplates', sm('connect.baseplate'), sm('connect.sheartabs'), { split: ['connect.splice', 'connect.gusset', 'connect.mitre'], size: 'sm' }]], ['apply', ['connect.similar']]]),
       tab('edit', [['clipboard', ['edit.paste', sm('edit.cut'), sm('edit.copy'), sm('edit.delete')], ['edit.paste-in-place', 'edit.duplicate']], ['transform', ['edit.move']], ['selection', ['edit.select-all', 'edit.select-none']]]),
       tab('drawings', [['drawings', ['output.drawings', 'output.shop']], ['reports', ['output.bom', 'output.bending', 'output.report']]]),
-      tab('fabrication', [['nc', ['output.nc', 'output.kiss']], ['exchange', ['output.ifc', 'output.usd', 'file.import']]]),
+      tab('fabrication', [['nc', ['output.nc', 'output.nc-send', 'output.kiss']], ['exchange', ['output.ifc', 'output.ids', 'output.usd', 'file.import']]]),
       tab('view', [['views', ['view.3d', 'view.plan', 'view.elevation']], ['navigate', ['view.fit']]]),
     ],
     labels: { 'place.select': 'input.lbl.steel.select' },

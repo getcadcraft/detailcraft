@@ -10,6 +10,10 @@ This is what changed in DetailCraft 0.7, compared with 0.6. The frame analysis o
 
 ## New
 
+### Mitre joints (0.7.1)
+
+- **Two I-shapes meeting at an angle**, such as a portal knee or a ridge: select both, choose {{ui:Mitre}} in the {{ui:Connect}} group's {{ui:More}} menu, and both ends are cut on the plane that halves the angle. End plates bolted together and web stiffeners are tick boxes in the new Mitre dialog, whose numbered fields match a drawing of your joint made as you type. The mitre follows the members when they move, and carries through to drawings, NC files (skew cuts), IFC and the bill of materials. See [Mitre joints](topic:mitres).
+
 ### Design checks
 
 - **Load combinations from the code.** In the {{ui:Analysis}} tab, the new {{ui:Design checks}} block has a {{ui:Design code}}: ASCE 7 + AISC 360 (US, LRFD) or EN 1990 + EN 1993-1-1 (Eurocode). Give each load case its kind (dead, live, the new roof live, snow, wind, seismic), press {{ui:Make combinations}}, and DetailCraft writes the code's strength and serviceability combinations of your cases. The combinations you typed yourself stay. See [Make the combinations](topic:design-checks#make-the-combinations).
