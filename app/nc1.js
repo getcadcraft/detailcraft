@@ -101,7 +101,7 @@ export function writeNc1(part, info) {
   field(CODE[k]);
   const per = p.perimeter / 1000;
   const nums = isPlate ? [L, p.b, 0, 0, p.t, 0, p.t * STEEL_KG_PER_M3 / 1000, 2]
-    : k === 'L' ? [L, p.b, p.b, p.t, p.t, 0, p.mass, per]
+    : k === 'L' ? [L, p.b, p.h ?? p.b, p.t, p.t, 0, p.mass, per]
       : k === 'RHS' ? [L, p.h, p.b, p.t, p.t, p.ro, p.mass, per]
         : k === 'CHS' ? [L, p.D, p.D, p.t, p.t, 0, p.mass, per]
           : [L, p.d, p.bf, p.tf, p.tw, p.r, p.mass, per];
@@ -122,7 +122,7 @@ export function writeNc1(part, info) {
   const copes = (part.cuts || []).filter((c) => c.kind === 'cope');
   const rect = (face, x0, x1, w) => ak(face, [[x0, 0], [x1, 0], [x1, w], [x0, w]]);
   if (isPlate) rect('v', 0, L, p.b);
-  else if (k === 'L') { rect('v', 0, L, p.b); rect('u', 0, L, p.b); }
+  else if (k === 'L') { rect('v', 0, L, p.b); rect('u', 0, L, p.h ?? p.b); }
   else if (k === 'CHS') rect('v', 0, L, p.D);
   else if (k === 'C') {
     // Y = d/2 − v: the web outline mirrored top for bottom (reversed to stay counter-clockwise)
@@ -156,7 +156,7 @@ export function writeNc1(part, info) {
       if (hh.face === 'web') return [['v', hh.x, hh.y + p.h / 2, hh.d], ['h', hh.x, hh.y + p.h / 2, hh.d]];
       return [[hh.face === 'top' ? 'o' : 'u', hh.x, p.b / 2 - hh.y, hh.d]];
     }
-    if (k === 'L') return [hh.face === 'web' ? ['u', hh.x, hh.y + p.b / 2, hh.d] : ['v', hh.x, hh.y + p.b / 2, hh.d]];
+    if (k === 'L') return [hh.face === 'web' ? ['u', hh.x, hh.y + (p.h ?? p.b) / 2, hh.d] : ['v', hh.x, hh.y + p.b / 2, hh.d]];
     if (hh.face === 'web') return [['v', hh.x, hh.y + p.d / 2, hh.d]];
     return [[hh.face === 'top' ? 'o' : 'u', hh.x, p.bf / 2 - hh.y, hh.d]];          // from the behind (+u) edge
   });

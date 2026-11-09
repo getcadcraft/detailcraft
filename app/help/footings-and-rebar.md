@@ -6,7 +6,7 @@ order: 90
 keywords: footing, pad footing, foundation, rebar, reinforcement, bars, mat, starters, dowels, bending schedule, bar list, concrete, hooks, cover
 ---
 
-DetailCraft reinforces one kind of concrete element: the rectangular pad footing. Each footing gets a bottom mat both ways and, if you want them, starter bars standing up out of it. Bars are US sizes #3 to #11.
+This topic is about rectangular pad footings. Beams, columns, slabs and walls are in [Detail reinforced concrete](topic:reinforced-concrete). Each footing gets a bottom mat both ways and, if you want them, starter bars standing up out of it. Bars are US sizes #3 to #11.
 
 ## Place a footing
 

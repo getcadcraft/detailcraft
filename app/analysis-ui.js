@@ -12,6 +12,8 @@ import { el } from './ui-util.js';
 import { t } from './i18n.js';
 import { ANALYSIS_DEFAULTS, cleanAnalysis, analyse, sectionsOf, MEMBER_KINDS } from './analysis.js';
 import { framePanel } from './frame/frame-panel.js';
+import { modalOfFrame, modeSolution, MODAL_NOTE } from './fem/frame-fem.js';
+import { DYN } from './fem/frame-dyn.js';   // 0.9 SU.1056: response spectrum, time history, pushover (lib/fem)   // 0.9 SU.908: natural frequencies (lib/fem)
 import { showResults, clearResults, showUtilisation, clearUtilisation } from './analysis-view.js';
 import * as B from './study/breakit.js';   // 0.8 round 3 (EG.31): findings, reserve, Problems (lib/study, copied by tools/study/sync.mjs)
 import { frameLive } from './study/live.js';   // 0.8 round 3 (EG.29): live re-solve
@@ -66,6 +68,7 @@ export function mountAnalysis(app) {
     hide: () => clearResults(app.getView()),
     design: true,       // sections carry an I shape (analysis.js shapeOf), so the Design checks block shows
     showUtil: (frame, map) => (map ? showUtilisation(app.getView(), frame, map) : clearUtilisation(app.getView())),
+    fem: { modal: modalOfFrame, modeSolution, note: MODAL_NOTE, dyn: DYN },   // 0.9 SU.908: the Finite elements block (natural frequencies)
     concrete: true,     // 0.8 SU.1056: the Concrete and Seismic blocks
     sections: () => sectionsOf(model().state),
     problems: (list) => app.setFrameProblems?.(list),

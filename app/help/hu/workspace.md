@@ -1,87 +1,87 @@
 ---
-title: A képernyő körútja
-summary: A DetailCraft minden sávja, panelje és lapja a képernyőn látható nevén, és hogy mire való mindegyik.
+title: A képernyő bemutatása
+summary: A DetailCraft minden sávja, panelje és lapja a képernyőn látható nevén, és az, hogy mire való.
 keywords: képernyő, elrendezés, eszköztár, panelek, tulajdonságok, állapotsor, jelentések, felület, ui, lapok
-from: 454f74fd
+from: 94f81073
 ---
 
-A DetailCraft kitölti a böngészőablakot az alkalmazássáv alatt. Fentről lefelé: az eszköztár, majd három oszlop (a {{ui:Modell}} panel, a nézet, a {{ui:Tulajdonságok}} panel), majd a jelentéslapok, végül az állapotsor.
+A DetailCraft az alkalmazássáv alatt kitölti a böngészőablakot. Felülről lefelé: az eszköztár, majd három oszlop ({{ui:Modell}} panel, a nézet, a {{ui:Tulajdonságok}} panel), utána a jelentéslapok, végül az állapotsor.
 
 ## Az alkalmazássáv
 
-A legfelső vékony sáv a CadCraft webhelyhez tartozik, nem a modellhez. Megmutatja az alkalmazás nevét és verzióját, egy hivatkozást a {{ui:A DetailCraft névjegye}} oldalra, a {{ui:Súgó}} gombot (vagy az {{key:F1}}-et) ehhez a súgóhoz, a {{ui:Mentés offline használatra}} gombot, a képernyőmód gombot és a {{ui:Papír}} / {{ui:Modell}} kapcsolót.
+A legfelső vékony sáv a CadCraft webhelyhez tartozik, nem a modellhez. Megmutatja az alkalmazás nevét és verzióját, a {{ui:A DetailCraft névjegye}} hivatkozást, a {{ui:Súgó}} gombot (vagy a {{key:F1}} billentyűt) a súgóhoz, a {{ui:Mentés offline használatra}} gombot, a képernyőmód gombot és a {{ui:Papír}} / {{ui:Modell}} kapcsolót.
 
-- A {{ui:Mentés offline használatra}} a DetailCraftot, a 3D nézetét és ezt a súgót a böngészőben tartja, hogy kapcsolat nélkül is megnyíljon. Mentés után az {{ui:Offline használatra kész}} feliratot mutatja; ekkor kattintson rá a {{ui:Mentés újra (a legújabb verzió beszerzése)}} vagy az {{ui:Az offline másolat eltávolítása}} lehetőségért. Lásd: [Munka offline](common:offline).
-- A {{ui:Papír}} világos, a {{ui:Modell}} sötét képernyőt ad. A 3D nézet azonnal követi; a modellben semmi nem változik.
-- A képernyőmód gomb és a {{key:Ctrl+Shift+F}} lépked a normál, a teljes képernyő és az elrejtett sávos teljes képernyő között. A {{key:Ctrl+Shift+F}} minden számítógépen a Control billentyűt használja, Macen is. Elrejtett sávoknál a visszahozásukhoz mutasson a képernyő felső szélére (vagy koppintson oda). Az {{key:Esc}} kilép a teljes képernyőből.
+- A {{ui:Mentés offline használatra}} gomb a DetailCraftot, a 3D-nézetét és ezt a súgót a böngészőben tartja, így kapcsolat nélkül is megnyílik. Mentés után a {{ui:Offline használatra kész}} feliratot mutatja; ekkor kattintson rá a {{ui:Mentés újra (a legújabb verzió beszerzése)}} vagy az {{ui:Az offline másolat eltávolítása}} lehetőségért. Lásd: [Munka offline](common:offline).
+- A {{ui:Papír}} világos, a {{ui:Modell}} sötét képernyőt ad. A 3D-nézet azonnal követi; a modellben semmi nem változik.
+- A képernyőmód gomb és a {{key:Ctrl+Shift+F}} billentyűkombináció normál, teljes képernyős és sávok nélküli teljes képernyős mód között vált. A {{key:Ctrl+Shift+F}} minden számítógépen a Ctrl billentyűt használja, a Mac-et is beleértve. A sávok elrejtése esetén vigye az egérmutatót a képernyő felső szélére (vagy érintse meg), hogy visszajöjjenek. Az {{key:Esc}} billentyű kilép a teljes képernyőből.
 
 ## Az eszköztár
 
-Az eszköztárnak öt csoportja van. Vigye az egérmutatót egy gombra, hogy lássa, mit csinál, és melyik a billentyűje.
+Az eszköztárnak öt csoportja van. Vigye az egeret egy gomb fölé, hogy lássa, mit csinál, és mi a billentyűje.
 
 | Csoport | Gombok | Mit csinálnak |
 |---|---|---|
-| {{ui:Fájl}} | {{ui:Új}}, {{ui:Megnyitás}}, {{ui:IFC importálása}}, {{ui:Mentés}}, {{ui:Minta}} | Modell indítása, mentett `.detailcraft.json` vagy IFC-fájl megnyitása, modell mentése, vagy a mintakeret megnyitása |
+| {{ui:Fájl}} | {{ui:Új}}, {{ui:Megnyitás}}, {{ui:IFC importálása}}, {{ui:Mentés}}, {{ui:Minta}} | Új modellt kezd, megnyit egy mentett `.detailcraft.json` vagy IFC-fájlt, ment egyet, vagy megnyitja a mintavázat |
 | {{ui:Elhelyezés}} | {{ui:Kijelölés}}, {{ui:Gerenda}}, {{ui:Oszlop}}, {{ui:Merevítő}}, {{ui:Lemez}}, {{ui:Alap}}, {{ui:Lépcső}} | Az eszköz, amelyet a nézetben a következő kattintás használ |
-| {{ui:Kapcsolás}} | {{ui:Homloklemezek}}, {{ui:Talplemez}}, és a {{ui:Továbbiak}} alatt: {{ui:Nyírólemezek}}, {{ui:Toldás}}, {{ui:Csomólemez}}, {{ui:Hasonló}} | Kapcsolat hozzáadása a kijelölt gerendához, oszlophoz vagy merevítőhöz, vagy a kijelölt kapcsolat másolása minden hasonló csomópontra |
-| {{ui:Szerkesztés}} | {{ui:Visszavonás}}, {{ui:Ismétlés}}, {{ui:Másolás}}, {{ui:Beillesztés}}, {{ui:Továbbiak}} | Lépegetés hátra és előre a szerkesztésekben; a kijelölés másolása és beillesztése. A {{ui:Továbbiak}} menüt nyit a {{ui:Kivágás}}, {{ui:Másolás}}, {{ui:Beillesztés}}, {{ui:Beillesztés helyben}}, {{ui:Kettőzés}}, {{ui:Törlés}}, {{ui:Összes kijelölése}} és {{ui:Kijelölés megszüntetése}} parancsokkal, mindegyik a billentyűjével |
-| {{ui:Kimenet}} | {{ui:IFC}}, {{ui:NC-fájlok}}, {{ui:Anyagjegyzék}}, {{ui:Gyártmányrajz}}, {{ui:Rajzok}}, és a {{ui:Továbbiak}} alatt: {{ui:Hajlítás}}, {{ui:Tömegjelentés fázisonként}}, {{ui:KISS-fájl gyártásszervező szoftverhez}} | Export letöltése, vagy a rajzlapok megnyitása |
+| {{ui:Kapcsolás}} | {{ui:Homloklemezek}}, {{ui:Talplemez}}, és a {{ui:Továbbiak}} alatt: {{ui:Nyírólemezek}}, {{ui:Toldás}}, {{ui:Csomólemez}}, {{ui:Hasonló}} | Kapcsolatot ad a kijelölt gerendához, oszlophoz vagy merevítőhöz, vagy a kijelölt kapcsolatot minden hozzá hasonló csomópontra másolja |
+| {{ui:Szerkesztés}} | {{ui:Visszavonás}}, {{ui:Ismétlés}}, {{ui:Másolás}}, {{ui:Beillesztés}}, {{ui:Továbbiak}} | Visszalépés és előre lépés a szerkesztések között; a kijelölés másolása és beillesztése. A {{ui:Továbbiak}} menüben megnyílik: {{ui:Kivágás}}, {{ui:Másolás}}, {{ui:Beillesztés}}, {{ui:Beillesztés helyben}}, {{ui:Kettőzés}}, {{ui:Törlés}}, {{ui:Összes kijelölése}} és {{ui:Kijelölés megszüntetése}}, mindegyik a billentyűjével |
+| {{ui:Kimenet}} | {{ui:IFC}}, {{ui:NC-fájlok}}, {{ui:Anyagjegyzék}}, {{ui:Gyártmányrajz}}, {{ui:Rajzok}}, és a {{ui:Továbbiak}} alatt: {{ui:Hajlítás}}, {{ui:Tömegjelentés fázisonként}}, {{ui:KISS-fájl gyártásszervező szoftverhez}} | Exportot tölt le, vagy megnyitja a rajzlapokat |
 
-A most nem működő gombok és menüelemek szürkék, és az egérmutatót rájuk víve megmondják, miért. A {{ui:Homloklemezek}} kijelölt gerendát, a {{ui:Talplemez}} kijelölt oszlopot, a {{ui:Hasonló}} kijelölt kapcsolatot, a {{ui:Gyártmányrajz}} kijelölt I-szelvényű vagy lemez alkatrészt, a {{ui:Másolás}} kijelölt rúdelemet vagy alapot, a {{ui:Beillesztés}} pedig valamit, amit másolt, igényel. Lásd: [Másolás, beillesztés és kettőzés](topic:copy-paste).
+Azok a gombok és menüpontok, amelyek éppen nem működhetnek, szürkén jelennek meg, és ha föléjük viszi az egeret, megmondja, miért. A {{ui:Homloklemezek}} gombhoz kijelölt gerenda kell, a {{ui:Talplemez}} gombhoz kijelölt oszlop, a {{ui:Hasonló}} gombhoz kijelölt kapcsolat, a {{ui:Gyártmányrajz}} gombhoz alkatrészekkel rendelkező modell, a {{ui:Másolás}} gombhoz kijelölt rúdelem vagy alap, a {{ui:Beillesztés}} gombhoz pedig előzőleg másolt elem kell. Lásd: [Másolás, beillesztés és kettőzés](topic:copy-paste).
 
-## A Modell panel (balra)
+## Az A Modell panel (bal oldal)
 
-- {{ui:Modell}}: a modell {{ui:Név}}. Ez nevezi el minden mentett vagy exportált fájlt.
-- {{ui:Rácsok}}: a rácsvonalak és osztásaik, valamint az {{ui:Rácsok alkalmazása}}. Lásd: [Rácsok és szintek beállítása](topic:grids-and-levels).
+- {{ui:Modell}}: a modell {{ui:Név}} mezője. Ez nevezi el az összes mentett vagy exportált fájlt.
+- {{ui:Rácsok}}: a rácsvonalak és távolságaik, valamint a {{ui:Rácsok alkalmazása}}. Lásd: [Rácsok és szintek beállítása](topic:grids-and-levels).
 - {{ui:Szintek}}: szintenként egy sor (név és magasság mm-ben), a {{ui:Szint hozzáadása}} és a {{ui:Szintek alkalmazása}}.
-- {{ui:Egyéni szelvény}}: saját paraméteres szelvény készítése. Zárva van, amíg ki nem nyitja.
-- {{ui:Alkatrészjelek}}: a modell minden alkatrészjele a szelvényével, hosszával és darabszámával. Egy jelre kattintva kijelöli az első alkatrészt, amelynek az a jele.
+- {{ui:Egyéni szelvény}}: saját paraméteres szelvény készítése. Addig zárva van, amíg meg nem nyitja.
+- {{ui:Alkatrészjelek}}: a modell minden alkatrészjele a szelvényével, hosszával és darabszámával. Kattintson egy jelre, hogy kijelölje az első hozzá tartozó alkatrészt.
 
-A {{ui:Rácsok}}, a {{ui:Szintek}} és az {{ui:Egyéni szelvény}} összecsukódik: kattintson a címsorukra.
+A {{ui:Rácsok}}, a {{ui:Szintek}} és az {{ui:Egyéni szelvény}} összecsukható: kattintson a fejlécükre.
 
 ## A nézet (középen)
 
-A nézet a modellt 3D-ben mutatja. Fölötte a nézetsávon három gomb és egy lista van:
+A nézet a modellt 3D-ben mutatja. Fölötte a nézetsávban három gomb és egy lista van:
 
 - {{ui:3D}}: szabadon körbeforgathatja a modellt.
-- {{ui:Alaprajz}}: egyenesen lefelé néz egy szintre. A gombok mellett megjelenik a szintek listája. Ami több mint 1,5 m-rel van a szint fölött, az el van vágva, hogy a szintet tisztán lássa és kattinthassa.
-- {{ui:Homlokzat}}: egyenesen egy betűjelű rácsvonalra néz (A rács, B rács …). Megjelenik a betűjelű rácsok listája. Csak az attól a vonaltól 1 m-en belüli acél látszik.
-- A nézetsáv jobb végén lévő illesztés gomb az egész modellt megjeleníti.
+- {{ui:Alaprajz}}: egy szintre nézés felülről. A gombok mellett szintlista jelenik meg. A szint fölött 1.5 m-nél magasabban lévő minden elem le van vágva, hogy a szint jól látható és kattintható legyen.
+- {{ui:Homlokzat}}: egy betűvel jelölt rácsvonalra nézés egyenesen (A rács, B rács …). Megjelenik a betűs rácsok listája. Csak az attól 1 m-en belüli acél látszik.
+- A nézetsáv jobb végén lévő illesztés gomb a teljes modell megjelenítéséhez nagyít.
 
-Kis pontok jelölik minden szint minden rácsmetszéspontját. Amíg egy elhelyező eszköz be van kapcsolva, az egérmutatóhoz legközelebbi pont kivilágosodik, és az állapotsor megnevezi, például „A/2 itt: Level 1”. A színek különböztetik meg a rúdelemtípusokat: az oszlopoknak, gerendáknak, merevítőknek és lemezeknek saját színük van, a csavaroknak és a száraknak másik, az alapok átlátszók, a vasalás pedig csőként van kirajzolva. A furatok sötét dugóként látszanak; a kivágások ki vannak vágva.
+Apró pontok jelölik minden szinten minden rácsmetszéspontot. Amíg elhelyező eszköz be van kapcsolva, a mutatóhoz legközelebbi pont kigyullad, és az állapotsor megnevezi, például: „A/2 az 1. szinten”. A színek különböztetik meg a rúdelemtípusokat: az oszlopoknak, gerendáknak, merevítőknek és lemezeknek saját színük van, a csavaroknak és rudaknak másik, az alapok áttetszőek, a betétvas csövekként jelenik meg. A furatok sötét dugókként látszanak; a kivágások le vannak vágva.
 
-Hogyan forgathat, tolhat el és nagyíthat: [Mozgás a 3D nézetben](topic:navigate-3d).
+A forgatás, eltolás és nagyítás módja: [Mozgás a 3D-nézetben](topic:navigate-3d).
 
-Ha a modell üres, a nézet egy rövid „Modell indítása” listát mutat. Egy mentett modellfájlt a nézet bármely pontjára ejtve is megnyithat.
+Ha a modell üres, a nézet egy rövid „Modell indítása” listát mutat. Egy mentett modellfájlt a nézet bármely pontjára húzva is megnyithat.
 
-## A Tulajdonságok panel (jobbra)
+## A Tulajdonságok panel (jobb oldal)
 
-Hogy mit mutat ez a panel, attól függ, mit csinál, és a címsora megmondja: „Modell”, „Gerenda elhelyezése”, „Gerenda b2”, „Homloklemez-kapcsolat”, „Talplemez”, „Alap F1”, „3 kijelölve” vagy „Beillesztés”.
+Ez a panel attól függően mutat különböző dolgokat, hogy mit csinál, és a fejléce megmondja, melyiket: „Modell”, „Gerenda elhelyezése”, „b2 gerenda”, „Homloklemez-kapcsolat”, „Talplemez”, „F1 alap”, „3 kijelölve” vagy „Beillesztés”.
 
-- **Nincs kijelölve semmi:** a modell összefoglalója (rúdelemek, kapcsolatok, alapok, alkatrészek, jelek, csavarok, acél- és vasalástömeg, rácsok, szintek).
-- **Elhelyező eszköz be van kapcsolva:** a következő darab beállításai (szelvény, anyag, helyzet, forgatás, oszlopnál {{ui:Eddig}}), a kiválasztott szelvény összefoglalója, valamint egy {{ui:Hozzáadás rács szerint}} űrlap a nézetben kattintás nélküli elhelyezéshez.
-- **Rúdelem van kijelölve:** a neve, szelvénye, anyaga, helyzete, forgatása, a két végének koordinátái, a jelei, vágott hossza és tömege, a furatai és kivágásai, valamint gombok a kapcsolatokhoz, a gyártmányrajzához és a {{ui:Törlés}}hez.
-- **Kapcsolat van kijelölve:** minden lemez-, csavar- és hegesztésbeállítás, az általa készített csavarok és hegesztés, a figyelmeztetései, és az {{ui:Alkalmazás a hasonlókra}}.
-- **Alap van kijelölve:** a helyzete és mérete, az alsó háló, az indítóvasak, és a használt vasjelek.
-- **Több dolog van kijelölve:** hány rúdelem típusonként, kapcsolat és alap, az acéltömegük, valamint a {{ui:Másolás}}, a {{ui:Kettőzés}} és a {{ui:Törlés}}.
-- **Beillesztés:** mi van a vágólapon, és űrlapok a beillesztéshez beírt eltolással vagy egy listákból választott rácsmetszéspontra.
+- **Nincs kijelölés:** a modell összefoglalója (rúdelemek, kapcsolatok, alapok, alkatrészek, jelek, csavarok, acél- és betétvas-tömeg, rácsok, szintek).
+- **Elhelyezőeszköz be van kapcsolva:** a következő elem beállításai (szelvény, anyag, helyzet, elforgatás, oszlopoknál a {{ui:Eddig}}), a kiválasztott szelvény összefoglalója, és a {{ui:Hozzáadás rács szerint}} űrlap, amellyel a nézetre kattintás nélkül lehet elhelyezni.
+- **Rúdelem kijelölve:** a neve, szelvénye, anyaga, helyzete, elforgatása, két végének koordinátái, jelei, vágási hossza és tömege, furatai és kivágásai, valamint gombok a kapcsolatokhoz, a gyártmányrajzához és a {{ui:Törlés}} gombhoz.
+- **Kapcsolat kijelölve:** minden lemez-, csavar- és hegesztésbeállítás, az általa készített csavarok és varrat, a figyelmeztetései, valamint az {{ui:Alkalmazás hasonlókra}}.
+- **Alap kijelölve:** a helyzete és mérete, az alsó háló, az indítóvasak, és az általa használt vasjelek.
+- **Több elem kijelölve:** típusonként hány rúdelem, kapcsolat és alap van, azok acéltömege, valamint a {{ui:Másolás}}, {{ui:Kettőzés}} és {{ui:Törlés}} gombok.
+- **Beillesztés:** a vágólapon lévő elem, és űrlapok a beírt eltolással vagy egy listából kiválasztott rácsmetszéspontra történő beillesztéshez.
 
-A számmezők az {{key:Enter}} megnyomásakor vagy a mező elhagyásakor lépnek érvénybe. Minden módosítás egy visszavonható lépés.
+A számmezők az {{key:Enter}} megnyomásakor vagy a mezőből való kilépéskor lépnek érvénybe. Minden módosítás egy visszavonható lépés.
 
 ## A jelentéslapok (alul)
 
-- {{ui:Problémák}}: minden, amit a DetailCraft nem tudott megépíteni, vagy amit ellenőriznie kell, soronként egy {{ui:Kijelölés}} gombbal. A lap zárójelben mutatja a darabszámot.
-- {{ui:Anyagjegyzék}}: alkatrészek, összeállítások, valamint csavarok és horgonyszárak, tömegekkel és egy {{ui:CSV letöltése}} hivatkozással. Egy alkatrészjelre kattintva kijelöli az alkatrészt.
+- {{ui:Problémák}}: minden, amit a DetailCraft nem tudott felépíteni, vagy amit ellenőrizni szeretne, soronként egy {{ui:Kijelölés}} gombbal. A lap zárójelben mutatja a darabszámot.
+- {{ui:Anyagjegyzék}}: alkatrészek, összeállítások, valamint csavarok és horgonyrudak, tömegekkel és egy {{ui:CSV letöltése}} hivatkozással. Kattintson egy alkatrészjelre, hogy kijelölje azt az alkatrészt.
 - {{ui:Hajlítási kimutatás}}: minden alap minden vasjele, egy {{ui:CSV letöltése}} hivatkozással.
 
-Fókuszált lapnál a {{key:Left}} és a {{key:Right}} lapok között lép.
+Ha egy lap van fókuszban, a {{key:Left}} és a {{key:Right}} billentyű lapok között léptet.
 
 ## Az állapotsor
 
-Az alul húzódó sávnak három része van: az egérmutató alatti rácsmetszéspont elhelyezés közben, a legutóbbi üzenet (mi történt éppen, vagy miért utasítottak vissza valamit), és az alkatrészek, csavarok, acéltömeg és vasalástömeg futó összegei. Ha egy művelet úgy tűnik, nem csinál semmit, olvassa el előbb az itteni üzenetet.
+Az alul futó sáv három részből áll: az elhelyezés közben a mutató alatti rácsmetszéspont, a legutolsó üzenet (mi történt az imént, vagy miért nem fogadtak el valamit), és az alkatrészek, csavarok, acéltömeg és betétvas-tömeg folyamatosan frissülő összesítése. Ha egy művelet nem látszik hatni, előbb ezt az üzenetet olvassa el.
 
-A böngészőlap címe ponttal (•) kezdődik, amíg a modellben vannak nem mentett módosítások.
+A böngészőlap címe egy ponttal (•) kezdődik, amíg a modellben nem mentett módosítások vannak.
 
 ## Keskeny képernyőn
 
-Körülbelül 760 képpontnál keskenyebb szélességnél az oszlopok egymás alá kerülnek: eszköztár, nézet, állapotsor, {{ui:Tulajdonságok}}, jelentéslapok, végül a {{ui:Modell}} panel. Az eléréshez görgesse az oldalt. A DetailCraft asztali vagy laptop képernyőre van kialakítva; telefonon nézni lehet, részletezni nem.
+A kb. 760 pixel szélesség alatt az oszlopok egymás alá kerülnek: eszköztár, nézet, állapotsor, {{ui:Tulajdonságok}}, jelentéslapok, majd az utolsónak a {{ui:Modell}} panel. Görgesse az oldalt, hogy elérje őket. A DetailCraft asztali vagy laptop képernyőre készült; telefonon nézelődni lehet, szerkeszteni nem.

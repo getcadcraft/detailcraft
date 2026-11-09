@@ -37,6 +37,7 @@ export const COMMANDS = [
   C('place.plate', 'place', 'bi-square', T('tool:plate'), { defKeys: ['P'] }),
   C('place.footing', 'place', 'bi-bricks', T('tool:footing'), { defKeys: ['F'] }),
   C('place.stair', 'place', 'bi-bar-chart-steps', T('tool:stair'), { defKeys: ['S'] }),
+  C('place.concrete', 'place', 'bi-grid-1x2', '[data-tab="rc"]'),   // 0.9 RC.1: the Concrete tab (beams, columns, slabs, walls and their bars)
 
   C('connect.endplates', 'connect', 'bi-layout-sidebar-inset', T('endplates')),
   C('connect.baseplate', 'connect', 'bi-border-bottom', T('baseplate')),
@@ -67,6 +68,7 @@ export const COMMANDS = [
   C('output.shop', 'output', 'bi-file-earmark-ruled', T('shop')),
   C('output.drawings', 'output', 'bi-files', T('drawings')),
   C('output.bending', 'output', 'bi-bezier2', M('data-output-menu', 'bending')),
+  C('output.rc-sheets', 'output', 'bi-file-earmark-break', M('data-output-menu', 'rc-sheets')),   // 0.9 RC.1
   C('output.report', 'output', 'bi-clipboard-data', M('data-output-menu', 'report')),
   C('output.kiss', 'output', 'bi-file-earmark-arrow-down', M('data-output-menu', 'kiss')),
 
@@ -105,19 +107,19 @@ export const STYLES = {
     quick: ['file.new', 'file.open', 'file.save', 'output.drawings', 'edit.undo', 'edit.redo'],
     tabs: [
       tab('home', [
-        ['draw', ['place.beam', 'place.column', 'place.brace', 'place.plate', 'place.footing', 'place.stair']],
+        ['draw', ['place.beam', 'place.column', 'place.brace', 'place.plate', 'place.footing', 'place.stair', 'place.concrete']],
         ['modify', ['place.select', 'edit.move', 'edit.copy', 'edit.paste', 'edit.duplicate', 'edit.delete']],
         ['connections', ['connect.endplates', 'connect.baseplate', 'connect.sheartabs', 'connect.splice', 'connect.gusset', 'connect.mitre', 'connect.similar']],
         ['clipboard', ['edit.cut', 'edit.paste-in-place', 'edit.select-all', 'edit.select-none']],
       ]),
       tab('view', [['views', ['view.3d', 'view.plan', 'view.elevation', 'view.fit']]]),
-      tab('output', [['plot', ['output.drawings', 'output.shop']], ['export', ['output.ifc', 'output.ids', 'output.usd', 'output.nc', 'output.nc-send', 'output.kiss']], ['reports', ['output.bom', 'output.bending', 'output.report']]]),
+      tab('output', [['plot', ['output.drawings', 'output.shop', 'output.rc-sheets']], ['export', ['output.ifc', 'output.ids', 'output.usd', 'output.nc', 'output.nc-send', 'output.kiss']], ['reports', ['output.bom', 'output.bending', 'output.report']]]),
     ],
     labels: { 'output.drawings': 'input.lbl.drafting.drawings' },
     keys: { ...CTRL_KEYS },
     typed: {
       'place.select': ['SELECT'], 'place.beam': ['BEAM', 'BM'], 'place.column': ['COLUMN', 'COL'], 'place.brace': ['BRACE', 'BR'],
-      'place.plate': ['PLATE', 'PL'], 'place.footing': ['FOOTING', 'FTG'], 'place.stair': ['STAIR'],
+      'place.plate': ['PLATE', 'PL'], 'place.footing': ['FOOTING', 'FTG'], 'place.stair': ['STAIR'], 'place.concrete': ['CONCRETE', 'RCDETAIL'], 'output.rc-sheets': ['RCSHEETS', 'BBS'],
       'connect.endplates': ['ENDPLATE', 'EP'], 'connect.baseplate': ['BASEPLATE', 'BP'], 'connect.sheartabs': ['SHEARTAB', 'ST'],
       'connect.splice': ['SPLICE'], 'connect.gusset': ['GUSSET'], 'connect.mitre': ['MITRE', 'MITER'], 'connect.similar': ['SIMILAR', 'MATCH'],
       'edit.undo': ['U', 'UNDO'], 'edit.redo': ['REDO'], 'edit.copy': ['COPYCLIP', 'CP'], 'edit.paste': ['PASTECLIP'], 'edit.cut': ['CUTCLIP'],
@@ -136,10 +138,10 @@ export const STYLES = {
     menus: [m('file', FILE_MENU)],
     quick: ['file.open', 'file.save', 'edit.undo', 'edit.redo'],
     tabs: [
-      tab('modeling', [['select', ['place.select']], ['members', ['place.beam', sm('place.column'), sm('place.brace'), sm('place.plate')]], ['concrete', ['place.footing']], ['stairs', ['place.stair']]]),
+      tab('modeling', [['select', ['place.select']], ['members', ['place.beam', sm('place.column'), sm('place.brace'), sm('place.plate')]], ['concrete', ['place.footing', 'place.concrete']], ['stairs', ['place.stair']]]),
       tab('detailing', [['connections', ['connect.endplates', sm('connect.baseplate'), sm('connect.sheartabs'), { split: ['connect.splice', 'connect.gusset', 'connect.mitre'], size: 'sm' }]], ['apply', ['connect.similar']]]),
       tab('edit', [['clipboard', ['edit.paste', sm('edit.cut'), sm('edit.copy'), sm('edit.delete')], ['edit.paste-in-place', 'edit.duplicate']], ['transform', ['edit.move']], ['selection', ['edit.select-all', 'edit.select-none']]]),
-      tab('drawings', [['drawings', ['output.drawings', 'output.shop']], ['reports', ['output.bom', 'output.bending', 'output.report']]]),
+      tab('drawings', [['drawings', ['output.drawings', 'output.shop', 'output.rc-sheets']], ['reports', ['output.bom', 'output.bending', 'output.report']]]),
       tab('fabrication', [['nc', ['output.nc', 'output.nc-send', 'output.kiss']], ['exchange', ['output.ifc', 'output.ids', 'output.usd', 'file.import']]]),
       tab('view', [['views', ['view.3d', 'view.plan', 'view.elevation']], ['navigate', ['view.fit']]]),
     ],

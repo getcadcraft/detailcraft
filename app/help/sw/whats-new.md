@@ -1,55 +1,59 @@
 ---
-title: Kipya katika 0.7
-summary: Ukaguzi wa muundo wa maumbo-I ya chuma pamoja na michanganyiko ya mizigo kutoka ASCE 7 au EN 1990 na ukaguzi wa vipengele kwa AISC 360 au EN 1993-1-1, hamisho la USD la modeli ya chuma, zana msaidizi ya USD, utepe wa Chuma wenye vitufe vikubwa na vidogo, vidirisha vinavyojikunja na mazungumzo yanayohamishika.
-keywords: kipya, nini kipya, maelezo ya toleo, mabadiliko, mabadiliko ya toleo, 0.7, toleo, vipengele vipya, ukaguzi wa muundo, muundo wa chuma, matumizi, michanganyiko ya mizigo, ASCE 7, EN 1990, AISC 360, EN 1993-1-1, Eurocode, Kiambatisho cha Kitaifa, mzigo hai wa paa, kikomo cha mkengeuko, usd, usda, usdc, usdz, openusd, msaidizi, mcp, utepe wa chuma, utepe, kitufe kilichogawanyika, vipimo, kubana, vidirisha, mazungumzo, kireno
-from: 17d1e0bb
+title: Nini kipya katika 0.8 na 0.8.1
+summary: Filamu ya ufungaji kutoka chati ya mzigo ya kreni, rubani wa muunganisho, ramani ya msongamano wa nondo, ukaguzi wa msingi, paneli za fremu za mbao na chuma chepesi, ukaguzi wa ujengwaji na ufikiaji wa uchomeleaji, hisa za msambazaji, kinachovunjika kwanza, hesabu ya moja kwa moja, ukaguzi zaidi wa zege na marekebisho ya 0.8.1.
+keywords: nini kipya, madokezo ya toleo, mabadiliko, orodha ya mabadiliko, 0.8, 0.8.1, toleo, vipengele vipya, ufungaji, kreni, chati ya mzigo, filamu, rubani, muunganisho, nondo, msongamano, msingi, fremu, mbao, ukaguzi, uchomeleaji, msambazaji, hisa, muda wa kuletwa, zege, lugha, msaidizi
+from: 6e33e052
 ---
 
-Haya ndiyo yaliyobadilika katika DetailCraft 0.7, ikilinganishwa na 0.6. Uchanganuzi wa fremu wa 0.6 sasa una hatua ya pili: kukagua vipengele vya chuma kulingana na kanuni ya muundo.
+Haya ndiyo yaliyobadilika katika DetailCraft 0.8 (1 Novemba 2026) na 0.8.1 (2 Novemba 2026), ikilinganishwa na 0.7. 0.7 ilikagua vipengele vya chuma; 0.8 inapanga kuinua, inapendekeza miunganisho, inakagua misingi na nondo, na inaunda fremu za kuta, sakafu na paa za mbao na chuma chepesi.
 
 ## Mpya
 
-### Viungio vya mshazari (0.7.1)
+### Ufungaji
 
-- **Maumbo-I mawili yanayokutana kwa pembe**, kama goti la portal au kilele: chagua yote mawili, chagua {{ui:Kiungio cha mshazari}} kwenye menyu ya {{ui:Zaidi}} ya kundi la {{ui:Unganisha}}, na ncha zote mbili zinakatwa kwenye ndege inayogawanya pembe kwa nusu. Sahani za mwisho zilizofungwa pamoja na vidhibiti vya utando ni visanduku vya kuteua kwenye mazungumzo mapya ya Kiungio cha mshazari, ambayo sehemu zake zenye namba zinalingana na mchoro wa kiungo chako unaotengenezwa unapoandika. Mshazari unafuata vipengele vinapohamishwa, na unapita hadi kwenye michoro, faili za NC (kukata kwa mteremko), IFC na orodha ya vifaa. Tazama [Viungio vya mshazari](topic:mitres).
+- **Erection plan and movie.** Kwenye kichupo cha {{ui:Erection}}, eleza kreni (inasimama wapi, ndoano yake ya juu kabisa, na vifaa vya kuunganisha visivyo kwenye chati) kisha uandike safu za chati yake ya mzigo. DetailCraft inainua modeli mkusanyiko mmoja kwa wakati, kwa mpangilio wa awamu na daraja kwa daraja, na inakagua kila kuinua dhidi ya chati kwenye radius yake na dhidi ya ukingo wa usalama ulioweka. {{ui:Save movie}} inaandika faili moja ya HTML inayocheza nje ya mtandao kwenye kivinjari chochote, hata kwenye simu. Kuinua kulioko juu ya chati, nje yake au juu mno kuko kwenye {{ui:Problems}}. Ni mpango kutoka kwenye namba zako, si mpango wa kuinua. Angalia [Mpango wa ufungaji na filamu](topic:erection-movie).
 
-### Ukaguzi wa muundo
+### Miunganisho
 
-- **Michanganyiko ya mizigo kutoka kwenye kanuni.** Kwenye kichupo cha {{ui:Uchanganuzi}}, kizuizi kipya cha {{ui:Ukaguzi wa muundo}} kina {{ui:Kanuni ya muundo}}: ASCE 7 + AISC 360 (Marekani, LRFD) au EN 1990 + EN 1993-1-1 (Eurocode). Mpe kila kesi ya mzigo aina yake (tuli, hai, mzigo hai wa paa mpya, theluji, upepo, tetemeko), bonyeza {{ui:Tengeneza michanganyiko}}, na DetailCraft inaandika michanganyiko ya nguvu na ya huduma ya kanuni kwa kesi zako. Michanganyiko uliyoandika mwenyewe inabaki. Tazama [Tengeneza michanganyiko](topic:design-checks#make-the-combinations).
-- **Thamani za Kiambatisho cha Kitaifa.** Kwa Eurocode vipengele huanza kwenye thamani zilizopendekezwa; {{ui:Thamani za Kiambatisho cha Kitaifa}} inakuruhusu kuandika za nchi yako, na zinahifadhiwa kwenye modeli. Tazama [Tengeneza michanganyiko](topic:design-checks#make-the-combinations).
-- **Kagua vipengele.** {{ui:Kagua vipengele}} inakagua kila umbo-I la chuma kwa mvutano, mgandamizo pamoja na kujikunja, kupinda pamoja na kujikunja kwa kando na msokoto, kukata, kupinda pamoja na nguvu ya mhimili, na mkengeuko dhidi ya {{ui:Kikomo cha mkengeuko}} unachoweka. Jedwali linaonyesha matumizi ya kila kipengele, ukaguzi unaotawala na mchanganyiko wake, na vipengele vinapakwa rangi kwenye modeli (bluu, kijani, ocha, nyekundu, kijivu kwa ambavyo havijakaguliwa). Tazama [Kagua vipengele](topic:design-checks#check-the-members).
-- **Katika ripoti.** {{ui:Ripoti (PDF)}} na {{ui:Ripoti (CSV)}} zinaongeza matoleo ya kanuni, mipangilio, matumizi kwa kila kipengele na kila kifungu kilichotumika. Tazama [Ripoti](topic:design-checks#the-report).
-- **Msaada hadi mhandisi aikague.** Inatumia nguvu za mpangilio wa kwanza pekee. Mirija, pembe, chaneli, maumbo yaliyochomelewa na sehemu nyembamba au za daraja la 4 zinasoma "hazijakaguliwa", pamoja na sababu; msokoto, miunganiko na zege hazijakaguliwa. Tazama [Kisichokaguliwa](topic:design-checks#what-is-not-checked).
+- **Connection autopilot.** Kichupo cha {{ui:Autopilot}} kinatazama kila kiungio kisicho na muunganisho na kupendekeza kimoja kulingana na maumbo: sahani za msingi, vichupo vya kukata, sahani za mwisho kwa mihimili uliyoiweka alama kama mihimili ya momenti, viunganishi na gusset. Toa mzigo sawa au kukata kwa ncha moja, na idadi ya bolti inafuata nguvu ya usanifu ya bolti. {{ui:Add them all}} inaongeza mapendekezo kama hatua moja ya kutendua. Ni thamani za kuanzia za kukagua, si usanifu wa muunganisho.
+- **Constructability checks.** {{ui:Problems}} kwa bolti ambayo ufunguo hauwezi kuifikia, bolti zilizo karibu mno kwa soketi, welds za fillet nje ya mipaka yao ya ukubwa, na sehemu tupu zinazoshika maji. Ufikiaji wa uchomeleaji ni mpya: uchomeleaji wa fillet wa pande zote ambao tochi ya mchomeleaji haiwezi kuufikia unaorodheshwa pamoja na sehemu iliyo njiani na sehemu ya uchomeleaji iliyoathirika. Angalia [Ukaguzi wa ujengwaji](topic:constructability).
 
-### USD
+### Misingi na nondo
 
-- **Hamisha modeli ya chuma kama USD.** {{ui:USD}} kwenye kundi la {{ui:Matokeo}} inaandika modeli kama {{ui:Maandishi (.usda)}}, {{ui:Binary (.usdc)}} au {{ui:Kifurushi (.usdz)}} kwa programu za uonyeshaji na kuunganisha onyesho: kila mkusanyiko unashikilia sehemu zake, kila sehemu ni sehemu yake ya msalaba inayopita urefu wake pamoja na kupunguzwa kumekatwa, na kila moja inabeba alama yake ya sehemu, wasifu, daraja la chuma, urefu na uzito. Mashimo ya bolti, bolti, uchomeleaji na misingi havimo kwenye matundu ya USD. Tazama [Hamisha modeli ya chuma kama USD](topic:usd).
+- **Foundation checks.** Kichupo cha {{ui:Foundation}} kinakagua misingi, misingi iliyounganishwa na mikeka kwenye udongo unaoueleza: kubeba, kuteleza na kupinduka kutokana na mizigo ya huduma; kupinda, kukata, kupenya, urefu wa kufungwa na chuma cha chini kutokana na mizigo iliyozidishwa (ACI 318-19). Nguzo karibu na ukingo au kona inakaguliwa kwa sehemu iliyokatwa na ukingo wa msingi. Kutulia kunatokana na moduli ya udongo, mkeka unaonyumbulika unatatuliwa kwenye springs kutoka moduli ya subgrade, na vikundi vya marundo na kuta za kubakiza vina paneli zao. Mizigo ya nguzo inaweza kuandikwa au kuchukuliwa kutoka {{ui:Analysis}}. Angalia [Ukaguzi wa msingi](topic:foundation-checks).
+- **Rebar congestion map.** Kichupo cha {{ui:Congestion}} kinachora ramani ya joto ya kila msingi kama unavyouona kutoka juu: pale ambapo nondo zinaacha nafasi ndogo mno kwa zege kushuka chini, dhidi ya kanuni ya nafasi safi na, ukiyatoa, agregeti kubwa zaidi na kichwa cha vibrator. Angalia [Ramani ya msongamano wa nondo](topic:rebar-congestion).
 
-### Visaidizi vya AI
+### Fremu na ugavi
 
-- **USD kwa visaidizi.** Msaidizi wako mwenyewe, aliyeunganishwa kupitia CadCraft Studio, anaweza kuhamisha modeli kama USD (`usd_export`), na kwenye Studio kuiandika kwenye folda uliyoruhusu. Tazama [Msaidizi anaweza kuomba nini](topic:use-with-ai-assistants#what-an-assistant-can-ask-for).
+- **Timber and light-gauge framing.** Kichupo cha {{ui:Framing}} kinaunda fremu za paneli za kuta, sakafu na paa kwa kila kipande, orodha ya kukata, hisa ya kununua na mchoro wa warsha kwa kipimo. {{ui:Place as members}} inaweka vipande kwenye modeli, na {{ui:PDF sheets}} inahifadhi karatasi moja kwa kila paneli. Ukubwa, nafasi na vichwa vya fremu ni vyako: DetailCraft haikagui kama vinabeba mzigo. Angalia [Paneli za fremu za mbao na chuma chepesi](topic:framing-panels).
+- **Supplier stock and lead times.** Kichupo cha {{ui:Supply}} kinasoma orodha ya hisa ya msambazaji (CSV) na kinaonyesha, kwa kila sehemu ambayo orodha ya kukata inanunua, kama iko ya kutosha kwenye hisa na muda wa kusubiri ni kiasi gani. Upungufu na sehemu zilizochelewa ziko kwenye {{ui:Problems}}. Hakuna kinachoagizwa. Angalia [Hisa ya msambazaji na muda wa kuletwa](topic:supplier-stock).
 
-## Imebadilika
+### Uchanganuzi na usanifu
 
-- **Utepe wa Chuma** una vitufe vikubwa na vidogo: {{ui:Boriti}} kubwa kando ya {{ui:Nguzo}}, {{ui:Mshikio}} na {{ui:Bamba}} vidogo kwenye {{ui:Kuunda modeli}} › {{ui:Vipengele}}; {{ui:Sahani za mwisho}} kubwa kwenye {{ui:Uchoraji wa kina}} › {{ui:Miunganiko}}, na {{ui:Kiunganishi}} na {{ui:Gusset}} vikishiriki kitufe kimoja kilichogawanyika; {{ui:Bandika}} kubwa kwenye {{ui:Hariri}} › {{ui:Ubao wa kunakili}}, na {{ui:Bandika mahali pale}} na {{ui:Nakili mara mbili}} nyuma ya mshale wa kundi. {{ui:Utengenezaji}} › {{ui:Ubadilishanaji}} ina {{ui:Hamisha USD}} kando ya IFC. Mitindo mingine ya menyu inaonekana kama ilivyokuwa. Tazama [Menyu, funguo na kipanya](topic:menus-keys-and-mouse#the-three-styles).
-- [Chambua fremu](topic:frame-analysis) sasa inaelekeza kwenye ukaguzi wa muundo, na michanganyiko yake inaweza kutengenezwa kwa kanuni.
+- **Kinachovunjika kwanza?** Kwenye kichupo cha {{ui:Analysis}}, kitufe kinatafuta mchanganyiko wa nguvu unaotawala, mwanachama dhaifu zaidi, mizigo inaweza kukua kwa kiasi gani kabla mwanachama wa kwanza hajafikia kikomo chake, na sahani ya mwisho dhaifu zaidi au kichupo cha kukata pale nguvu ya kukata ya bolti zake inapojulikana. Inahitaji mchanganyiko na kanuni ya usanifu kwanza. Kubeba, block shear, welds na prying havikaguliwi. Msaidizi wako aliyeunganishwa anaweza kuuliza vilevile.
+- **Live.** Weka alama {{ui:Live: solve again after each edit}} na fremu inatatuliwa tena baada ya kila mabadiliko.
+- **Concrete, more.** Nguzo nyembamba katika fremu isiyoyumba inasanifiwa kwa momenti yake iliyokuzwa (ACI 318-19 6.6.4.5). Kipindi cha mtetemo cha mzigo wa tetemeko kinaweza kuchukuliwa kutoka kwenye uchanganuzi kwa mbinu ya Rayleigh. Slab iliyotengenezwa kwa bamba inapata chuma ambacho kila tabaka linahitaji kutokana na momenti zake, pamoja na kukata kwa mwelekeo mmoja. Angalia [Kagua vipengele vya zege na tengeneza mizigo ya tetemeko](topic:concrete-and-seismic).
+- **For an engineer to check.** Matokeo ya misingi, zege na Kinachovunjika kwanza ni misaada tu. Mizigo ya upepo bado haijajengwa.
 
-## Katika kila programu
+### Katika kila programu
 
-- **Vipimo.** {{ui:Mipangilio}} › {{ui:Kwa ujumla}} › {{ui:Vipimo}} ina orodha moja kila moja kwa urefu, eneo, ujazo, pembe na mteremko, pamoja na ukubwa kamili ambao ufafanuzi wa vipimo hutoa (futi ya utafiti ya Marekani ni kipimo chake yenyewe). Zima vipimo usivyotumia kamwe nazo zinaondoka kwenye orodha za vipimo; weka nyota kwa moja na kazi mpya inaanza nacho. Faili daima inabakiza kipimo chake. Visanduku vya DetailCraft havifuati orodha bado: urefu wake bado unaandikwa kwa milimita. Tazama [Vipimo, thamani zilizoandikwa na orodha za vipimo](common:unit-lists).
-- **Mpangilio mnene zaidi na vidirisha vinavyojikunja.** {{ui:Mipangilio}} › {{ui:Kwa ujumla}} › {{ui:Msongamano wa mpangilio}} › {{ui:Kubana}} inatoshea zaidi kwenye skrini (skrini za kugusa na simu zinabaki na vitufe vyake vikubwa). Kila kidirisha cha pembeni kina upau mwembamba wa kichwa: buruta ili kukiweka au kukielea, dondosha kwenye upau wa kidirisha kingine ili kushiriki fremu moja kama vichupo, bandika ili kiteleze hadi ukingoni, au kifiche na kukirudisha kutoka ukingoni. Tazama [Panga vidirisha](common:arrange-panels#make-the-layout-denser).
-- **Mazungumzo yanahamishika.** Buruta mazungumzo kwa upau wake wa kichwa uyatoe kwenye njia ya mchoro; yanarudi pale ulipoyaacha. Bofya mara mbili upau wa kichwa ili kuyaweka katikati tena. Tazama [Hamisha mazungumzo](common:arrange-panels#move-a-dialog).
-- **Mapishi kwa visaidizi vya AI.** Maombi kumi yaliyofanyiwa kazi kwa msaidizi wako mwenyewe (panga mchoro, chapisha seti, kagua michoro, uliza maswali kuhusu modeli, jumlisha ukadiriaji wa kiasi, jaribu lahaja la sehemu…), kila moja na zana inazoita na ruhusa inazohitaji, na kila moja inarudiwa na majaribio yetu. Programu hazina AI ndani yake. Tazama [Mapishi kwa visaidizi vya AI](common:assistants-recipes).
-- **Lugha.** **Português (Portugal)** ni mpya katika {{ui:Mipangilio}} › {{ui:Kwa ujumla}} › {{ui:Lugha}}. Yenyewe, **Português (Brasil)**, **Español (México)** na **Bahasa Indonesia** sasa zina kila neno la programu, kama rasimu ambazo bado hazijakaguliwa na mzungumzaji asilia. Mada za msaada ziko kwa Kiingereza.
-- **CadCraft Studio** inasema kwa nini ukaguzi wa sasisho ulishindwa (hakuna faili ya mfumo wako bado, hakuna mtandao, sahihi mbaya) badala ya "Imekamilika" tu, na inaacha kurudisha kadi ya Kipya ulioifunga hadi kuwe na toleo jipya zaidi.
+- **Languages.** Msaada uko katika lugha 54. Zile zaidi ya Kiingereza ni rasimu za mashine hadi mzawa asome; kumi ni mpya (Kilithuania, Kilatvia, Kibosnia, Kimarathi, Kitelugu, Kialbania, Kiafrikaans, Kifilipino, Kiswahili, Kiuzbeki).
+- **Toolbar rows.** {{ui:Settings}} › {{ui:General}} › {{ui:Toolbar rows}} inachagua wrap, safu 2 au safu 1. Upau unaotoshea tayari unabaki kama ulivyo; zilizobaki zinasogezwa kando.
+- **Property grid.** Sehemu za msingi zinatumia gridi ya pamoja: makundi yanayokunjika na msongamano mdogo. Hesabu iliyoandikwa kama 2*450 bado inafanya kazi.
+- **Input devices.** Trackpad, kalamu, kipanya cha 3D, kidhibiti na MIDI vinaweza kuendesha programu. Angalia [Zunguka kwenye 3D](topic:navigate-3d).
+- **Problems panel.** Maonyo ya ukaguzi mpya hapo juu yanaonekana kwenye paneli ile ile ya {{ui:Problems}} kama awali.
+- **Connect your AI.** Msaidizi wako mwenyewe, aliyeunganishwa kupitia CadCraft Studio, anafanya kazi na programu zote nane na anaona tu kile unachoruhusu. Kuunganisha kwa mbofyo mmoja, kiunganishi kilichopangishwa, na ufunguo wako wa API katika Studio bado vinakuja. Angalia [Tumia DetailCraft pamoja na msaidizi wa AI](topic:use-with-ai-assistants).
 
-## Bado si katika toleo hili
+## Vilivyorekebishwa katika 0.8.1
 
-- **0.7 haijasainiwa kidijitali.** Usainishaji, pamoja na kifurushi cha Microsoft Store, vilihamia 0.8 kwa sababu uthibitishaji wa cheti bado haujafika. Angalia SHA-256 karibu na kila faili kwenye getcadcraft.com/download. Kwenye Windows, ikiwa SmartScreen itasimamisha kisakinishi, chagua {{ui:Maelezo zaidi}}, kisha {{ui:Endesha hata hivyo}}. Kwenye Mac, mara ya kwanza, bofya kulia CadCraft Studio na uchague {{ui:Fungua}}. CadCraft Studio bado haipo kwenye duka lolote la programu, na bado hakuna toleo la iPad wala iPhone.
-- Orodha za pembe na mteremko katika {{ui:Vipimo}} zinahifadhiwa, lakini hakuna kisanduku kinazisoma bado.
-- **Ukaguzi wa muundo bado haujakaguliwa na mhandisi.** Majaribio yetu yanayalinganisha na thamani za jedwali zilizochapishwa na fomula zilizofanyiwa kazi kwa mkono, si bado na mifano iliyofanyiwa kazi ya mwongozo wa muundo. Hadi ukaguzi, ni msaada tu: kagua vipengele vyenye umuhimu kwa mkono.
-- Ukaguzi wa muundo unatumia nguvu za mpangilio wa kwanza (bila athari za mpangilio wa pili) na unakagua maumbo-I pekee. Havijajengwa: mirija, pembe, chaneli, maumbo yaliyochomelewa, sehemu nyembamba (AISC) au za daraja la 4 (Eurocode) katika kupinda, msokoto, kujikunja kwa kukata pamoja na kupinda, miunganiko, uchovu, moto, usanifu wa tetemeko na zege. Sehemu nyembamba iliyo chini ya mgandamizo huacha ukaguzi wa mgandamizo nje, na kipengele kinasoma "imepita, imekaguliwa kwa sehemu".
-- Uchanganuzi wa fremu bado ni wa mpangilio wa kwanza na wa mstari, na bado haujajaribiwa na mhandisi kwenye kazi halisi.
-- Mashimo ya bolti, bolti, uchomeleaji na misingi havimo kwenye hamisho la USD.
+- **Languages in Studio.** Studio na matoleo yaliyofungashwa yanaweza kubadilisha lugha wakati wa kuendesha; kabla yalikuwa Kiingereza pekee. Bado haijajaribiwa kwenye kila jukwaa: tuambie lugha isipobadilika.
+- **Crossing-window select.** Visakinishi vya 0.8.1 vinabeba tabia ya kuchagua kwa dirisha linalovuka ambayo tayari ilikuwa sahihi kwenye toleo la wavuti la 0.8; kisakinishi cha zamani hakikuwa nayo.
+- **Tablets in portrait.** Nafasi ya gridi iliyobaki inaenda kwenye turubai, na mpangilio wa karatasi unaanza kwenye 760 px au chini.
 
-Kila kitu kingine kiko katika [Kisichojengwa bado](topic:not-built-yet).
+## Bado haipo katika toleo hili
+
+- **Send NC to a machine** haijatolewa.
+- **Wind loads** kwa zege bado hazijajengwa, na ukaguzi wa zege na msingi ni wa mhandisi kukagua.
+- **Code signing.** Visakinishi vya Windows na .dmg ya macOS havijasainiwa, kwa hiyo Windows inaweza kuonya na macOS inauliza bonyeza-kulia, kisha Open.
+
+Mabadiliko ya awali yako katika [Nini kipya katika 0.7](topic:whats-new-0-7).

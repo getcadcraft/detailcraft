@@ -51,7 +51,7 @@ const Csv = await load('csv.js');
 const { writeIfc, guidFor, S: stepString } = await load('ifc.js');
 const Nc = await load('nc1.js');
 const { zip, crc32 } = await load('zip.js');
-const { shopDrawing } = await load('shop.js');
+const { shopDrawing, shopSet } = await load('shop.js');
 const { toPdf } = await load('pdf.js');
 const { sampleModel } = await load('sample.js');
 const Dw = await load('drawings.js');
@@ -72,14 +72,14 @@ function tool(bin, file, extra = []) {
 section('Profiles');
 {
   const cat = [...Pr.CATALOG.values()];
-  // the shared section table (lib/shapes/sections.js, 0.5 MQ.3): 1,259 sizes here (every family but unequal-leg angles)
-  ok(cat.length === 1259, 'catalog has 1,259 cited sizes from the shared section table', String(cat.length));
+  // the shared section table (lib/shapes/sections.js, 0.5 MQ.3; the UK ranges and unequal angles since 0.9 SU.1192): every family
+  ok(cat.length === 2311, 'catalog has 2,311 cited sizes from the shared section table', String(cat.length));
   const legacy = ['W8x10', 'W10x49', 'W24x55', 'C12x20.7', 'L6x6x1/2', 'HSS8x8x1/2', 'HSS4.500x0.237', 'HSS6.625x0.280', 'IPE100', 'HEA300', 'HEB300'];
   ok(legacy.every((n) => Pr.isLegacyName(n) && Pr.CATALOG.get(n.toUpperCase())?.name === n), 'the 0.4 catalog names are all there, named as before');
   const w49 = Pr.getProfile('W10x49'), h45 = Pr.getProfile('HSS4.500x0.237');
   ok(near(w49.d, 9.98 * 25.4) && near(h45.massPub, 10.79 * 1.48816394) && near(Pr.getProfile('HSS6.625x0.280').D, 6.625 * 25.4), 'the three rows whose database value is rounded keep their 0.4 values (W10x49 d 9.98, HSS4.500x0.237 10.79 lb/ft, OD 6.625)');
   // families drawn with parallel flanges / square corners, and the Pipe rows whose published area the database rounds
-  const famTol = { S: 0.02, UPN: 0.015, Pipe: 0.035, W: 0.008 };
+  const famTol = { S: 0.02, UPN: 0.015, Pipe: 0.035, W: 0.008, PFC: 0.035, EA: 0.035, UEA: 0.035, UB: 0.008, UC: 0.008, CFSHS: 0.012, CFRHS: 0.012, CFCHS: 0.012, CHS: 0.012, SHS: 0.012, RHS: 0.012 };
   const ODD = new Set(['C3x3.5']);   // its nominal weight and area run 6% and 1.6% apart in the database itself
   const IN2 = 645.16, LBFT_PER_IN2 = 490 / 144;            // steel at 490 lb/ft³: lb/ft per in² of area
   for (const p0 of cat) {
@@ -87,7 +87,8 @@ section('Profiles');
     const ex = Pr.exactArea(p);
     const tolA = famTol[p.family] ?? { I: 0.004, C: 0.015, L: 0.015, RHS: 0.008, CHS: 0.01 }[p.kind];
     ok(Math.abs(ex / p.areaPub - 1) <= (ODD.has(p.name) ? 0.02 : tolA), p.name + ': area from dimensions matches the published area', (ex / 100).toFixed(2) + ' vs ' + (p.areaPub / 100).toFixed(2) + ' cm²');
-    if (p.source === 'en' && p.kind === 'I') ok(near(ex / 100 * 0.785, p.massPub, 0.051), p.name + ': EN mass = A × 7850 kg/m³ (to its 0.1 kg/m)', p.massPub + ' vs ' + (ex / 100 * 0.785).toFixed(2));
+    if (p.source === 'uk') ok(Math.abs(p.massPub / (p.pub.A * 0.785) - 1) <= 0.007, p.name + ': Blue Book mass = published A × 7850 kg/m³', p.massPub + ' vs ' + (p.pub.A * 0.785).toFixed(2));
+    else if (p.source === 'en' && p.kind === 'I') ok(near(ex / 100 * 0.785, p.massPub, 0.051), p.name + ': EN mass = A × 7850 kg/m³ (to its 0.1 kg/m)', p.massPub + ' vs ' + (ex / 100 * 0.785).toFixed(2));
     else if (p.source === 'en') ok(near(p.pub.A * 0.785, p.massPub, 0.1), p.name + ': EN mass = published A × 7850 kg/m³ (both rounded)', p.massPub + ' vs ' + (p.pub.A * 0.785).toFixed(2));
     else if (p.kind === 'RHS' || p.kind === 'CHS') {
       // AISC HSS weights use the NOMINAL wall; areas the design wall (0.93 t)
@@ -434,15 +435,15 @@ section('Move, rotate, mirror a selection; one property on many members; window 
   // a mirror gives the mirror image: every section kind, sloped, turned, offset
   const mx = Tf.mirrorXf([1000, -300], [1000 + 0.6, -300 + 0.8]);
   const custom = [{ name: 'MY-C', kind: 'C', d: 250, bf: 80, tw: 8, tf: 11 }];
-  for (const [name, type, pos] of [['W16x26', 'beam', 'top'], ['C10x15.3', 'beam', 'top'], ['L4x4x3/8', 'brace', 'middle'], ['L4x4x3/8', 'brace', 'top'], ['HSS6x4x1/4', 'brace', 'bottom'], ['HSS6.625x0.280', 'brace', 'middle'], ['PL20x300', 'plate', 'middle'], ['IPE300', 'column', 'middle'], ['MY-C', 'beam', 'bottom']]) {
+  for (const [name, type, pos] of [['W16x26', 'beam', 'top'], ['C10x15.3', 'beam', 'top'], ['L4x4x3/8', 'brace', 'middle'], ['L4x4x3/8', 'brace', 'top'], ['UEA150x90x10.0', 'brace', 'middle'], ['UEA150x90x10.0', 'brace', 'top'], ['L8x4x1/2', 'brace', 'bottom'], ['HSS6x4x1/4', 'brace', 'bottom'], ['HSS6.625x0.280', 'brace', 'middle'], ['PL20x300', 'plate', 'middle'], ['IPE300', 'column', 'middle'], ['MY-C', 'beam', 'bottom']]) {
     const prof = Pr.getProfile(name, custom);
     if (!prof) { ok(false, 'profile ' + name + ' exists'); continue; }
     const m0 = { id: 'm1', type, profile: name, material: 'A36', start: [200, 300, 1000], end: type === 'column' ? [200, 300, 5000] : [5200, 2100, 2600], rotation: 30, position: pos, name: '', holes: [], cuts: [] };
-    const out = Tf.transformMember(m0, mx, prof.kind);
+    const out = Tf.transformMember(m0, mx, prof.kind, prof.kind === 'L' && prof.h !== undefined && prof.h !== prof.b);
     const m1 = { ...m0, ...out };
     if (out.note === 'angle-offset') { const tx = { updateMember: (id, p) => Object.assign(m1, p) }; Tf.transformRefs(tx, { members: [m0], footings: [], connections: [], profiles: custom }, [{ kind: 'member', id: 'm1' }], mx); }
     const img = Tf.worldSection(m0, prof, 700).map((p) => Tf.applyPt(mx, p));
-    const got = Tf.worldSection(m1, prof, 700);
+    const got = Tf.worldSection(m1, prof, out.turned ? Math.hypot(...m0.end.map((v, i) => v - m0.start[i])) - 700 : 700);   // an unequal angle runs the other way
     ok(sameSet(got, img, 1e-6), 'mirror of ' + name + ' (' + type + ', ' + pos + ', turned 30°) is its mirror image, section for section');
   }
   // holes and copes follow a mirror
@@ -1672,7 +1673,72 @@ section('Shop drawings');
   fs.writeFileSync(path.join(OUT, 'p1.pdf'), pdfP.bytes);
   const tp = tool('pdftotext', path.join(OUT, 'p1.pdf'));
   if (tp !== null) ok(tp.includes('PL20x180') && tp.includes('8 x Ø22 in the plate'), 'plate PDF text: PL20x180, 8 × Ø22');
-  ok(shopDrawing(built.parts.find((p) => p.type === 'brace'), {}).refused, 'HSS shop drawing refused with a reason (not faked)');
+  const bd = shopDrawing(built.parts.find((p) => p.type === 'brace'), { mark: 'br1' });
+  ok(!bd.refused && bd.dims.some((x) => x.dir === 'h'), 'a hollow section brace gets a shop drawing (0.9 SU.1193)');
+  ok(shopDrawing(null, {}).refused, 'nothing selected: refused with a reason');
+}
+
+// ---------------------------------------------------------------------------
+section('UK sections and unequal angles (0.9 SU.1192)');
+{
+  const P = Pr.getProfile;
+  ok(P('305x165x40 UB')?.name === 'UB305x165x40' && P('L150x90x10')?.name === 'UEA150x90x10.0' && P('SHS100x5')?.name === 'SHS100x100x5.0', 'the ways UK sizes are written on drawings resolve to the catalog');
+  const labels = Pr.catalogGroups().map((g) => g.label);
+  ok(['UB', 'UC', 'PFC', 'EA', 'UEA', 'SHS', 'RHS', 'CHS', 'CFSHS', 'CFRHS', 'CFCHS'].every((l) => labels.includes(l)), 'every UK family is in the profile picker', labels.join());
+  ok(Pr.catalogGroups().find((g) => g.label === 'UB').source === 'Steel for Life Blue Book (UK)' && P('UB305x165x40').massFrom === 'Steel for Life Blue Book (UK)', 'the picker and the properties panel cite the table');
+  const ua = P('UEA150x90x10');
+  ok(ua.depth === 150 && ua.width === 90 && near(Pr.exactArea(ua), 10 * (150 + 90 - 10)), 'UEA150x90x10: 150 deep, 90 wide, area from both legs');
+  ok(Pr.describe(ua).some((r) => /150 mm × 90 mm/.test(r[1])), 'the properties panel says both legs');
+
+  // one model of every kind of UK section
+  const m = new Md.Model(Md.starterState('UK'));
+  const names = ['UB305x165x40', 'UC203x203x46', 'PFC200x90x30', 'EA100x100x10.0', 'UEA150x90x10.0', 'SHS100x100x5.0', 'RHS200x100x8.0', 'CHS88.9x5.0', 'CFSHS100x100x5.0', 'CFRHS200x100x8.0', 'CFCHS88.9x5.0'];
+  const ids = new Map();
+  m.change('Add', (tx) => names.forEach((profile, i) => ids.set(profile, tx.addMember({ type: 'beam', profile, start: [0, i * 1000, 3000], end: [4000 + i * 100, i * 1000, 3000] }))));
+  m.change('Holes', (tx) => {
+    for (const n of ['UB305x165x40', 'PFC200x90x30', 'RHS200x100x8.0']) { tx.addHole(ids.get(n), { face: 'web', x: 500, y: 40, d: 22 }); tx.addHole(ids.get(n), { face: 'top', x: 900, y: 20, d: 18 }); }
+  });
+  const b = build(m.state), mk = Mk.markParts(b);
+  ok(names.every((n) => b.parts.some((p) => p.profile.name === n)), 'all eleven kinds build into parts');
+
+  // the whole shop set at once (0.9 SU.1193): one sheet per mark, nothing to select
+  const set = shopSet(b, mk, { model: 'UK', date: '2026-11-04', paper: 'A3', weld: () => '' });
+  ok(set.sheets.length === mk.parts.length && !set.refused.length && mk.parts.length === names.length, 'one sheet per part mark, none refused', set.sheets.length + ' / ' + mk.parts.length);
+  ok(set.sheets.every((s, i) => s.mark === mk.parts[i].mark && s.items.some((x) => x.k === 'text' && x.s.includes('Sheet ' + (i + 1) + ' of ' + set.sheets.length))), 'each sheet is numbered in the marks\' order');
+  const inSheet = (s, text) => s.items.some((x) => x.k === 'text' && x.s.includes(text));
+  ok(names.every((n) => set.sheets.some((s) => s.profileName === n && inSheet(s, n))), 'each sheet names its section');
+  const outOfSheet = set.sheets.filter((s) => s.items.some((x) => (x.k === 'path' ? x.pts : x.k === 'circle' ? [x.c] : [[x.x, x.y]]).some(([u, v]) => !(u >= 0 && u <= s.w && v >= 0 && v <= s.h))));
+  ok(!outOfSheet.length, 'every line stays on the paper', outOfSheet.map((s) => s.profileName).join());
+  const sOf = (n) => set.sheets.find((s) => s.profileName === n);
+  ok(sOf('UB305x165x40').dims.some((d) => d.dir === 'v' && Math.abs(d.value - 303) <= 1) && sOf('UEA150x90x10.0').dims.some((d) => d.dir === 'v' && d.value === 150) && sOf('UEA150x90x10.0').dims.some((d) => d.dir === 'h' && d.value === 90), 'depths and widths are dimensioned from the section');
+  ok(inSheet(sOf('RHS200x100x8.0'), '2 x Ø') || inSheet(sOf('RHS200x100x8.0'), 'Ø22'), 'a hollow section\'s holes reach the schedule');
+  const a4 = shopSet(b, mk, { paper: 'A4' });
+  ok(a4.sheets.every((s) => s.w === 297 && s.h === 210), 'the set follows the sheet size');
+  const { bytes } = await toPdf(set.sheets, { title: 'Set' });
+  fs.writeFileSync(path.join(OUT, 'shop-set.pdf'), bytes);
+  const info = tool('pdfinfo', path.join(OUT, 'shop-set.pdf'));
+  if (info !== null) ok(new RegExp('Pages:\\s+' + set.sheets.length + '\\b').test(info), 'the PDF has one page per sheet', info);
+  const big = new Md.Model(Md.starterState('Same'));
+  big.change('Add', (tx) => { for (let i = 0; i < 40; i++) tx.addMember({ type: 'beam', profile: 'UB305x165x40', start: [0, i * 1000, 3000], end: [6000, i * 1000, 3000] }); });
+  const bb = build(big.state), bm = Mk.markParts(bb), bs = shopSet(bb, bm, {});
+  ok(bs.sheets.length === 1 && bs.sheets[0].count === 40 && inSheet(bs.sheets[0], '40'), '40 identical beams share one sheet, 40 off');
+
+  // an unequal angle's real legs, in the NC file and IFC
+  const part = b.parts.find((p) => p.profile.name === 'UEA150x90x10.0');
+  const nc = Nc.readNc1(Nc.writeNc1(part, { order: 'T', mark: 'u1', count: 1 }));
+  ok(nc.header.code === 'L' && nc.header.height === 90 && nc.header.flangeWidth === 150, 'NC: the leg on the v face and the leg on the u face', JSON.stringify(nc.header));
+  const ifcText = writeIfc(m.state, b, Object.assign(mk, { footingMark: new Map() }), Rb.bendingSchedule([]), {});
+  ok(/IFCLSHAPEPROFILEDEF\(\.AREA\.,'UEA150x90x10\.0',#\d+,150\.?,90\.?,10\.?/.test(ifcText), 'IFC: Depth 150, Width 90, Thickness 10', (ifcText.match(/IFCLSHAPE[^\n]*/g) || []).join(' | '));
+
+  // a mirrored unequal angle with a gusset keeps the gusset on the same physical end
+  const Tf = await load('transform.js');
+  const g = new Md.Model(Md.starterState('G'));
+  let bid; g.change('A', (tx) => { bid = tx.addMember({ type: 'brace', profile: 'UEA150x90x10.0', start: [0, 0, 0], end: [3000, 0, 3000] }); tx.addHole(bid, { face: 'web', x: 200, y: 10, d: 18 }); });
+  const conn = { id: 'j1', type: 'gusset', brace: bid, end: 'start', support: 'x', params: {} };
+  let swapped = null;
+  const fake = { updateMember: (id, p) => Object.assign(g.state.members.find((x) => x.id === id) === undefined ? {} : (swapped = p), p), updateFooting() {}, updateStair() {}, swapConnectionEnd: (id) => { conn.end = 'end'; } };
+  Tf.transformRefs(fake, { members: g.state.members, footings: [], stairs: [], connections: [conn], profiles: [] }, [{ kind: 'member', id: bid }], Tf.mirrorXf([1000, 0], [1000, 1000]));
+  ok(conn.end === 'end' && near(swapped.holes[0].x, Math.hypot(3000, 3000) - 200, 1e-3), 'mirror: an unequal angle turns end for end, its gusset and holes go with it');
 }
 
 // ---------------------------------------------------------------------------
@@ -1882,9 +1948,10 @@ section('IFC import (cc-ifc)');
   const txt = writeIfc(sample.state, built, marks, schedule, { now: new Date('2026-10-10T12:00:00Z') });
   const { state: st, report: rp } = await importIfc(W, api, new TextEncoder().encode(txt));
   const nHoles = built.parts.reduce((s2, p) => s2 + p.holes.length + p.cuts.length, 0);
-  ok(JSON.stringify(rp.converted) === JSON.stringify({ IfcBeam: 4, IfcColumn: 6, IfcMember: 1, IfcPlate: 14, IfcOpeningElement: nHoles, IfcMechanicalFastener: 88 }), 'own export: 4 beams, 6 columns, 1 member, 14 plates, ' + nHoles + ' openings (holes) and 88 fasteners (bolts) brought in (D11)', JSON.stringify(rp.converted));
+  // 0.9 RC.1: the footings' bars come back too, as loose bars (rc-detail.js; tools/rc/test.mjs checks them bar by bar)
+  ok(JSON.stringify(rp.converted) === JSON.stringify({ IfcReinforcingBar: 132, IfcBeam: 4, IfcColumn: 6, IfcMember: 1, IfcPlate: 14, IfcOpeningElement: nHoles, IfcMechanicalFastener: 88 }), 'own export: 132 bars (as loose bars, 0.9 RC.1), 4 beams, 6 columns, 1 member, 14 plates, ' + nHoles + ' openings (holes) and 88 fasteners (bolts) brought in (D11)', JSON.stringify(rp.converted));
   const nc = Object.fromEntries(rp.notConverted.map((r) => [r.cls, r.n]));
-  ok(nc.IfcReinforcingBar === 132 && nc.IfcFooting === 7 && nc.IfcElementAssembly === 10 && rp.notConverted.length === 3, 'own export: the rest counted by class with a reason (132 bars, 7 footings, 10 assemblies)');
+  ok(!nc.IfcReinforcingBar && nc.IfcFooting === 7 && nc.IfcElementAssembly === 10 && rp.notConverted.length === 2 && st.rc?.loose.length === 132, 'own export: the rest counted by class with a reason (7 footings, 10 assemblies); the 132 bars kept as loose bars (0.9 RC.1)');
   ok(JSON.stringify(st.levels) === JSON.stringify(sample.state.levels) && JSON.stringify(st.grids) === JSON.stringify(sample.state.grids), 'own export: levels and grids identical');
   const b2 = build(st);
   let same = 0;
@@ -1924,9 +1991,10 @@ section('IFC import (cc-ifc)');
     const { state: s2, report: r2 } = await importIfc(W, api, fs.readFileSync(path.join(FX, f)));
     const tag = f + ': ';
     ok(r2.schema === (f.includes('2x3') ? 'IFC2X3' : 'IFC4') && near(r2.toMm, f.includes('feet') ? 304.8 : 1, 1e-9), tag + r2.schema + ', ' + r2.unit + ' (× ' + r2.toMm + ' to mm)');
-    ok(JSON.stringify(r2.converted) === JSON.stringify({ IfcBeam: 4, IfcColumn: 2, IfcMember: 1, IfcPlate: 1, IfcOpeningElement: 2, IfcMechanicalFastener: 1 }), tag + 'brought in 4 beams, 2 columns, a member, a plate, 2 holes and a bolt', JSON.stringify(r2.converted));
+    ok(JSON.stringify(r2.converted) === JSON.stringify({ IfcBeam: 4, IfcColumn: 2, IfcMember: 2, IfcPlate: 1, IfcOpeningElement: 2, IfcMechanicalFastener: 1 }), tag + 'brought in 4 beams, 2 columns, 2 members, a plate, 2 holes and a bolt', JSON.stringify(r2.converted));
     const why = (cls) => r2.notConverted.filter((r) => r.cls === cls).map((r) => r.n + ' ' + r.why).join('; ');
-    ok(/1 its profile is an IfcCircleProfileDef/.test(why('IfcBeam')) && /1 unequal-leg angle/.test(why('IfcMember')) && why('IfcWall').startsWith('1 ') && why('IfcSlab').startsWith('1 ') && r2.notConverted.length === 4, tag + 'reported, not dropped: round bar, unequal angle, wall, slab');
+    ok(/1 its profile is an IfcCircleProfileDef/.test(why('IfcBeam')) && why('IfcWall').startsWith('1 ') && why('IfcSlab').startsWith('1 ') && r2.notConverted.length === 3, tag + 'reported, not dropped: round bar, wall, slab');
+    ok(s2.members.some((x) => x.profile === 'UEA150x90x10.0') && !s2.profiles.some((p) => p.name === 'L150x90x10'), tag + 'the 150 × 90 × 10 angle is now the catalog UEA (0.9 SU.1192)');
     ok(r2.warnings.some((w) => /1 member had clipped ends/.test(w)), tag + 'the clipped beam is said in the report');
     ok(JSON.stringify(s2.levels) === JSON.stringify([{ name: 'Ground', z: 0 }, { name: 'First', z: 3600 }]), tag + 'storeys → levels Ground 0, First 3600');
     ok(JSON.stringify(s2.grids) === JSON.stringify({ x: [{ label: '1', at: 1000 }, { label: '2', at: 7000 }], y: [{ label: 'A', at: 2000 }, { label: 'B', at: 7000 }] }), tag + 'grid axes → grids 1, 2 at x 1000, 7000; A, B at y 2000, 7000 (building placed at 1000, 2000)');
@@ -1941,8 +2009,8 @@ section('IFC import (cc-ifc)');
     const cA1 = m('C-A1'), cA2 = m('C-A2');
     ok(cA1?.profile === 'HEA200' && vEq(cA1.start, [1000, 2000, 0]) && vEq(cA1.end, [1000, 2000, 3600]) && G.dist(fc(cA1).v, [0, 1, 0]) < 1e-6, tag + 'C-A1: HEA200, depth along world Y as placed (rotation ' + cA1?.rotation + ')');
     ok(cA2?.profile === 'HEA200' && G.dist(fc(cA2).v, [-1, 0, 0]) < 1e-6, tag + 'C-A2: turned 90° in the file → depth along world X (rotation ' + cA2?.rotation + ')');
-    const br = m('BR-1'), pl = s2.profiles.find((p) => p.name === 'L100x100x10');
-    ok(br?.type === 'brace' && br.profile === 'L100x100x10' && pl?.kind === 'L' && near(pl.b, 100, 1e-6) && near(pl.t, 10, 1e-6) && vEq(br.start, [1000, 2000, 0]) && vEq(br.end, [7000, 2000, 3600]) && near(br.rotation, 0, 1e-6), tag + 'BR-1: IfcMember → brace, equal angle 100 × 10 (custom), 1000,2000,0 → 7000,2000,3600, legs as placed');
+    const br = m('BR-1');
+    ok(br?.type === 'brace' && br.profile === 'EA100x100x10.0' && !s2.profiles.some((p) => p.name === 'L100x100x10') && vEq(br.start, [1000, 2000, 0]) && vEq(br.end, [7000, 2000, 3600]) && near(br.rotation, 0, 1e-6), tag + 'BR-1: IfcMember → brace, the catalog\'s equal angle 100 × 10, 1000,2000,0 → 7000,2000,3600, legs as placed');
     const bp1 = m('BP-1'), bpp = bp1 && G.frame(bp1.start, bp1.end, bp1.rotation);
     // D11: the holes (made by IfcOpenShell: one placed relative to the plate, one in the storey) and the bolt
     const hb = bp1?.holes[0], ha = m('B-A')?.holes[0];

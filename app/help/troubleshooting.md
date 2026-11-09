@@ -141,7 +141,7 @@ When a file opens with warnings such as "2 members were not valid and left out."
 | No footings, so no bars to schedule. | {{ui:Bending}} with no footings |
 | … character(s) outside the PDF font printed as "?". | The model name or a grade has characters the PDF font lacks |
 
-{{ui:Shop drawing}} grayed out: select a part first. Channels, angles and tubes have no shop drawing yet.
+{{ui:Shop drawing}} grayed out: the model has no parts yet.
 
 ## Downloads do not appear
 

@@ -1,55 +1,59 @@
 ---
-title: Novedades de la versión 0.7
-summary: Revisiones de diseño de perfiles I de acero con combinaciones de carga de ASCE 7 o EN 1990 y revisión de miembros según AISC 360 o EN 1993-1-1, exportación USD del modelo de acero, una herramienta de asistente para USD, una cinta Acero con botones grandes y pequeños, paneles que se recogen y diálogos que se mueven.
-keywords: novedades, notas de la versión, registro de cambios, cambios, 0.7, versión, funciones nuevas, revisiones de diseño, diseño de acero, aprovechamiento, combinaciones de carga, ASCE 7, EN 1990, AISC 360, EN 1993-1-1, Eurocódigo, Anexo Nacional, carga viva de techo, límite de deflexión, usd, usda, usdc, usdz, openusd, asistente, mcp, cinta Acero, cinta, botón dividido, unidades, compacto, paneles, diálogos, portugués
-from: 17d1e0bb
+title: Novedades de 0.8 y 0.8.1
+summary: Una película de montaje a partir de la tabla de carga de una grúa, un piloto automático de conexiones, un mapa de congestión de varillas, revisiones de cimentación, paneles de armazón de madera y de perfiles ligeros, revisiones de constructibilidad y de acceso para soldadura, inventario de proveedores, qué falla primero, un recálculo en vivo, más revisiones de concreto y las correcciones de 0.8.1.
+keywords: novedades, qué hay de nuevo, notas de versión, registro de cambios, cambios, 0.8, 0.8.1, versión, nuevas funciones, montaje, grúa, tabla de carga, película, piloto automático, conexiones, varillas, congestión, cimentación, zapata, losa, asentamiento, armazón, madera, perfiles ligeros, lista de cortes, constructibilidad, acceso para soldadura, proveedor, inventario, tiempo de entrega, qué falla primero, en vivo, concreto, sísmico, idiomas, asistente
+from: 6e33e052
 ---
 
-Esto es lo que cambió en DetailCraft 0.7, comparado con 0.6. El análisis de estructura de 0.6 ahora tiene un segundo paso: revisar los miembros de acero según un código de diseño.
+Esto es lo que cambió en DetailCraft 0.8 (1 de noviembre de 2026) y 0.8.1 (2 de noviembre de 2026), en comparación con la 0.7. La 0.7 revisaba miembros de acero; la 0.8 planea los izajes, propone las conexiones, revisa las cimentaciones y las varillas, y arma muros, pisos y techos de madera y de perfiles ligeros.
 
-## Novedades
+## Nuevo
 
-### Juntas a inglete (0.7.1)
+### Montaje
 
-- **Dos perfiles I que se encuentran en ángulo**, como una rodilla de pórtico o una cumbrera: selecciónelos, elija {{ui:Inglete}} en el menú {{ui:Más}} del grupo {{ui:Conectar}}, y ambos extremos se cortan en el plano que divide el ángulo por la mitad. Las placas de extremo atornilladas entre sí y los atiesadores de alma son casillas en el nuevo diálogo Inglete, cuyos campos numerados coinciden con un dibujo de su junta que se hace mientras escribe. El inglete sigue a los miembros cuando se mueven y pasa a planos, archivos NC (cortes oblicuos), IFC y la lista de materiales. Vea [Juntas a inglete](topic:mitres).
+- **Plan de montaje y película.** En la pestaña {{ui:Montaje}}, describa una grúa (dónde está, su gancho más alto, el aparejo que no viene en la tabla de carga) y escriba las filas de su tabla de carga. DetailCraft iza el modelo un ensamblaje a la vez, en orden de fase y nivel por nivel, y revisa cada izaje contra la tabla a su radio y contra el margen que usted fije. {{ui:Guardar película}} escribe un archivo HTML que se reproduce sin conexión en cualquier navegador, también en un teléfono. Los izajes que están sobre la tabla, fuera de ella o demasiado altos aparecen en {{ui:Problemas}}. Es un plan a partir de sus números, no un plan de izaje. Vea [Plan de montaje y película](topic:erection-movie).
 
-### Revisiones de diseño
+### Conexiones
 
-- **Combinaciones de carga del código.** En la pestaña {{ui:Análisis}}, el nuevo bloque {{ui:Revisiones de diseño}} tiene un {{ui:Código de diseño}}: ASCE 7 + AISC 360 (EE. UU., LRFD) o EN 1990 + EN 1993-1-1 (Eurocódigo). Dé a cada caso de carga su tipo (muerta, viva, la nueva viva de techo, nieve, viento, sísmica), pulse {{ui:Generar combinaciones}}, y DetailCraft escribe las combinaciones de resistencia y de servicio del código con sus casos. Las combinaciones que usted escribió se conservan. Vea [Genere las combinaciones](topic:design-checks#make-the-combinations).
-- **Valores del Anexo Nacional.** Para el Eurocódigo los factores parten de los valores recomendados; {{ui:Valores del Anexo Nacional}} le permite escribir los de su país, y se guardan en el modelo. Vea [Genere las combinaciones](topic:design-checks#make-the-combinations).
-- **Revisar miembros.** {{ui:Revisar miembros}} revisa cada perfil I de acero por tensión, compresión con pandeo, flexión con pandeo lateral por torsión, cortante, flexión con fuerza axial y deflexión contra el {{ui:Límite de deflexión (L / …)}} que usted fije. La tabla muestra el aprovechamiento de cada miembro, la revisión que rige y su combinación, y los miembros se colorean en el modelo (azul, verde, ocre, rojo, gris para no revisado). Vea [Revise los miembros](topic:design-checks#check-the-members).
-- **En el informe.** {{ui:Informe (PDF)}} e {{ui:Informe (CSV)}} agregan las ediciones de los códigos, los ajustes, el aprovechamiento por miembro y cada cláusula usada. Vea [El informe](topic:design-checks#the-report).
-- **Una ayuda hasta que un ingeniero la revise.** Usa solo fuerzas de primer orden. Los tubos, ángulos, canales, perfiles soldados y piezas esbeltas o de clase 4 dicen "no revisado", con el motivo; no se revisan torsión, conexiones ni concreto. Vea [Qué no se revisa](topic:design-checks#what-is-not-checked).
+- **Piloto automático de conexiones.** La pestaña {{ui:Piloto automático}} revisa cada junta que no tiene conexión y propone una a partir de las formas: placas base, placas de cortante, placas de extremo para las vigas que usted marque como vigas de momento, empalmes y placas de nudo. Dé una carga uniforme o un cortante en un extremo, y el número de pernos sigue la resistencia de diseño del perno. {{ui:Agregarlas todas}} agrega las propuestas como un solo paso de {{ui:Deshacer}}. Son valores iniciales para revisar, no un diseño de conexión.
+- **Revisiones de constructibilidad.** {{ui:Problemas}} para un perno que una llave no alcanza, pernos demasiado juntos para el dado, soldaduras de filete fuera de sus límites de tamaño y secciones huecas que retienen agua. El acceso para soldadura es nuevo: una soldadura de filete perimetral que el soplete del soldador no alcanza se enumera con la pieza que estorba y la proporción de la soldadura afectada. Vea [Revisiones de constructibilidad](topic:constructability).
 
-### USD
+### Cimentaciones y varillas
 
-- **Exporte el modelo de acero como USD.** {{ui:USD}} en el grupo {{ui:Salida}} escribe el modelo como {{ui:Texto (.usda)}}, {{ui:Binario (.usdc)}} o {{ui:Paquete (.usdz)}} para programas de render y armado de escenas: cada ensamblaje contiene sus piezas, cada pieza es su sección recorrida a lo largo con los despuntes cortados, y cada una lleva su marca de pieza, perfil, calidad, longitud y peso. Los agujeros de pernos, pernos, soldaduras y zapatas no están en las mallas USD. Vea [Exporte el modelo de acero como USD](topic:usd).
+- **Revisiones de cimentación.** La pestaña {{ui:Cimentación}} revisa zapatas, zapatas combinadas y losas de cimentación sobre el suelo que usted describa: capacidad de carga, deslizamiento y volcamiento con cargas de servicio; flexión, cortante, punzonamiento, desarrollo y acero mínimo con cargas factorizadas (ACI 318-19). Una columna cerca de un borde o de una esquina se revisa con la sección que queda cortada por el borde de la zapata. El asentamiento sale del módulo del suelo, una losa flexible se resuelve sobre resortes a partir de un módulo de subrasante, y los grupos de pilotes y los muros de contención tienen paneles propios. Las cargas de columna pueden escribirse o tomarse de {{ui:Análisis}}. Vea [Revisiones de cimentación](topic:foundation-checks).
+- **Mapa de congestión de varillas.** La pestaña {{ui:Congestión}} dibuja un mapa de calor de cada zapata vista desde arriba: dónde las varillas dejan muy poco espacio para que el concreto baje, frente a la regla de separación libre y, si las indica, el agregado más grande y la cabeza del vibrador. Vea [Mapa de congestión de varillas](topic:rebar-congestion).
 
-### Asistentes de IA
+### Armazón y suministro
 
-- **USD para asistentes.** Su propio asistente, conectado mediante CadCraft Studio, puede exportar el modelo como USD (`usd_export`) y, en Studio, escribirlo en una carpeta que usted permitió. Vea [Qué puede pedir un asistente](topic:use-with-ai-assistants#what-an-assistant-can-ask-for).
+- **Armazón de madera y de perfiles ligeros.** La pestaña {{ui:Armazón}} arma paneles de muro, piso y techo con cada pieza, una lista de cortes, el material que hay que comprar y un plano de taller a escala. {{ui:Colocar como miembros}} pone las piezas en el modelo, y {{ui:Hojas PDF}} guarda una hoja por cada panel. Las dimensiones, la separación y los cabezales son suyos: DetailCraft no revisa que soporten la carga. Vea [Paneles de armazón de madera y de perfiles ligeros](topic:framing-panels).
+- **Inventario del proveedor y tiempos de entrega.** La pestaña {{ui:Suministro}} lee la lista de inventario de un proveedor (CSV) y muestra, para cada sección que compra la lista de cortes, si hay suficiente en existencia y cuánto dura la espera. Los faltantes y las secciones atrasadas aparecen en {{ui:Problemas}}. No se hace ningún pedido. Vea [Inventario del proveedor y tiempos de entrega](topic:supplier-stock).
 
-## Cambios
+### Análisis y diseño
 
-- **La cinta Acero** tiene botones grandes y pequeños: una {{ui:Viga}} grande junto a {{ui:Columna}}, {{ui:Contraviento}} y {{ui:Placa}} pequeños en {{ui:Modelado}} › {{ui:Miembros}}; unas {{ui:Placas de extremo}} grandes en {{ui:Detallado}} › {{ui:Conexiones}}, con {{ui:Empalme}} y {{ui:Cartela}} compartiendo un botón dividido; un {{ui:Pegar}} grande en {{ui:Edición}} › {{ui:Portapapeles}}, con {{ui:Pegar en el mismo lugar}} y {{ui:Duplicar}} tras la flecha del grupo. {{ui:Fabricación}} › {{ui:Intercambio}} tiene {{ui:Exportar USD}} junto a IFC. Los demás estilos de menú se ven como antes. Vea [Menús, teclas y mouse](topic:menus-keys-and-mouse#the-three-styles).
-- [Analice la estructura](topic:frame-analysis) ahora remite a las revisiones de diseño, y sus combinaciones pueden generarse por código.
+- **¿Qué falla primero?** En la pestaña {{ui:Análisis}}, el botón encuentra la combinación de resistencia que gobierna, el miembro más débil, cuánto pueden crecer las cargas antes de que el primer miembro llegue a su límite, y la placa de extremo o la placa de cortante más débil donde se conoce la resistencia al cortante de sus pernos. Necesita primero las combinaciones y un código de diseño. Aplastamiento, cortante de bloque, soldaduras y pandeo local por palanca no se revisan. Su asistente conectado puede pedir lo mismo.
+- **En vivo.** Marque {{ui:En vivo: resolver de nuevo tras cada edición}} y el marco se vuelve a resolver después de cada edición.
+- **Concreto, más.** Una columna esbelta en un marco sin desplazamiento lateral se diseña para su momento amplificado (ACI 318-19 6.6.4.5). El periodo sísmico puede tomarse del análisis por el método de Rayleigh. Una losa hecha de placas obtiene el acero que necesita cada capa a partir de sus momentos, y también el cortante en una dirección. Vea [Revisar elementos de concreto y generar cargas sísmicas](topic:concrete-and-seismic).
+- **Para que un ingeniero lo revise.** Los resultados de cimentación, de concreto y de ¿Qué falla primero? son auxiliares. Las cargas de viento no están incluidas.
 
-## En todas las aplicaciones
+### En todas las aplicaciones
 
-- **Unidades.** {{ui:Configuración}} › {{ui:General}} › {{ui:Unidades}} tiene una lista cada una para longitud, área, volumen, ángulo y pendiente, con los tamaños exactos que dan las definiciones de las unidades (el pie topográfico de EE. UU. es su propia unidad). Desactive las unidades que nunca usa y salen de las listas de unidades; marque una con estrella y el trabajo nuevo empieza en ella. Un archivo siempre conserva su propia unidad. Los cuadros propios de DetailCraft aún no siguen las listas: sus longitudes se siguen escribiendo en milímetros. Vea [Unidades, valores escritos y listas de unidades](common:unit-lists).
-- **Un diseño más denso y paneles que se recogen.** {{ui:Configuración}} › {{ui:General}} › {{ui:Densidad del diseño}} › {{ui:Compacta}} cabe más en la pantalla (las pantallas táctiles y los teléfonos conservan sus botones grandes). Cada panel lateral tiene una barra de título delgada: arrástrela para acoplar o flotar el panel, suéltela sobre la barra de otro panel para compartir un marco como pestañas, fíjelo para que se deslice hacia el borde, u ocúltelo y tráigalo de vuelta desde el borde. Vea [Organice los paneles](common:arrange-panels#make-the-layout-denser).
-- **Los diálogos se mueven.** Arrastre un diálogo por su barra de título para quitarlo del paso del dibujo; vuelve donde lo dejó. Haga doble clic en la barra de título para centrarlo otra vez. Vea [Mueva un diálogo](common:arrange-panels#move-a-dialog).
-- **Recetas para asistentes de IA.** Diez peticiones resueltas para su propio asistente (ordenar un dibujo, trazar un juego, revisar dibujos, hacer preguntas a un modelo, totalizar una cuantificación, probar una variante de pieza…), cada una con las herramientas que llama y los permisos que necesita, y cada una reproducida por nuestras pruebas. Las aplicaciones no contienen IA. Vea [Recetas para asistentes de IA](common:assistants-recipes).
-- **Idiomas.** **Português (Portugal)** es nuevo en {{ui:Configuración}} › {{ui:General}} › {{ui:Idioma}}. Ese, **Português (Brasil)**, **Español (México)** y **Bahasa Indonesia** ya tienen cada palabra de las aplicaciones, como borradores aún no revisados por un hablante nativo. Los temas de ayuda están en inglés.
-- **CadCraft Studio** dice por qué falló una búsqueda de actualización (aún no hay archivo para su sistema, no hay red, firma incorrecta) en lugar de solo "Listo", y deja de traer una tarjeta de Novedades que usted cerró hasta que haya una versión más nueva.
+- **Idiomas.** La ayuda está en 54 idiomas. Los que no son el inglés son borradores de máquina hasta que un hablante nativo los revise; diez son nuevos (lituano, letón, bosnio, marati, telugu, albanés, afrikáans, filipino, suajili y uzbeko).
+- **Filas de la barra de herramientas.** {{ui:Configuración}} › {{ui:General}} › {{ui:Filas de la barra de herramientas}} elige ajustar, 2 filas o 1 fila. Una barra que ya cabe se queda igual; las demás se desplazan de lado.
+- **Cuadrícula de propiedades.** Los campos de la zapata usan la cuadrícula compartida: categorías plegables y una densidad compacta. Las operaciones aritméticas escritas, como 2*450, siguen funcionando.
+- **Dispositivos de entrada.** El panel táctil, el lápiz, el ratón 3D, el control y MIDI pueden controlar las aplicaciones. Vea [Navegar en 3D](topic:navigate-3d).
+- **Panel de problemas.** Las advertencias de las nuevas revisiones de arriba aparecen en el mismo panel {{ui:Problemas}} de siempre.
+- **Conecte su IA.** Su propio asistente, conectado mediante CadCraft Studio, funciona con las ocho aplicaciones y solo ve lo que usted permita. La conexión en un clic, el conector alojado y su propia clave de API en Studio todavía están por llegar. Vea [Usar DetailCraft con un asistente de IA](topic:use-with-ai-assistants).
 
-## Aún no está en esta versión
+## Corregido en 0.8.1
 
-- **0.7 no está firmada con certificado de código.** La firma y el paquete de Microsoft Store pasaron a 0.8 porque la validación del certificado aún no llega. Compruebe el SHA-256 junto a cada archivo en getcadcraft.com/download. En Windows, si SmartScreen detiene el instalador, elija {{ui:Más información}} y luego {{ui:Ejecutar de todas formas}}. En una Mac, la primera vez, haga clic derecho en CadCraft Studio y elija {{ui:Abrir}}. CadCraft Studio todavía no está en una tienda de aplicaciones y aún no hay versión para iPad ni iPhone.
-- Las listas de ángulo y pendiente en {{ui:Unidades}} se guardan, pero ningún cuadro las lee todavía.
-- **Las revisiones de diseño aún no las ha revisado un ingeniero.** Nuestras pruebas las comparan con valores impresos de tablas y fórmulas resueltas a mano, todavía no con ejemplos resueltos de una guía de diseño. Hasta una revisión, son una ayuda: revise a mano los miembros que importan.
-- Las revisiones de diseño usan fuerzas de primer orden (sin efectos de segundo orden) y revisan solo perfiles I. No están construidos: tubos, ángulos, canales, perfiles soldados, piezas esbeltas (AISC) o de clase 4 (Eurocódigo) en flexión, torsión, pandeo por cortante junto con flexión, conexiones, fatiga, fuego, detallado sísmico y concreto. Una pieza esbelta en compresión deja fuera las revisiones de compresión, y el miembro dice "passes, partly checked".
-- El análisis de estructura sigue siendo de primer orden y lineal, y aún no lo ha probado un ingeniero en un trabajo real.
-- Los agujeros de pernos, pernos, soldaduras y zapatas no están en la exportación USD.
+- **Idiomas en Studio.** Studio y las ediciones empaquetadas pueden cambiar de idioma en tiempo de ejecución; antes solo estaban en inglés. Todavía no se ha probado en todas las plataformas: avísenos si el idioma no cambia.
+- **Selección por ventana de cruce.** Los instaladores 0.8.1 ya traen el comportamiento correcto de selección por ventana que tenía la versión web 0.8; un instalador anterior no lo tenía.
+- **Tabletas en vertical.** El alto de cuadrícula sobrante va al lienzo, y la disposición de la hoja empieza a 760 px o menos.
 
-Todo lo demás está en [Lo que aún no está construido](topic:not-built-yet).
+## Todavía no está en esta versión
+
+- **Enviar NC a una máquina** todavía no se publica.
+- **Cargas de viento** para concreto aún no están incluidas, y las revisiones de concreto y de cimentación son para que un ingeniero las revise.
+- **Firma de código.** Los instaladores de Windows y el .dmg de macOS no están firmados, así que Windows puede advertir, y macOS pide un clic derecho y luego Abrir.
+
+Los cambios anteriores están en [Novedades de 0.7](topic:whats-new-0-7).

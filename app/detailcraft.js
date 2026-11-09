@@ -34,13 +34,13 @@
  */
 import { el, fillDl } from './ui-util.js';
 import { Model, starterState, gridsFromSpacings, spacingsOf, nodeName, pointAt, MATERIALS, defaultsFor, connPhase, MAX_PHASE } from './model.js';
-import { getProfile, catalogGroups, plateName, CUSTOM_KINDS, describe, holeFaces } from './profiles.js';
+import { getProfile, catalogGroups, plateName, CUSTOM_KINDS, describe, holeFaces, cleanCustom, cleanLibrary } from './profiles.js';
 import { build } from './build.js';
 import { markParts, bomTables, markFootings } from './marks.js';
 import { findJoints, similarJoints, similarColumns, freeSplices, similarSplices, freeBraceEnds, similarBraceEnds, freeMitres, similarMitres, MITRE_DEFAULTS, PARAM_LABELS, PARAM_HELP, PARAM_CHOICES, dg1Row, isBeamEnd } from './connections.js';
 import { mitrePreview } from './mitre-preview.js';   // 0.7.1 71.20: the Mitre dialog's drawing
 import { STAIR_DEFAULTS, stairGeometry } from './stair.js';
-import { BARS, BAR_SOURCE, BAR_SOURCE_BS, BAR_SETS, barLabel, bendingSchedule, scheduleTable, footingVolume, FOOTING_DEFAULTS, hookLeg } from './rebar.js';
+import { BARS, BAR_SOURCE, BAR_SOURCE_BS, BAR_SETS, barLabel, bendingSchedule, scheduleTable, footingVolume, FOOTING_DEFAULTS, hookLeg, shapeCode, scheduleDims } from './rebar.js';
 import { sectionsCsv, toCsv } from './csv.js';
 import { nestBars, piecesFromMarks, cutListTables } from './nest.js';
 import { installAgents } from './agents.js';
@@ -49,7 +49,7 @@ import { writeIfc, guidFor } from './ifc.js';
 import { mountIds } from './ids-ui.js';   // 0.7.1 71.25: Output › Check against IDS… (cc-ids in ./ids/)
 import { writeNc1, ncRefusal } from './nc1.js';
 import { zip } from './zip.js';
-import { shopDrawing, shopRefusal } from './shop.js';
+import { shopSet, shopRefusal } from './shop.js';
 import { toPdf } from './pdf.js';
 import { sampleModel } from './sample.js';
 import { drawingSet } from './drawings.js';
@@ -79,9 +79,12 @@ import { mountSupply } from './supply-ui.js';   // 0.8 round 3, EG.51: the Suppl
 import { mountFraming } from './framing-ui.js';   // 0.8 EG.6: the Framing tab (timber / light-gauge panels, cut lists, shop drawings)
 import { mountFoundation } from './foundation-ui.js';   // 0.8 EG.5: the Foundation tab (footing design checks)
 import { mountCongestion } from './congestion-ui.js';   // 0.8 EG.74: the Congestion tab (rebar heat map per footing)
+import { rcBuild, mergeSchedule, rcProblems, rcAnchor, barOf as rcBarOf } from './rc-detail.js';   // 0.9 RC.1: reinforced concrete detailing (cc-rc in ./rc/)
+import { mountRc } from './rc-ui.js';   // 0.9 RC.1: the Concrete tab, an element's properties, reinforcement shop drawings
 import { mountAutopilot } from './autopilot-ui.js';   // 0.8 EG.73: the Autopilot tab (connections for the open joints)
 import { mountErection } from './erection-ui.js';   // 0.8 EG.72: the Erection tab (crane chart, picks, the movie file)
 import { mountAnalysis } from './analysis-ui.js';   // 0.6 LC.4: the Analysis tab (frame analysis, an aid, not a code check)
+import { mountUndoHook } from './undo-hook.js';   // 0.9 EG.77: tells Studio each finished step
 
 const root = document.querySelector('[data-detailcraft]');
 if (root) start(root);
@@ -96,12 +99,12 @@ async function start(root) {
     tools: $('.dc-tools'), file: $('[data-file]'), name: $('[data-model-name]'),
     gridForm: $('[data-grid-form]'), gx: $('[data-gx]'), gxs: $('[data-gxs]'), gy: $('[data-gy]'), gys: $('[data-gys]'),
     levelForm: $('[data-level-form]'), levels: $('[data-levels]'), levelAdd: $('[data-level-add]'),
-    profileForm: $('[data-profile-form]'), pname: $('[data-pname]'), pkind: $('[data-pkind]'), pdims: $('[data-pdims]'), customList: $('[data-custom-list]'),
+    profileForm: $('[data-profile-form]'), pkeep: $('[data-pkeep]'), myList: $('[data-my-list]'), pname: $('[data-pname]'), pkind: $('[data-pkind]'), pdims: $('[data-pdims]'), customList: $('[data-custom-list]'),
     marks: $('[data-marks]'), phases: $('[data-phases]'), stage: $('[data-stage]'), canvas: $('[data-canvas]'), hint: $('[data-hint]'), drop: $('[data-drop]'), nogl: $('[data-nogl]'),
     vlevel: $('[data-vlevel]'), vgrid: $('[data-vgrid]'),
     propsH: $('[data-props-h]'), props: $('[data-props]'),
     report: $('[data-report]'), countProblems: $('[data-count-problems]'), countClashes: $('[data-count-clashes]'),
-    shop: $('[data-shop]'), shopH: $('[data-shop-h]'), shopCanvas: $('[data-shop-canvas]'), shopNote: $('[data-shop-note]'), shopPdf: $('[data-shop-pdf]'), shopClose: $('[data-shop-close]'),
+    shop: $('[data-shop]'), shopH: $('[data-shop-h]'), shopCanvas: $('[data-shop-canvas]'), shopNote: $('[data-shop-note]'), shopPdf: $('[data-shop-pdf]'), shopAll: $('[data-shop-all]'), shopSheet: $('[data-shop-sheet]'), shopClose: $('[data-shop-close]'),
     node: $('[data-node]'), status: $('[data-status]'), counts: $('[data-counts]'),
     dwg: $('[data-dwg]'), dwgSheet: $('[data-dwg-sheet]'), dwgCanvas: $('[data-dwg-canvas]'), dwgNote: $('[data-dwg-note]'),
     dwgOne: $('[data-dwg-one]'), dwgAll: $('[data-dwg-all]'), dwgClose: $('[data-dwg-close]'),
@@ -110,7 +113,28 @@ async function start(root) {
     issueStatus: $('[data-issue-status]'), issueNote: $('[data-issue-note]'), issueOne: $('[data-issue-one]'), issueAll: $('[data-issue-all]'),
   };
 
-  let model = new Model(starterState(tr('app.model.untitled')));
+  // My profiles: custom profiles kept in this browser (localStorage), copied into every new model
+  const MY_KEY = 'detailcraft.myprofiles';
+  const readMine = () => { try { return cleanLibrary(JSON.parse(localStorage.getItem(MY_KEY) || '[]')); } catch { return []; } };
+  let mine = readMine();
+  const writeMine = () => { try { localStorage.setItem(MY_KEY, JSON.stringify(mine)); return true; } catch { print(tr('app.mine.nosave')); return false; } };
+  const freshState = () => { const s = starterState(tr('app.model.untitled')); s.profiles = mine.map((p) => ({ ...p })); return s; };
+  /** Keeps a profile in My profiles; false (and a message) when another one already has its name. */
+  function keepProfile(p) {
+    const r = cleanCustom(p);
+    if (!r.ok) { print(r.error); return false; }
+    const old = mine.find((x) => x.name.toUpperCase() === r.profile.name.toUpperCase());
+    if (old) {
+      if (JSON.stringify(old) === JSON.stringify(r.profile)) return true;
+      print(tr('app.mine.taken', { name: r.profile.name })); return false;
+    }
+    if (mine.length >= 200) { print(tr('app.mine.full')); return false; }
+    mine = [...mine, r.profile];
+    return writeMine();
+  }
+
+  let model = new Model(freshState());
+  const undoHook = mountUndoHook({ getModel: () => model });   // 0.9 EG.77 undo across apps (follows the model when a file opens: attach)
   let built = null, marks = null, schedule = null;
   let tool = 'select';
   let sel = null;                      // { kind: 'member'|'conn'|'footing'|'stair', id } when one thing is selected
@@ -128,7 +152,7 @@ async function start(root) {
   let idsUi = null;                    // 0.7.1 71.25: the IDS check of the IFC export (ids-ui.js)
   let frameProblems = null, frameProblemsSet = null;   // the Analysis tab's concrete / seismic problems (0.8 SU.1056): kept until the shell's Problems is there
   let problemsSync = null;             // the shell's Problems (manifest "problems"): hands build.js's problems over after every rebuild
-  let breakSet = null, breakProblems = [], consSet = null, consTimer = 0, supply = null, supplySet = null, framing = null, frmSet = null, foundation = null, fndSet = null, congestion = null, congSet = null, autopilot = null, erection = null, extraProblems = [], extraSet = null, autoProblems = [], autoSet = null;   // the Erection tab (0.8 EG.72) and the problems of the round-2 checks, kept until the shell's Problems is there
+  let breakSet = null, breakProblems = [], consSet = null, consTimer = 0, supply = null, supplySet = null, framing = null, frmSet = null, foundation = null, fndSet = null, congestion = null, congSet = null, rcUi = null, rcSet = null, rcb = null, autopilot = null, erection = null, extraProblems = [], extraSet = null, autoProblems = [], autoSet = null;   // the Erection tab (0.8 EG.72) and the problems of the round-2 checks, kept until the shell's Problems is there
   let analysis = null;                 // the Analysis tab (0.6 LC.4, analysis-ui.js), mounted with the reports below
   let workspace = null;                // the workspace layouts (0.7 WS.13, workspace-detailcraft.js): told after every redraw
   const opts = {
@@ -349,7 +373,9 @@ async function start(root) {
     const perPhase = model.state.numbering?.perPhase !== false;
     marks = markParts(built, { perPhase });
     marks.footingMark = markFootings(model.state.footings, { perPhase });
-    schedule = bendingSchedule(model.state.footings);
+    rcb = rcBuild(model.state);   // 0.9 RC.1: concrete elements, their bars and checks; loose bars read from a file
+    built.rc = rcb;
+    schedule = mergeSchedule(bendingSchedule(model.state.footings), rcb);   // one bending schedule over the whole structure
   }
   function refresh() {
     for (const n of [...hiddenPhases]) if (!model.state.phases.some((p) => p.n === n)) hiddenPhases.delete(n);
@@ -364,12 +390,12 @@ async function start(root) {
     // while someone is typing or tabbing in the properties panel, redraw it once focus has settled
     if (ui.props.contains(ui.props.ownerDocument.activeElement)) setTimeout(renderProps, 0); else renderProps();   // ownerDocument: the panel may be in the panels window
     analysis?.modelChanged();
-    if (extraSet) { extraSet(erection.problems()); autoSet?.(autopilot.problems()); congSet?.(congestion.problems()); fndSet?.(foundation.problems()); frmSet?.(framing.problems()); if (consSet) { clearTimeout(consTimer); consTimer = setTimeout(() => consSet?.(constructability(model.state, built)), 400); } }   // 0.8 EG.72/73: their Problems follow the model, not the open tab
+    if (extraSet) { extraSet(erection.problems()); autoSet?.(autopilot.problems()); congSet?.(congestion.problems()); fndSet?.(foundation.problems()); frmSet?.(framing.problems()); rcSet?.(rcProblems(rcb)); if (consSet) { clearTimeout(consTimer); consTimer = setTimeout(() => consSet?.(constructability(model.state, built)), 400); } }   // 0.8 EG.72/73: their Problems follow the model, not the open tab
     problemsSync?.();
     idsUi?.changed();   // 0.7.1 71.25: re-check the IFC export against the IDS
     renderReport();
     renderBar();
-    ui.hint.hidden = model.state.members.length > 0 || model.state.footings.length > 0;
+    ui.hint.hidden = model.state.members.length > 0 || model.state.footings.length > 0 || !!model.state.rc?.elements.length || !!model.state.rc?.loose.length;
   }
   model.on(refresh);
   model.on(() => refreshAutosave());
@@ -377,7 +403,8 @@ async function start(root) {
   window.ccAddonModel = { current: () => ({ name: model.state.name || '' }), read: (fn) => fn(model) };
   const addonModelChanged = () => window.dispatchEvent(new CustomEvent('cc-addon-model-changed'));
   model.on(addonModelChanged);
-  const exists = (r) => (r.kind === 'member' ? !!model.member(r.id) : r.kind === 'conn' ? !!model.connection(r.id) : r.kind === 'stair' ? !!model.stair(r.id) : r.kind === 'picture' ? !!model.picture(r.id) : !!model.footing(r.id));
+  const exists = (r) => (r.kind === 'member' ? !!model.member(r.id) : r.kind === 'conn' ? !!model.connection(r.id) : r.kind === 'stair' ? !!model.stair(r.id) : r.kind === 'picture' ? !!model.picture(r.id)
+    : r.kind === 'rc' ? !!model.state.rc?.elements.some((x) => x.id === r.id) : r.kind === 'rcbar' ? !!model.state.rc?.loose.some((x) => x.id === r.id) : !!model.footing(r.id));
 
   /** One undo step; a refused edit is said in the status bar and nothing changes. */
   function edit(label, fn) {
@@ -387,6 +414,7 @@ async function start(root) {
 
   function setModel(m) {
     model = m;
+    undoHook.attach();
     model.on(refresh);
     model.on(() => refreshAutosave());
     model.on(addonModelChanged); addonModelChanged();
@@ -446,6 +474,8 @@ async function start(root) {
       case 'nc-send': return sendNc();
       case 'bom': return exportBom();
       case 'bending': return exportBending();
+      case 'rc-sheets': return rcUi.openSheets(null);   // 0.9 RC.1: reinforcement shop drawings and bending sheets
+      case 'rc-tab': reportTab = 'rc'; renderReport(); ui.report.focus(); print(tr('rc.tab.opened')); return;
       case 'shop': return openShop();
       case 'drawings': return openDrawings();
       case 'kiss': return exportKiss();
@@ -472,7 +502,7 @@ async function start(root) {
     setEdit('paste-in-place', canPaste, tr('app.bar.paste-in-place'), tr('app.bar.paste.why'));
     const any = model.state.members.length + model.state.footings.length > 0;
     setEdit('select-all', any, tr('app.bar.select-all'), tr('app.bar.select-all.why'));
-    const st = model.state, content = any || st.stairs.length + st.connections.length > 0;
+    const st = model.state, content = any || st.stairs.length + st.connections.length > 0 || !!st.rc?.elements.length || !!st.rc?.loose.length;
     for (const b of ui.tools.querySelectorAll('[data-act]')) {
       const a = b.dataset.act;
       if (a === 'new') b.disabled = !content && !model.dirty;
@@ -488,11 +518,11 @@ async function start(root) {
     btn('mitre').disabled = picked.filter((r) => r.kind === 'member').length < 2 && !(sel?.kind === 'conn' && model.connection(sel.id)?.type === 'mitre');
     btn('similar').disabled = !(sel?.kind === 'conn');
     const part = selectedPart();
-    btn('shop').disabled = !part || !!shopRefusal(part);
+    btn('shop').disabled = !built.parts.length;   // no selection needed: the dialog holds every part mark
     for (const b of ui.tools.querySelectorAll('[data-act^="tool:"]')) b.setAttribute('aria-pressed', String(b.dataset.act === 'tool:' + tool));
     const steel = built.parts.reduce((s, p) => s + p.weight, 0), bars = schedule.rows.reduce((s, r) => s + r.totalWeight, 0);
     ui.counts.textContent = tr('app.bar.counts', { parts: built.parts.length, bolts: built.bolts.length, steel: kg(steel) }) + (bars ? ' ' + tr('app.bar.counts.rebar', { rebar: kg(bars) }) : '');
-    document.title = (model.dirty ? '• ' : '') + model.state.name + ' — DetailCraft';
+    window.ccSetDocTitle ? window.ccSetDocTitle(model.state.name, model.dirty) : (document.title = (model.dirty ? '• ' : '') + model.state.name + ' — DetailCraft | CadCraft');   // 2026-11-09: the shell's one title pattern
     workspace?.refresh();
   }
 
@@ -663,6 +693,8 @@ async function start(root) {
     if (r.kind === 'conn') { const c = model.connection(r.id); return tr('app.ref.' + c.type, { id: c.id }); }
     if (r.kind === 'stair') { const x = model.stair(r.id); return tr('app.ref.stair', { mark: marks.asmMark.get(r.id + '.stringerL') || '', rise: mm(x.rise), width: mm(x.width) }); }
     if (r.kind === 'picture') { const p = model.picture(r.id), [w, h] = pictureSizeMm(p); return tr('pic.ref', { name: p.name || tr('pic.unnamed'), w: mm(w), h: mm(h) }); }
+    if (r.kind === 'rc') { const x = model.state.rc.elements.find((q) => q.id === r.id), it = rcb?.byId.get(r.id); return tr('rc.ref', { name: rcb?.labels.get(r.id) || r.id, n: it ? it.res.groups.reduce((a, g) => a + g.count, 0) : 0, fails: it ? it.checks.filter((c) => c.status === 'fail').length : 0, kind: tr('rc.kind.' + x.kind) }); }
+    if (r.kind === 'rcbar') { const b = model.state.rc.loose.find((q) => q.id === r.id); return tr('rc.ref.loose', { bar: barLabel(b.bar, settings.barNames), mark: b.mark || '—', host: b.host?.name || b.host?.cls || tr('rc.loose.nohost') }); }
     const f = model.footing(r.id); return tr('app.ref.footing', { mark: marks.footingMark.get(f.id) || '', l: mm(f.L), b: mm(f.B), h: mm(f.H) });
   }
   function selectedPart() {
@@ -677,8 +709,8 @@ async function start(root) {
 
   function deleteRefs(refs, label) {
     const ids = (k) => refs.filter((r) => r.kind === k).map((r) => r.id);
-    const ms = ids('member'), cs = ids('conn'), fs = ids('footing'), ss = ids('stair'), ps = ids('picture');
-    const ok = edit(label, (tx) => { tx.removeConnections(cs); tx.removeMembers(ms); tx.removeFootings(fs); tx.removeStairs(ss); tx.removePictures(ps); });
+    const ms = ids('member'), cs = ids('conn'), fs = ids('footing'), ss = ids('stair'), ps = ids('picture'), rs = ids('rc'), xs = ids('rcbar');
+    const ok = edit(label, (tx) => { tx.removeConnections(cs); tx.removeMembers(ms); tx.removeFootings(fs); tx.removeStairs(ss); tx.removePictures(ps); tx.removeRc(rs); if (xs.length) tx.removeLoose(xs); });
     setSelection([]);
     return ok;
   }
@@ -686,7 +718,7 @@ async function start(root) {
     const refs = selected();
     if (!refs.length) { print(tr('app.delete.none')); return; }
     const r = refs[0];
-    const label = refs.length > 1 ? tr('app.undo.delete.many', { n: refs.length }) : r.kind === 'member' ? tr('app.undo.delete.' + model.member(r.id).type) : tr(r.kind === 'conn' ? 'app.undo.delete.conn' : r.kind === 'picture' ? 'pic.undo.delete' : 'app.undo.delete.footing');
+    const label = refs.length > 1 ? tr('app.undo.delete.many', { n: refs.length }) : r.kind === 'member' ? tr('app.undo.delete.' + model.member(r.id).type) : tr(r.kind === 'conn' ? 'app.undo.delete.conn' : r.kind === 'picture' ? 'pic.undo.delete' : r.kind === 'rc' ? 'rc.undo.delete' : r.kind === 'rcbar' ? 'rc.undo.delete-bar' : 'app.undo.delete.footing');
     if (deleteRefs(refs, label)) print(refs.length > 1 ? tr('app.delete.done.many', { n: refs.length }) : tr('app.delete.done.one'));
   }
 
@@ -1049,7 +1081,15 @@ async function start(root) {
     if (!ui.levelForm.contains(focused)) renderLevels(s.levels);
     if (!ui.phases.contains(focused)) renderPhases();
     syncViewSelects();
-    ui.customList.replaceChildren(...s.profiles.map((p) => el('li', {}, el('span', { className: 'dc-ellip' }, p.name), el('span', { className: 'dc-muted' }, kindName(p.kind)))));
+    const kept = (p) => mine.some((x) => x.name.toUpperCase() === p.name.toUpperCase());
+    ui.customList.replaceChildren(...s.profiles.map((p) => el('li', {}, el('span', { className: 'dc-ellip' }, p.name + ' · ' + kindName(p.kind)),
+      kept(p) ? el('span', { className: 'dc-muted' }, tr('app.mine.kept'))
+        : el('button', { type: 'button', className: 'btn-line btn-sm-dc', onclick: () => { if (keepProfile(p)) { print(tr('app.mine.added', { name: p.name })); refresh(); } } }, tr('app.mine.keep')))));
+    ui.myList.replaceChildren(...mine.map((p) => el('li', {}, el('span', { className: 'dc-ellip' }, p.name + ' · ' + kindName(p.kind)),
+      el('span', { className: 'dc-row' },
+        s.profiles.some((x) => x.name.toUpperCase() === p.name.toUpperCase()) ? '' : el('button', { type: 'button', className: 'btn-line btn-sm-dc', onclick: () => { if (edit(tr('app.undo.add-profile', { name: p.name }), (tx) => tx.addProfile(p))) print(tr('app.mine.used', { name: p.name })); } }, tr('app.mine.use')),
+        el('button', { type: 'button', className: 'btn-line btn-sm-dc', onclick: () => { mine = mine.filter((x) => x !== p); if (writeMine()) { print(tr('app.mine.removed', { name: p.name })); refresh(); } } }, tr('app.mine.remove'))))));
+    if (!mine.length) ui.myList.append(el('li', { className: 'dc-muted' }, tr('app.mine.none')));
     ui.marks.replaceChildren(...marks.parts.map((p) => el('li', {},
       el('button', { type: 'button', onclick: () => { setTool('select'); select(refForPart(p.ids[0])); }, title: tr('app.marks.select-first', { mark: p.mark }) },
         el('span', { className: 'dc-mk' }, p.mark), el('span', { className: 'dc-ellip' }, p.profile + ' x ' + mm(p.length))),
@@ -1070,7 +1110,7 @@ async function start(root) {
       show.addEventListener('change', () => setPhaseShown(p.n, show.checked));
       const name = el('input', { type: 'text', className: 'dc-input', value: p.name, placeholder: tr('phase.default', { n: p.n }), maxLength: 40, 'aria-label': tr('phase.name', { n: p.n }), dataset: { phaseName: String(p.n) } });
       name.addEventListener('change', () => edit(tr('phase.undo.rename'), (tx) => tx.renamePhase(p.n, name.value)));
-      const del = el('button', { type: 'button', className: 'dc-icon-btn', 'aria-label': tr('phase.remove', { phase: phaseName(p.n) }), title: tr('phase.remove', { phase: phaseName(p.n) }), dataset: { phaseRemove: String(p.n) }, onclick: () => { if (edit(tr('phase.undo.remove'), (tx) => tx.removePhase(p.n))) print(tr('phase.removed', { phase: phaseName(p.n) })); } }, el('i', { className: 'bi bi-x-lg', 'aria-hidden': 'true' }));
+      const del = el('button', { type: 'button', className: 'shell-x', 'aria-label': tr('phase.remove', { phase: phaseName(p.n) }), title: tr('phase.remove', { phase: phaseName(p.n) }), dataset: { phaseRemove: String(p.n) }, onclick: () => { if (edit(tr('phase.undo.remove'), (tx) => tx.removePhase(p.n))) print(tr('phase.removed', { phase: phaseName(p.n) })); } }, el('i', { className: 'bi bi-x-lg', 'aria-hidden': 'true' }));
       return el('li', { className: hiddenPhases.has(p.n) ? 'is-hidden' : '' }, show, el('span', { className: 'dc-mk' }, String(p.n)), name, el('span', { className: 'dc-muted' }, tr('phase.count', { n: count(p.n) })), del);
     }));
     const add = el('button', { type: 'button', className: 'dc-linkbtn', dataset: { phaseAdd: '' }, onclick: () => { const n = edit(tr('phase.undo.add'), (tx) => tx.addPhase()); if (n) { curPhase = n; renderPhases(); print(tr('phase.added', { phase: phaseName(n) })); } } }, el('i', { className: 'bi bi-plus-lg', 'aria-hidden': 'true' }), ' ', tr('phase.add'));
@@ -1110,7 +1150,7 @@ async function start(root) {
     const li = el('li', {},
       el('input', { type: 'text', className: 'dc-input', value: name, 'aria-label': tr('app.levels.name'), maxLength: 40, dataset: { lname: '' } }),
       el('input', { type: 'number', className: 'dc-input', value: String(z), step: 'any', 'aria-label': tr('app.levels.z'), dataset: { lz: '' } }),
-      el('button', { type: 'button', className: 'dc-icon-btn', 'aria-label': tr('app.levels.remove', { n: i + 1 }), onclick: () => { li.remove(); } }, el('i', { className: 'bi bi-x-lg', 'aria-hidden': 'true' })));
+      el('button', { type: 'button', className: 'shell-x', title: tr('app.levels.remove', { n: i + 1 }), 'aria-label': tr('app.levels.remove', { n: i + 1 }), onclick: () => { li.remove(); } }, el('i', { className: 'bi bi-x-lg', 'aria-hidden': 'true' })));
     return li;
   }
   ui.levelAdd.addEventListener('click', () => {
@@ -1150,7 +1190,11 @@ async function start(root) {
     e.preventDefault();
     const p = { name: ui.pname.value, kind: ui.pkind.value };
     for (const i of ui.pdims.querySelectorAll('[data-pdim]')) p[i.dataset.pdim] = i.value === '' ? NaN : Number(i.value);
-    if (edit(tr('app.undo.add-profile', { name: p.name }), (tx) => tx.addProfile(p))) { print(tr('app.profile.added', { name: p.name.trim() })); ui.pname.value = ''; }
+    if (edit(tr('app.undo.add-profile', { name: p.name }), (tx) => tx.addProfile(p))) {
+      const name = p.name.trim();
+      print(tr('app.profile.added', { name }) + (ui.pkeep.checked && keepProfile(p) ? ' ' + tr('app.mine.added', { name }) : ''));
+      ui.pname.value = ''; refresh();
+    }
   });
 
   // ---- properties panel ----
@@ -1166,6 +1210,8 @@ async function start(root) {
     else if (sel?.kind === 'stair') { const x = model.stair(sel.id); ui.propsH.textContent = tr('app.props.stair', { mark: marks.asmMark.get(x.id + '.stringerL') || '' }); body.push(...stairProps(x)); }
     else if (sel?.kind === 'picture') { const p = model.picture(sel.id); ui.propsH.textContent = tr('pic.props'); body.push(...pictureProps(p)); }
     else if (sel?.kind === 'footing') { const f = model.footing(sel.id); ui.propsH.textContent = tr('app.props.footing', { mark: marks.footingMark.get(f.id) || '' }); body.push(...footingProps(f)); }
+    else if (sel?.kind === 'rc') { const x = model.state.rc.elements.find((q) => q.id === sel.id); ui.propsH.textContent = rcb.labels.get(x.id) || tr('rc.kind.' + x.kind); body.push(...rcUi.props(x)); }
+    else if (sel?.kind === 'rcbar') { ui.propsH.textContent = tr('rc.props.loose'); body.push(el('p', { className: 'dc-note' }, describeRef(sel)), el('div', { className: 'dc-actions' }, el('button', { type: 'button', className: 'btn-line btn-sm-dc dc-danger', onclick: deleteSelection }, tr('app.btn.delete')))); }
     else { ui.propsH.textContent = tr('app.props.model'); body.push(...modelSummary()); }
     const pdoc = ui.props.ownerDocument;   // the panel may be in the panels window
     const focusedId = pdoc.activeElement && ui.props.contains(pdoc.activeElement) ? pdoc.activeElement.id : null;
@@ -1497,7 +1543,7 @@ async function start(root) {
     const box = el('div', { className: 'dc-block' }, el('p', { className: 'dc-sub' }, tr('app.holes.title')));
     const list = el('ul', { className: 'dc-list' });
     for (const h of m.holes) list.append(el('li', {}, el('span', {}, tr('app.holes.item', { face: FACE_NAME[h.face], d: r1(h.d), x: r1(h.x), y: r1(h.y) })),
-      el('button', { type: 'button', className: 'dc-icon-btn', 'aria-label': tr('app.holes.remove'), onclick: () => edit(tr('app.undo.remove-hole'), (tx) => tx.removeHole(m.id, h.id)) }, el('i', { className: 'bi bi-x-lg', 'aria-hidden': 'true' }))));
+      el('button', { type: 'button', className: 'shell-x', title: tr('app.holes.remove'), 'aria-label': tr('app.holes.remove'), onclick: () => edit(tr('app.undo.remove-hole'), (tx) => tx.removeHole(m.id, h.id)) }, el('i', { className: 'bi bi-x-lg', 'aria-hidden': 'true' }))));
     const fromConn = part ? part.holes.filter((h) => h.conn) : [];
     if (fromConn.length) list.append(el('li', { className: 'dc-muted' }, tr('app.holes.from-conn', { n: fromConn.length })));
     if (!m.holes.length && !fromConn.length) list.append(el('li', { className: 'dc-muted' }, tr('app.holes.none')));
@@ -1524,7 +1570,7 @@ async function start(root) {
     const box = el('div', { className: 'dc-block' }, el('p', { className: 'dc-sub' }, tr('app.copes.title')));
     const list = el('ul', { className: 'dc-list' });
     for (const c of m.cuts) list.append(el('li', {}, el('span', {}, tr('app.copes.item', { side: tr('app.side.' + c.side), end: tr('app.word.' + c.end), length: r1(c.length), depth: r1(c.depth) })),
-      el('button', { type: 'button', className: 'dc-icon-btn', 'aria-label': tr('app.copes.remove'), onclick: () => edit(tr('app.undo.remove-cope'), (tx) => tx.removeCut(m.id, c.id)) }, el('i', { className: 'bi bi-x-lg', 'aria-hidden': 'true' }))));
+      el('button', { type: 'button', className: 'shell-x', title: tr('app.copes.remove'), 'aria-label': tr('app.copes.remove'), onclick: () => edit(tr('app.undo.remove-cope'), (tx) => tx.removeCut(m.id, c.id)) }, el('i', { className: 'bi bi-x-lg', 'aria-hidden': 'true' }))));
     if (!m.cuts.length) list.append(el('li', { className: 'dc-muted' }, tr('app.copes.none')));
     const f = { kind: 'cope', end: 'start', side: 'top', length: 100, depth: 40 };
     const form = el('form', { className: 'dc-props' },
@@ -1743,6 +1789,11 @@ async function start(root) {
   supply = mountSupply({ getModel: () => model, edit, print, nest: () => nestResult(), built: () => built, rerender: () => renderReport(), setProblems: (list) => supplySet?.(list) });
   framing = mountFraming({ getModel: () => model, edit, print, download: (n, d, ty) => download(n, d, ty), safeName: () => safeName(), rerender: () => renderReport(), setProblems: (list) => frmSet?.(list) });
   foundation = mountFoundation({ getModel: () => model, edit, print, rerender: () => renderReport(), select, label: (id) => marks?.footingMark?.get(id) || id, analysisResult: () => analysis?.result || null, profileSize: (name) => { const p = getProfile(name, model.state.customProfiles || []); return p ? [Math.round(p.width), Math.round(p.depth)] : null; }, setProblems: (list) => fndSet?.(list) });
+  // 0.9 RC.1: the Concrete tab, a concrete element's properties and the reinforcement shop drawings (rc-ui.js)
+  rcUi = mountRc({ getModel: () => model, rb: () => rcb, schedule: () => schedule, edit, print, select: (ref) => { setTool('select'); select(ref); }, rerender: () => renderReport(),
+    barLabel: (b) => (rcBarOf(b)?.set === 'other' ? b : barLabel(b, settings.barNames)), paper: () => settings.paper, numIn, textIn, selectIn, field, phaseField, deleteSelection,
+    download: (n, d, ty) => download(n, d, ty), safeName: () => safeName(), root, drawList: (c, l) => drawList(c, l), toPdf, remember: () => { lastFocus = document.activeElement; }, restoreFocus: () => restoreFocus(),
+    shapeCode: (sh) => shapeCode(sh, settings.shapeCodes) || sh, scheduleDims: (sh, d) => scheduleDims(sh, d, settings.shapeCodes), phase: () => curPhase });
   congestion = mountCongestion({ getModel: () => model, rerender: () => renderReport(), print, select, label: (id) => { const m = marks?.footingMark?.get(id); return m || id; }, setProblems: (list) => congSet?.(list) });
   autopilot = mountAutopilot({ getModel: () => model, edit, print, selected, rerender: () => renderReport(), label: (id) => marks?.partMark.get(id) || model.member(id)?.name || id, setProblems: (list) => { autoProblems = list; autoSet?.(list); } });
   analysis = mountAnalysis({ getModel: () => model, getView: () => view, edit, selected, select, print, download: (n, d, ty) => download(n, d, ty), safeName: () => safeName(), rerender: () => renderReport(), setFrameProblems: (list) => { frameProblems = list; frameProblemsSet?.(list); }, setBreakProblems: (list) => { breakProblems = list; breakSet?.(list); } });
@@ -1784,6 +1835,8 @@ async function start(root) {
       out.push(...framing.panel());
     } else if (reportTab === 'foundation') {
       out.push(...foundation.panel());
+    } else if (reportTab === 'rc') {
+      out.push(...rcUi.panel());
     } else if (reportTab === 'congestion') {
       out.push(...congestion.panel());
     } else if (reportTab === 'autopilot') {
@@ -1894,7 +1947,7 @@ async function start(root) {
   }
   async function newModel() {
     if (!(await confirmDiscard())) return;
-    setModel(new Model(starterState(tr('app.model.untitled'))));
+    setModel(new Model(freshState()));
     setTool('select');
     print(tr('app.file.new'));
   }
@@ -1952,10 +2005,11 @@ async function start(root) {
 
   // ---- exports ----
   function exportIfc() {
-    if (!built.parts.length && !model.state.footings.length) { print(tr('app.export.nothing')); return; }
+    if (!built.parts.length && !model.state.footings.length && !rcb.items.length && !rcb.loose.length) { print(tr('app.export.nothing')); return; }
     const txt = writeIfc(model.state, built, marks, schedule, {});
     download(safeName() + '.ifc', txt, 'application/x-step');
     print(tr('app.export.ifc', { parts: built.parts.length, bolts: built.bolts.length, footings: model.state.footings.length, bars: built.footings.reduce((s, f) => s + f.bars.reduce((t, g) => t + g.count, 0), 0) }));
+    if (rcb.items.length || rcb.loose.length) print(tr('app.export.ifc', { parts: built.parts.length, bolts: built.bolts.length, footings: model.state.footings.length, bars: built.footings.reduce((s, f) => s + f.bars.reduce((t, g) => t + g.count, 0), 0) }) + ' ' + tr('rc.export.ifc', { n: rcb.items.length, bars: rcb.items.reduce((s, i) => s + i.res.groups.reduce((t2, g) => t2 + g.count, 0), 0) + rcb.loose.reduce((s, g) => s + g.count, 0) }));
   }
   // 0.7 XF.8 (session usd): the steel model as USD — usd-detailcraft.js on cc-usd (./usd/, lib/usd synced)
   async function exportUsd() {
@@ -2239,32 +2293,41 @@ async function start(root) {
   });
 
   // ---- shop drawing dialog ----
-  let shopList = null, shopMark = '';
+  let shopSheets = null, shopList = null, shopMark = '';
   function openShop() {
+    if (!built.parts.length) { print(tr('app.dwg.nothing')); return; }
     const part = selectedPart();
-    const why = shopRefusal(part);
-    if (why) { print(why); return; }
-    const row = marks.parts.find((p) => p.ids.includes(part.id));
-    shopMark = row?.mark || part.id;
-    shopPart = part;
-    makeShop();
-    ui.shopH.textContent = tr('app.shop.title', { mark: shopMark });
+    if (!fillShop(part ? part.id : null, 0)) return;
     lastFocus = document.activeElement;
     ui.shop.showModal();
     requestAnimationFrame(drawShop);
     ui.shopPdf.focus();
   }
-  let shopPart = null;
-  function makeShop() {
-    const part = shopPart, row = marks.parts.find((p) => p.ids.includes(part.id));
-    const weld = built.welds.find((w) => w.between.includes(part.id));
-    shopList = shopDrawing(part, { mark: shopMark, asmMark: marks.asmMark.get(marks.asmOf.get(part.id)) || '', count: row?.count || 1, model: model.state.name, date: new Date().toISOString().slice(0, 10), weld: weld ? tr('app.shop.weld', { size: weld.size, where: weld.where.toLowerCase() }) : '', paper: settings.paper });
+  /** (Re)makes the set: one sheet per part mark, on the chosen sheet size. Opens on the part's own mark, else on sheet `at`. */
+  function fillShop(partId, at) {
+    const date = new Date().toISOString().slice(0, 10);
+    const weld = (part) => { const w = built.welds.find((x) => x.between.includes(part.id)); return w ? tr('app.shop.weld', { size: w.size, where: w.where.toLowerCase() }) : ''; };
+    const set = shopSet(built, marks, { model: model.state.name, date, paper: settings.paper, weld });
+    if (!set.sheets.length) { print(tr('app.dwg.empty')); return false; }
+    shopSheets = set.sheets;
+    const own = partId ? shopSheets.findIndex((s) => s.ids.includes(partId)) : -1;
+    ui.shopSheet.replaceChildren(...shopSheets.map((s, i) => el('option', { value: String(i) }, s.mark + ' — ' + s.profileName + ' x ' + mm(s.length) + (s.count > 1 ? ' (' + s.count + ')' : ''))));
+    ui.shopSheet.value = String(own >= 0 ? own : Math.min(at, shopSheets.length - 1));
+    ui.shopAll.lastChild.textContent = ' ' + tr('shop.all', { n: shopSheets.length });
     fillPaper(ui.shopPaper);
-    ui.shopNote.textContent = tr('shop.note', { part: part.profileName + ' x ' + mm(part.length), n: row?.count || 1, paper: paperLabel(shopList.paper) });
+    showShop();
+    return true;
   }
+  function showShop() {
+    const s = shopSheets[Number(ui.shopSheet.value)] || shopSheets[0];
+    shopList = s; shopMark = s.mark;
+    ui.shopH.textContent = tr('app.shop.title', { mark: shopMark });
+    ui.shopNote.textContent = tr('shop.note', { part: s.profileName + ' x ' + mm(s.length), n: s.count, paper: paperLabel(s.paper) });
+  }
+  ui.shopSheet.addEventListener('change', () => { if (shopSheets) { showShop(); drawShop(); } });
   ui.shopPaper.addEventListener('change', () => {
     setSetting('paper', PAPER_KEYS.includes(ui.shopPaper.value) ? ui.shopPaper.value : DEFAULT_PAPER, tr('dwg.paper.set', { paper: paperLabel(ui.shopPaper.value) }));
-    if (shopPart) { makeShop(); drawShop(); }
+    if (shopSheets && fillShop(null, Number(ui.shopSheet.value) || 0)) drawShop();
   });
   function drawShop() { if (shopList) drawList(ui.shopCanvas, shopList); }
   /** Paints a display list (pdf.js items, mm, y up) on a canvas, white paper, black ink. */
@@ -2302,8 +2365,14 @@ async function start(root) {
     download(safeName() + ' ' + shopMark + '.pdf', new Blob([bytes], { type: 'application/pdf' }));
     print(tr('app.shop.saved', { mark: shopMark }) + (missing ? ' ' + tr('app.pdf.missing', { n: missing }) : ''));
   });
+  ui.shopAll.addEventListener('click', async () => {
+    if (!shopSheets) return;
+    const { bytes, missing } = await toPdf(shopSheets, { title: tr('app.shop.set-title', { name: model.state.name }) });
+    download(safeName() + ' ' + tr('app.shop.file') + '.pdf', new Blob([bytes], { type: 'application/pdf' }));
+    print(tr('app.shop.saved.all', { n: shopSheets.length }) + (missing ? ' ' + tr('app.pdf.missing', { n: missing }) : ''));
+  });
   ui.shopClose.addEventListener('click', () => ui.shop.close());
-  ui.shop.addEventListener('close', () => { shopList = null; shopPart = null; restoreFocus(); });
+  ui.shop.addEventListener('close', () => { shopSheets = null; shopList = null; restoreFocus(); });
 
   // ---- in-page question dialog (never window.confirm) ----
   let lastFocus = null;
@@ -2393,7 +2462,8 @@ async function start(root) {
     get autopilot() { return autopilot; },
     get congestion() { return congestion; },
     get foundation() { return foundation; },
-    get framing() { return framing; },   // 0.8 EG.6 (tests)   // 0.8 EG.5 (tests)   // 0.8 EG.74 (tests)   // 0.8 EG.73 (tests)
+    get framing() { return framing; },
+    get rc() { return rcUi; }, get rcBuild() { return rcb; },   // 0.9 RC.1 (tests)   // 0.8 EG.6 (tests)   // 0.8 EG.5 (tests)   // 0.8 EG.74 (tests)   // 0.8 EG.73 (tests)
   };
   // the menu styles (0.5 IP.3, input-detailcraft.js + the shell's app-input-ui.js): their messages go to the status line, and
   // letters stay DetailCraft's while a placement or a paste is under way
@@ -2451,17 +2521,17 @@ async function start(root) {
         P.store.loadAccepted(model.state.problems?.accepted || []);
       };
       // an IDS problem (0.7.1 71.25) names the exported element by GlobalId: back to the member, connection, stair or footing it came from
-      const refs = (p) => p.about.map((r) => (r.kind === 'element' ? refOfGuid(r.id) : r)).filter((r) => r && ['member', 'conn', 'footing', 'stair'].includes(r.kind) && exists(r));
+      const refs = (p) => p.about.map((r) => (r.kind === 'element' ? refOfGuid(r.id) : r)).filter((r) => r && ['member', 'conn', 'footing', 'stair', 'rc', 'rcbar'].includes(r.kind) && exists(r));
       P.adapter({
         t: tr,
         file: () => model.state.name,
         select: (p) => { const r = refs(p); if (!r.length) return; if (tool !== 'select') setTool('select'); setSelection(r); if (r.length === 1) print(describeRef(r[0])); },
-        focus: (p) => { const at = refs(p).map((r) => anchorOf(model.state, r)).find(Boolean); if (at) view?.focusPoint(at, 2500); },
+        focus: (p) => { const at = refs(p).map((r) => anchorOf(model.state, r) || rcAnchor(model.state, r)).find(Boolean); if (at) view?.focusPoint(at, 2500); },
         saveAccepted: (list) => { edit(tr('problems.undo.accept'), (tx) => tx.setAcceptedProblems(list)); },
       });
       if (view) P.markers({
         stage: ui.stage,
-        anchor: (p) => refs(p).map((r) => anchorOf(model.state, r)).find(Boolean) || null,
+        anchor: (p) => refs(p).map((r) => anchorOf(model.state, r) || rcAnchor(model.state, r)).find(Boolean) || null,
         toScreen: (pt) => view.toScreen(pt),
         onView: (fn) => { const prev = view.onRender; view.onRender = () => { prev?.(); fn(); }; return () => { view.onRender = prev; }; },
       });
@@ -2475,6 +2545,9 @@ async function start(root) {
       const congSrc = P.source({ id: 'detailcraft.congestion', kind: 'engine', label: tr('problems.src.congestion') });
       congSet = (list) => congSrc.set(list);
       congSet(congestion.problems());
+      const rcSrc = P.source({ id: 'detailcraft.rebar', kind: 'check', label: tr('problems.src.rebar') });   // 0.9 RC.1: laps, anchorage, cover, spacing, steel
+      rcSet = (list) => rcSrc.set(list);
+      rcSet(rcProblems(rcb));
       const fndSrc = P.source({ id: 'detailcraft.foundation', kind: 'engine', label: tr('problems.src.foundation') });
       fndSet = (list) => fndSrc.set(list);
       fndSet(foundation.problems());
@@ -2503,7 +2576,7 @@ async function start(root) {
   idsUi = mountIds({
     root, el, t: tr, print,
     ifc: async () => {
-      if (!built.parts.length && !model.state.footings.length) throw new Error(tr('app.export.nothing'));
+      if (!built.parts.length && !model.state.footings.length && !rcb.items.length && !rcb.loose.length) throw new Error(tr('app.export.nothing'));
       const { IfcFile } = await import('./ifc/model.js');
       return IfcFile.open(new TextEncoder().encode(writeIfc(model.state, built, marks, schedule, {})));
     },

@@ -1,55 +1,59 @@
 ---
-title: Perkara baharu dalam 0.7
-summary: Semakan reka bentuk bagi bentuk-I keluli dengan gabungan beban daripada ASCE 7 atau EN 1990 dan semakan ahli kepada AISC 360 atau EN 1993-1-1, eksport USD model keluli, alat pembantu untuk USD, reben Keluli dengan butang besar dan kecil, panel yang kemas sendiri, dan kotak dialog yang boleh digerakkan.
-keywords: perkara baharu, nota keluaran, senarai perubahan, perubahan, 0.7, versi, ciri baharu, semakan reka bentuk, reka bentuk keluli, nisbah penggunaan, gabungan beban, ASCE 7, EN 1990, AISC 360, EN 1993-1-1, Eurocode, Annex Negara, beban hidup bumbung, had pesongan, usd, usda, usdc, usdz, openusd, pembantu, mcp, reben keluli, reben, butang pisah, unit, padat, panel, kotak dialog, Portugis
-from: 17d1e0bb
+title: Perkara baharu dalam 0.8 dan 0.8.1
+summary: Filem pendirian daripada carta beban kren, autopilot sambungan, peta kesesakan tetulang, semakan asas, panel rangka kayu dan keluli nipis, semakan kebolehbinaan dan kebolehcapaian kimpalan, stok pembekal, apa yang pecah dahulu, semakan semula langsung, lebih banyak semakan konkrit dan pembetulan 0.8.1.
+keywords: perkara baharu, what's new, nota keluaran, changelog, perubahan, 0.8, 0.8.1, versi, ciri baharu, pendirian, kren, carta beban, filem, autopilot, sambungan, tetulang, kesesakan, asas, tapak asas, mat, enapan, rangka, kayu, keluli nipis, senarai potongan, kebolehbinaan, kebolehcapaian kimpalan, pembekal, stok, masa penghantaran, apa yang pecah dahulu, langsung, konkrit, seismik, slab, bahasa, pembantu
+from: 6e33e052
 ---
 
-Ini ialah perubahan dalam DetailCraft 0.7, berbanding 0.6. Analisis rangka 0.6 kini mempunyai langkah kedua: menyemak ahli keluli mengikut kod reka bentuk.
+Ini ialah perubahan dalam DetailCraft 0.8 (1 November 2026) dan 0.8.1 (2 November 2026), berbanding dengan 0.7. 0.7 menyemak anggota keluli; 0.8 merancang angkatan, mencadangkan sambungan, menyemak asas dan tetulang, serta merangka dinding, lantai dan bumbung kayu dan keluli nipis.
 
 ## Baharu
 
-### Sambungan mitre (0.7.1)
+### Pendirian
 
-- **Dua bentuk-I bertemu pada sudut**, seperti lutut portal atau rabung: pilih kedua-duanya, pilih {{ui:Mitre}} dalam menu {{ui:Lagi}} kumpulan {{ui:Sambung}}, dan kedua-dua hujung dipotong pada satah yang membahagi dua sudut. Plat hujung yang diboltkan bersama dan pengaku badan ialah kotak tanda dalam kotak dialog Mitre baharu, yang medan bernombornya sepadan dengan lukisan sambungan anda yang dibuat semasa anda menaip. Mitre mengikut ahli apabila ia bergerak, dan dibawa ke lukisan, fail NC (potongan senget), IFC dan senarai bahan. Lihat [Sambungan mitre](topic:mitres).
+- **Pelan pendirian dan filem.** Dalam tab {{ui:Erection}}, terangkan kren (di mana ia berdiri, cangkuk tertingginya, rigging yang tiada dalam carta) dan taip baris carta bebannya. DetailCraft mengangkat model satu himpunan pada satu masa, mengikut tertib fasa dan tingkat demi tingkat, dan menyemak setiap angkatan terhadap carta pada jejarinya serta margin yang anda tetapkan. {{ui:Save movie}} menulis satu fail HTML yang dimainkan luar talian dalam mana-mana pelayar, termasuk telefon. Angkatan yang melebihi carta, melepasinya atau terlalu tinggi berada dalam {{ui:Problems}}. Ia ialah pelan daripada nombor anda, bukan pelan angkatan. Lihat [Pelan pendirian dan filem](topic:erection-movie).
 
-### Semakan reka bentuk
+### Sambungan
 
-- **Gabungan beban daripada kod.** Dalam tab {{ui:Analisis}}, blok {{ui:Semakan reka bentuk}} baharu mempunyai {{ui:Kod reka bentuk}}: ASCE 7 + AISC 360 (AS, LRFD) atau EN 1990 + EN 1993-1-1 (Eurocode). Berikan setiap kes beban jenisnya (mati, hidup, beban hidup bumbung baharu, salji, angin, seismik), tekan {{ui:Buat kombinasi}}, dan DetailCraft menulis gabungan kekuatan dan kebolehkhidmatan kod bagi kes anda. Gabungan yang anda taip sendiri kekal. Lihat [Buat gabungan](topic:design-checks#make-the-combinations).
-- **Nilai Annex Negara.** Bagi Eurocode, faktor bermula pada nilai yang disyorkan; {{ui:Nilai Annex Negara}} membolehkan anda menaip nilai negara anda, dan ia disimpan dalam model. Lihat [Buat gabungan](topic:design-checks#make-the-combinations).
-- **Semak ahli.** {{ui:Semak anggota}} menyemak setiap bentuk-I keluli bagi tegangan, mampatan dengan lengkokan, lenturan dengan lengkokan sisi-kilasan, ricih, lenturan dengan daya paksi dan pesongan berbanding {{ui:Had pesongan}} yang anda tetapkan. Jadual menunjukkan nisbah penggunaan setiap ahli, semakan yang mengawal dan gabungannya, dan ahli diwarnakan pada model (biru, hijau, ocre, merah, kelabu untuk tidak disemak). Lihat [Semak ahli](topic:design-checks#check-the-members).
-- **Dalam laporan.** {{ui:Laporan (PDF)}} dan {{ui:Laporan (CSV)}} menambah edisi kod, tetapan, nisbah penggunaan mengikut ahli dan setiap klausa yang digunakan. Lihat [Laporan](topic:design-checks#the-report).
-- **Bantuan sehingga jurutera menyemaknya.** Ia hanya menggunakan daya tertib pertama. Tiub, sudut, saluran, bentuk kimpalan dan bahagian langsing atau kelas 4 dibaca "tidak disemak", dengan sebab; kilasan, sambungan dan konkrit tidak disemak. Lihat [Apa yang tidak disemak](topic:design-checks#what-is-not-checked).
+- **Autopilot sambungan.** Tab {{ui:Autopilot}} melihat setiap sambungan yang tiada sambungan dan mencadangkan satu daripada bentuknya: plat tapak, tab ricih, plat hujung bagi rasuk yang anda tandakan sebagai rasuk momen, penyambung dan plat gusset. Berikan beban seragam atau ricih hujung tunggal, dan bilangan bolt mengikut kekuatan reka bentuk bolt. {{ui:Add them all}} menambah cadangan sebagai satu langkah buat asal. Ia ialah nilai permulaan untuk disemak, bukan reka bentuk sambungan.
+- **Semakan kebolehbinaan.** {{ui:Problems}} untuk bolt yang tidak dapat dicapai oleh sepana, bolt yang terlalu rapat untuk soket, kimpalan fillet di luar had saiznya, dan bahagian berongga yang menakung air. Kebolehcapaian kimpalan baharu: kimpalan fillet satu lilitan yang tidak dapat dicapai oleh mulut obor tukang kimpal disenaraikan bersama bahagian yang menghalangnya dan bahagian kimpalan yang terjejas. Lihat [Semakan kebolehbinaan](topic:constructability).
 
-### USD
+### Asas dan tetulang
 
-- **Eksport model keluli sebagai USD.** {{ui:USD}} dalam kumpulan {{ui:Output}} menulis model sebagai {{ui:Teks (.usda)}}, {{ui:Binari (.usdc)}} atau {{ui:Pakej (.usdz)}} untuk program pemaparan dan pemasangan adegan: setiap himpunan memegang bahagiannya, setiap bahagian ialah keratannya yang dijalankan sepanjang panjangnya dengan potongan hujung dipotong, dan setiap satu membawa tanda bahagian, profil, gred, panjang dan berat. Lubang bolt, bolt, kimpalan dan tapak asas tidak berada dalam jejaring USD. Lihat [Eksport model keluli sebagai USD](topic:usd).
+- **Semakan asas.** Tab {{ui:Foundation}} menyemak tapak asas, tapak asas gabungan dan tikar pada tanah yang anda terangkan: galas, gelincir dan guling daripada beban perkhidmatan; lenturan, ricih, tebukan, perkembangan dan keluli minimum daripada beban terfaktor (ACI 318-19). Tiang berhampiran tepi atau sudut disemak dengan keratan yang dipotong oleh tepi tapak asas. Enapan datang daripada modulus tanah, tikar fleksibel diselesaikan atas spring daripada modulus subgred, dan kumpulan cerucuk serta dinding penahan mempunyai panel sendiri. Beban tiang boleh ditaip atau diambil daripada {{ui:Analysis}}. Lihat [Semakan asas](topic:foundation-checks).
+- **Peta kesesakan tetulang.** Tab {{ui:Congestion}} melukis peta haba bagi setiap tapak asas seperti dilihat dari atas: di mana bar memberi terlalu sedikit ruang untuk konkrit turun, berbanding peraturan jarak bersih dan, jika anda memberinya, agregat terbesar dan kepala penggetar. Lihat [Peta kesesakan tetulang](topic:rebar-congestion).
 
-### Pembantu AI
+### Rangka dan bekalan
 
-- **USD untuk pembantu.** Pembantu anda sendiri, disambungkan melalui CadCraft Studio, boleh mengeksport model sebagai USD (`usd_export`), dan dalam Studio menulisnya ke folder yang anda benarkan. Lihat [Apa yang boleh diminta pembantu](topic:use-with-ai-assistants#what-an-assistant-can-ask-for).
+- **Rangka kayu dan keluli nipis.** Tab {{ui:Framing}} merangka panel dinding, lantai dan bumbung dengan setiap keping, senarai potongan, stok untuk dibeli dan lukisan bengkel mengikut skala. {{ui:Place as members}} meletakkan keping-keping itu dalam model, dan {{ui:PDF sheets}} menyimpan satu helaian bagi setiap panel. Saiz, jarak dan header ialah milik anda: DetailCraft tidak menyemak sama ada ia menanggung beban. Lihat [Panel rangka kayu dan keluli nipis](topic:framing-panels).
+- **Stok pembekal dan masa penghantaran.** Tab {{ui:Supply}} membaca senarai stok pembekal (CSV) dan menunjukkan, bagi setiap bahagian yang dibeli oleh senarai potongan, sama ada terdapat cukup stok dan berapa lama penantian. Kekurangan dan bahagian lewat disenaraikan dalam {{ui:Problems}}. Tiada apa-apa dipesan. Lihat [Stok pembekal dan masa penghantaran](topic:supplier-stock).
 
-## Berubah
+### Analisis dan reka bentuk
 
-- **Reben Keluli** mempunyai butang besar dan kecil: {{ui:Rasuk}} besar bersebelahan {{ui:Tiang}}, {{ui:Tupang}} dan {{ui:Plat}} kecil pada {{ui:Pemodelan}} › {{ui:Ahli}}; {{ui:Plat hujung}} besar pada {{ui:Perincian}} › {{ui:Sambungan}}, dengan {{ui:Penyambung}} dan {{ui:Plat gusset}} berkongsi satu butang pisah; {{ui:Tampal}} besar pada {{ui:Sunting}} › {{ui:Papan keratan}}, dengan {{ui:Tampal di tempat yang sama}} dan {{ui:Pendua}} di sebalik anak panah kumpulan. {{ui:Fabrikasi}} › {{ui:Pertukaran}} mempunyai {{ui:Eksport USD}} bersebelahan IFC. Gaya menu lain kelihatan seperti sebelumnya. Lihat [Menu, kekunci dan tetikus](topic:menus-keys-and-mouse#the-three-styles).
-- [Analisis rangka](topic:frame-analysis) kini merujuk kepada semakan reka bentuk, dan gabungannya boleh dibuat mengikut kod.
+- **Apa yang pecah dahulu?** Dalam tab {{ui:Analysis}}, butang ini mencari gabungan kekuatan yang mengawal, anggota yang paling lemah, sejauh mana beban boleh bertambah sebelum anggota pertama mencapai hadnya, dan plat hujung atau tab ricih yang paling lemah apabila kekuatan ricih bolt-boltnya diketahui. Ia memerlukan gabungan dan kod reka bentuk dahulu. Galas, ricih blok, kimpalan dan prying tidak disemak. Pembantu anda yang bersambung juga boleh bertanya perkara yang sama.
+- **Langsung.** Tandakan {{ui:Live: solve again after each edit}} dan rangka akan diselesaikan semula selepas setiap suntingan.
+- **Konkrit, dan lebih banyak.** Tiang langsing dalam rangka tanpa goyang direka untuk momen terbesarnya (ACI 318-19 6.6.4.5). Tempoh seismik boleh diambil daripada analisis dengan kaedah Rayleigh. Slab yang dibuat daripada plat mendapat keluli yang diperlukan setiap lapisan daripada momennya, dan ricih satu hala. Lihat [Semak anggota konkrit dan buat beban seismik](topic:concrete-and-seismic).
+- **Untuk jurutera menyemak.** Keputusan asas, konkrit dan Apa yang pecah dahulu ialah bantuan sahaja. Beban angin belum dibina.
 
-## Dalam setiap aplikasi
+### Dalam setiap aplikasi
 
-- **Unit.** {{ui:Tetapan}} › {{ui:Umum}} › {{ui:Unit}} mempunyai satu senarai bagi setiap panjang, luas, isi padu, sudut dan cerun, dengan saiz tepat yang diberikan oleh takrifan unit (kaki tinjauan AS ialah unitnya sendiri). Matikan unit yang tidak pernah anda gunakan dan ia keluar daripada senarai unit; bintangkan satu dan kerja baharu bermula dengannya. Fail sentiasa mengekalkan unitnya sendiri. Kotak DetailCraft sendiri belum mengikut senarai: panjangnya masih ditaip dalam milimeter. Lihat [Unit, nilai ditaip dan senarai unit](common:unit-lists).
-- **Susun atur lebih padat dan panel yang kemas sendiri.** {{ui:Tetapan}} › {{ui:Umum}} › {{ui:Ketumpatan reka letak}} › {{ui:Padat}} memuatkan lebih banyak pada skrin (skrin sentuh dan telefon mengekalkan butang besarnya). Setiap panel sisi mempunyai bar tajuk nipis: seret untuk melekapkan atau menerapungkan panel, lepaskan pada bar panel lain untuk berkongsi satu bingkai sebagai tab, pin untuk meluncur ke tepi, atau sembunyikannya dan bawanya kembali dari tepi. Lihat [Susun panel](common:arrange-panels#make-the-layout-denser).
-- **Kotak dialog boleh digerakkan.** Seret kotak dialog mengikut bar tajuknya keluar dari laluan lukisan; ia kembali ke tempat anda tinggalkannya. Klik dua kali bar tajuk untuk memusatkannya semula. Lihat [Alih kotak dialog](common:arrange-panels#move-a-dialog).
-- **Resipi untuk pembantu AI.** Sepuluh permintaan yang telah dilaksanakan untuk pembantu anda sendiri (kemaskan lukisan, plot satu set, semak lukisan, tanya model satu soalan, jumlahkan pengukuran kuantiti (takeoff), cuba varian bahagian…), setiap satu dengan alat yang dipanggilnya dan kebenaran yang diperlukannya, dan setiap satu dimainkan semula oleh ujian kami. Aplikasi tidak mengandungi AI. Lihat [Resipi untuk pembantu AI](common:assistants-recipes).
-- **Bahasa.** **Português (Portugal)** baharu dalam {{ui:Tetapan}} › {{ui:Umum}} › {{ui:Bahasa}}. Ia, **Português (Brasil)**, **Español (México)** dan **Bahasa Indonesia** kini mempunyai setiap perkataan aplikasi, sebagai draf yang belum disemak oleh penutur asli. Topik bantuan dalam bahasa Inggeris.
-- **CadCraft Studio** memberitahu sebab semakan kemas kini gagal (belum ada fail untuk sistem anda, tiada rangkaian, tandatangan tidak sah) dan bukannya sekadar "Selesai", dan berhenti memunculkan semula kad Perkara baharu yang anda tutup sehingga ada keluaran yang lebih baharu.
+- **Bahasa.** Bantuan tersedia dalam 54 bahasa. Bahasa selain Inggeris ialah draf mesin sehingga penutur asli membacanya; sepuluh ialah baharu (Lithuania, Latvia, Bosnia, Marathi, Telugu, Albania, Afrikaans, Filipino, Swahili, Uzbek).
+- **Baris bar alat.** {{ui:Settings}} › {{ui:General}} › {{ui:Toolbar rows}} memilih wrap, 2 baris atau 1 baris. Bar yang sudah muat kekal seperti sedia ada; yang lain boleh digulung ke sisi.
+- **Grid sifat.** Medan asas menggunakan grid kongsi: kategori boleh dilipat dan ketumpatan padat. Pengiraan ditaip seperti 2*450 masih berfungsi.
+- **Peranti input.** Pad sentuh, pen, tetikus 3D, pengawal dan MIDI boleh memacu aplikasi. Lihat [Bergerak dalam 3D](topic:navigate-3d).
+- **Panel Problems.** Amaran bagi semakan baharu di atas muncul dalam panel {{ui:Problems}} yang sama seperti sebelumnya.
+- **Sambungkan AI anda.** Pembantu anda sendiri, disambungkan melalui CadCraft Studio, berfungsi dengan kesemua lapan aplikasi dan hanya melihat apa yang anda benarkan. Sambungan satu klik, penyambung dihoskan dan kunci API anda dalam Studio masih akan datang. Lihat [Gunakan DetailCraft dengan pembantu AI](topic:use-with-ai-assistants).
+
+## Dibetulkan dalam 0.8.1
+
+- **Bahasa dalam Studio.** Studio dan edisi pakej boleh bertukar bahasa semasa larian; sebelum ini hanya Inggeris. Ia belum diuji pada setiap platform: beritahu kami jika bahasa tidak bertukar.
+- **Pilihan tingkap bersilang.** Pemasang 0.8.1 membawa kelakuan pilih-mengikut-tingkap yang sudah betul dalam binaan web 0.8; pemasang lama tidak.
+- **Tablet dalam potret.** Ruang grid yang berlebihan diberikan kepada kanvas, dan susun atur helaian bermula pada 760 px atau kurang.
 
 ## Belum ada dalam versi ini
 
-- **0.7 tidak ditandatangani kod.** Penandatanganan, dan pakej Microsoft Store, dipindahkan ke 0.8 kerana pengesahan sijil belum selesai. Semak SHA-256 di sebelah setiap fail di getcadcraft.com/download. Pada Windows, jika SmartScreen menghentikan pemasang, pilih {{ui:Maklumat lanjut}}, kemudian {{ui:Tetap jalankan}}. Pada Mac, kali pertama, klik kanan CadCraft Studio dan pilih {{ui:Buka}}. CadCraft Studio belum berada dalam kedai aplikasi, dan belum ada binaan iPad atau iPhone.
-- Senarai sudut dan cerun dalam {{ui:Unit}} disimpan, tetapi belum ada kotak yang membacanya.
-- **Semakan reka bentuk belum disemak oleh jurutera.** Ujian kami membandingkannya dengan nilai jadual bercetak dan formula yang dikira dengan tangan, belum lagi dengan contoh kerja panduan reka bentuk. Sehingga disemak, ia hanyalah bantuan: semak ahli yang penting dengan tangan.
-- Semakan reka bentuk menggunakan daya tertib pertama (tiada kesan tertib kedua) dan hanya menyemak bentuk-I. Belum dibina: tiub, sudut, saluran, bentuk kimpalan, bahagian langsing (AISC) atau kelas 4 (Eurocode) dalam lenturan, kilasan, lengkokan ricih bersama lenturan, sambungan, lesu, kebakaran, perincian seismik dan konkrit. Bahagian langsing dalam mampatan membiarkan semakan mampatan dikeluarkan, dan ahli dibaca "lulus, sebahagiannya disemak".
-- Analisis rangka masih tertib pertama dan linear, dan belum dicuba oleh jurutera pada kerja sebenar.
-- Lubang bolt, bolt, kimpalan dan tapak asas tidak ada dalam eksport USD.
+- **Hantar NC ke mesin** belum dikeluarkan.
+- **Beban angin** bagi konkrit belum dibina, dan semakan konkrit serta asas adalah untuk jurutera menyemak.
+- **Penandatanganan kod.** Pemasang Windows dan .dmg macOS belum ditandatangani, jadi Windows mungkin memberi amaran dan macOS meminta klik kanan, kemudian Open.
 
-Yang lain terdapat dalam [Apa yang belum dibina](topic:not-built-yet).
+Perubahan lebih awal terdapat dalam [Perkara baharu dalam 0.7](topic:whats-new-0-7).

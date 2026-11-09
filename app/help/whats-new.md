@@ -1,56 +1,60 @@
 ---
-title: What's new in 0.7
-summary: Design checks of steel I-shapes with load combinations from ASCE 7 or EN 1990 and member checks to AISC 360 or EN 1993-1-1, USD export of the steel model, an assistant tool for USD, a Steel ribbon with large and small buttons, panels that tidy away and dialogs that move.
+title: What's new in 0.8 and 0.8.1
+summary: An erection movie from a crane's load chart, a connection autopilot, a rebar congestion map, foundation checks, timber and light-gauge framing panels, constructability and weld access checks, supplier stock, what breaks first, a live re-solve, more concrete checks and the 0.8.1 fixes.
 section: start
 order: 5
-keywords: whats new, what's new, release notes, changelog, changes, 0.7, version, new features, design checks, steel design, utilisation, utilization, load combinations, ASCE 7, EN 1990, AISC 360, EN 1993-1-1, Eurocode, National Annex, roof live, deflection limit, usd, usda, usdc, usdz, openusd, assistant, mcp, steel ribbon, ribbon, split button, units, compact, panels, dialogs, portuguese
+keywords: whats new, what's new, release notes, changelog, changes, 0.8, 0.8.1, version, new features, erection, crane, load chart, movie, autopilot, connections, rebar, congestion, foundation, footing, mat, settlement, framing, timber, light-gauge, cut list, constructability, weld access, supplier, stock, lead time, what breaks first, live, concrete, seismic, slab, languages, assistant
 ---
 
-This is what changed in DetailCraft 0.7, compared with 0.6. The frame analysis of 0.6 now has a second step: checking the steel members to a design code.
+This is what changed in DetailCraft 0.8 (1 November 2026) and 0.8.1 (2 November 2026), compared with 0.7. 0.7 checked steel members; 0.8 plans the lifts, proposes the connections, checks the foundations and the rebar, and frames timber and light-gauge walls, floors and roofs.
 
 ## New
 
-### Mitre joints (0.7.1)
+### Erection
 
-- **Two I-shapes meeting at an angle**, such as a portal knee or a ridge: select both, choose {{ui:Mitre}} in the {{ui:Connect}} group's {{ui:More}} menu, and both ends are cut on the plane that halves the angle. End plates bolted together and web stiffeners are tick boxes in the new Mitre dialog, whose numbered fields match a drawing of your joint made as you type. The mitre follows the members when they move, and carries through to drawings, NC files (skew cuts), IFC and the bill of materials. See [Mitre joints](topic:mitres).
+- **Erection plan and movie.** In the {{ui:Erection}} tab, describe a crane (where it stands, its highest hook, the rigging that is not in the chart) and type the rows of its load chart. DetailCraft lifts the model one assembly at a time, in phase order and tier by tier, and checks each lift against the chart at its radius and against the margin you set. {{ui:Save movie}} writes one HTML file that plays offline in any browser, on a phone too. Lifts that are over the chart, past it or too high are in {{ui:Problems}}. It is a plan from your numbers, not a lift plan. See [Erection plan and movie](topic:erection-movie).
 
-### Design checks
+### Connections
 
-- **Load combinations from the code.** In the {{ui:Analysis}} tab, the new {{ui:Design checks}} block has a {{ui:Design code}}: ASCE 7 + AISC 360 (US, LRFD) or EN 1990 + EN 1993-1-1 (Eurocode). Give each load case its kind (dead, live, the new roof live, snow, wind, seismic), press {{ui:Make combinations}}, and DetailCraft writes the code's strength and serviceability combinations of your cases. The combinations you typed yourself stay. See [Make the combinations](topic:design-checks#make-the-combinations).
-- **National Annex values.** For the Eurocode the factors start at the recommended values; {{ui:National Annex values}} lets you type your country's, and they are saved in the model. See [Make the combinations](topic:design-checks#make-the-combinations).
-- **Check members.** {{ui:Check members}} checks every steel I-shape for tension, compression with buckling, bending with lateral-torsional buckling, shear, bending with axial force and deflection against the {{ui:Deflection limit}} you set. The table shows each member's utilisation, the check that governs and its combination, and the members are coloured on the model (blue, green, ochre, red, grey for not checked). See [Check the members](topic:design-checks#check-the-members).
-- **In the report.** {{ui:Report (PDF)}} and {{ui:Report (CSV)}} add the code editions, the settings, utilisation by member and every clause used. See [The report](topic:design-checks#the-report).
-- **An aid until an engineer has reviewed it.** It uses first-order forces only. Tubes, angles, channels, welded shapes and slender or class 4 parts read "not checked", with the reason; torsion, connections and concrete are not checked. See [What is not checked](topic:design-checks#what-is-not-checked).
+- **Connection autopilot.** The {{ui:Autopilot}} tab looks at every joint that has no connection and proposes one from the shapes: base plates, shear tabs, end plates for the beams you mark as moment beams, splices and gussets. Give a uniform load or one end shear and the bolt count follows the bolt's design strength. {{ui:Add them all}} adds the proposals as one undo step. They are starting values to review, not a connection design.
+- **Constructability checks.** {{ui:Problems}} for a bolt a wrench cannot reach, bolts too close for the socket, fillet welds outside their size limits and hollow sections that hold water. Weld access is new: an all-round fillet weld that a welder's torch cannot reach is listed with the part in the way and the share of the weld affected. See [Constructability checks](topic:constructability).
 
-### USD
+### Foundations and rebar
 
-- **Export the steel model as USD.** {{ui:USD}} in the {{ui:Output}} group writes the model as {{ui:Text (.usda)}}, {{ui:Binary (.usdc)}} or {{ui:Package (.usdz)}} for rendering programs and scene assembly: each assembly holds its parts, each part is its section run along its length with copes cut, and each carries its part mark, profile, grade, length and weight. Bolt holes, bolts, welds and footings are not in the USD meshes. See [Export the steel model as USD](topic:usd).
+- **Foundation checks.** The {{ui:Foundation}} tab checks footings, combined footings and mats on the soil you describe: bearing, sliding and overturning from service loads; flexure, shear, punching, development and minimum steel from factored loads (ACI 318-19). A column near an edge or a corner is checked with the section cut off by the footing's edge. Settlement comes from the soil's modulus, a flexible mat is solved on springs from a subgrade modulus, and pile groups and retaining walls have panels of their own. Column loads can be typed or taken from the {{ui:Analysis}}. See [Foundation checks](topic:foundation-checks).
+- **Rebar congestion map.** The {{ui:Congestion}} tab draws a heat map of each footing as seen from above: where the bars leave too little room for concrete to get down, against the clear-spacing rule and, if you give them, the largest aggregate and the vibrator head. See [Rebar congestion map](topic:rebar-congestion).
 
-### AI assistants
+### Framing and supply
 
-- **USD for assistants.** Your own assistant, connected through CadCraft Studio, can export the model as USD (`usd_export`), and in Studio write it to a folder you allowed. See [What an assistant can ask for](topic:use-with-ai-assistants#what-an-assistant-can-ask-for).
+- **Timber and light-gauge framing.** The {{ui:Framing}} tab frames wall, floor and roof panels with every piece, a cut list, the stock to buy and a shop drawing to scale. {{ui:Place as members}} puts the pieces in the model, and {{ui:PDF sheets}} saves one sheet for each panel. The sizes, spacing and headers are yours: DetailCraft does not check that they carry the load. See [Timber and light-gauge framing panels](topic:framing-panels).
+- **Supplier stock and lead times.** The {{ui:Supply}} tab reads a supplier's stock list (CSV) and shows, for each section the cut list buys, whether there is enough in stock and how long the wait is. Shorts and late sections are in {{ui:Problems}}. Nothing is ordered. See [Supplier stock and lead times](topic:supplier-stock).
 
-## Changed
+### Analysis and design
 
-- **The Steel ribbon** has large and small buttons: a large {{ui:Beam}} beside small {{ui:Column}}, {{ui:Brace}} and {{ui:Plate}} on {{ui:Modeling}} › {{ui:Members}}; a large {{ui:End plates}} on {{ui:Detailing}} › {{ui:Connections}}, with {{ui:Splice}} and {{ui:Gusset}} sharing one split button; a large {{ui:Paste}} on {{ui:Edit}} › {{ui:Clipboard}}, with {{ui:Paste in place}} and {{ui:Duplicate}} behind the group's arrow. {{ui:Fabrication}} › {{ui:Exchange}} has {{ui:Export USD}} beside IFC. The other menu styles look as they did. See [Menus, keys and mouse](topic:menus-keys-and-mouse#the-three-styles).
-- [Analyse the frame](topic:frame-analysis) now points to the design checks, and its combinations can be made by the code.
+- **What breaks first?** In the {{ui:Analysis}} tab, the button finds the strength combination that governs, the weakest member, how far the loads can grow before the first member reaches its limit, and the weakest end plate or shear tab where its bolts' shear strength is known. It needs the combinations and a design code first. Bearing, block shear, welds and prying are not checked. Your connected assistant can ask the same.
+- **Live.** Tick {{ui:Live: solve again after each edit}} and the frame is solved again after each edit.
+- **Concrete, more.** A slender column in a non-sway frame is designed for its magnified moment (ACI 318-19 6.6.4.5). The seismic period can be taken from the analysis by Rayleigh's method. A slab made of plates gets the steel each layer needs from its moments, and the one-way shear. See [Check concrete members and make seismic loads](topic:concrete-and-seismic).
+- **For an engineer to check.** The foundation, concrete and What breaks first results are aids. Wind loads are not built.
 
-## In every app
+### In every app
 
-- **Units.** {{ui:Settings}} › {{ui:General}} › {{ui:Units}} has one list each for length, area, volume, angle and slope, with the exact sizes the units' definitions give (the US survey foot is its own unit). Switch off the units you never use and they leave the unit lists; star one and new work starts in it. A file always keeps its own unit. DetailCraft's own boxes don't follow the lists yet: its lengths are still typed in millimetres. See [Units, typed values and the unit lists](common:unit-lists).
-- **A denser layout and panels that tidy away.** {{ui:Settings}} › {{ui:General}} › {{ui:Layout density}} › {{ui:Compact}} fits more on the screen (touch screens and phones keep their large buttons). Each side panel has a slim title bar: drag it to dock or float the panel, drop it on another panel's bar to share one frame as tabs, pin it to slide away to the edge, or hide it and bring it back from the edge. See [Arrange the panels](common:arrange-panels#make-the-layout-denser).
-- **Dialogs move.** Drag a dialog by its title bar out of the way of the drawing; it comes back where you left it. Double-click the title bar to centre it again. See [Move a dialog](common:arrange-panels#move-a-dialog).
-- **Recipes for AI assistants.** Ten worked requests for your own assistant (tidy a drawing, plot a set, check drawings, ask a model questions, total a takeoff, try a part variant…), each with the tools it calls and the permissions it needs, and each replayed by our tests. The apps contain no AI. See [Recipes for AI assistants](common:assistants-recipes).
-- **Languages.** **Português (Portugal)** is new in {{ui:Settings}} › {{ui:General}} › {{ui:Language}}. It, **Português (Brasil)**, **Español (México)** and **Bahasa Indonesia** now have every word of the apps, as drafts not yet reviewed by a native speaker. Help topics are in English.
-- **CadCraft Studio** says why an update check failed (no file for your system yet, no network, a bad signature) instead of just "Done", and stops bringing back a What's new card you closed until there is a newer release.
+- **Languages.** The help is in 54 languages. Those beyond English are machine drafts until a native speaker reads them; ten are new (Lithuanian, Latvian, Bosnian, Marathi, Telugu, Albanian, Afrikaans, Filipino, Swahili, Uzbek).
+- **Toolbar rows.** {{ui:Settings}} › {{ui:General}} › {{ui:Toolbar rows}} chooses wrap, 2 rows or 1 row. A bar that already fits stays as it is; the rest scroll sideways.
+- **Property grid.** The footing's fields use the shared grid: collapsible categories and a compact density. Typed arithmetic such as 2*450 still works.
+- **Input devices.** Trackpad, pen, 3D mouse, controller and MIDI can drive the apps. See [Navigate in 3D](topic:navigate-3d).
+- **Problems panel.** The warnings of the new checks above appear in the same {{ui:Problems}} panel as before.
+- **Connect your AI.** Your own assistant, connected through CadCraft Studio, works with all eight apps and sees only what you allow. One-click connect, the hosted connector and your own API key in Studio are still to come. See [Use DetailCraft with an AI assistant](topic:use-with-ai-assistants).
+
+## Fixed in 0.8.1
+
+- **Languages in Studio.** Studio and the packed editions can switch language at run time; before, they were English only. It is not yet tested on every platform: tell us if the language does not change.
+- **Crossing-window select.** The 0.8.1 installers carry the select-by-window behavior already right in the 0.8 web build; an older installer did not.
+- **Tablets in portrait.** Spare grid height goes to the canvas, and the sheet layout starts at 760 px or less.
 
 ## Not in this version yet
 
-- **0.7 is not code-signed.** Signing, and the Microsoft Store package, moved to 0.8 because the certificate validation has not come through yet. Check the SHA-256 beside each file on getcadcraft.com/download. On Windows, if SmartScreen stops the installer, choose {{ui:More info}}, then {{ui:Run anyway}}. On a Mac, the first time, right-click CadCraft Studio and choose {{ui:Open}}. CadCraft Studio is not in an app store yet, and there is no iPad or iPhone build yet.
-- The angle and slope lists in {{ui:Units}} are saved, but no box reads them yet.
-- **The design checks have not been reviewed by an engineer yet.** Our tests compare them with printed table values and formulas worked by hand, not yet with a design guide's worked examples. Until a review, they are an aid: check members that matter by hand.
-- The design checks use first-order forces (no second-order effects) and check I-shapes only. Not built: tubes, angles, channels, welded shapes, slender (AISC) or class 4 (Eurocode) parts in bending, torsion, shear buckling together with bending, connections, fatigue, fire, seismic detailing and concrete. A slender part in compression leaves the compression checks out, and the member reads "passes, partly checked".
-- Frame analysis is still first-order and linear, and it hasn't been tried by an engineer on a real job yet.
-- Bolt holes, bolts, welds and footings are not in the USD export.
+- **Send NC to a machine** is not released.
+- **Wind loads** for concrete are not built, and the concrete and foundation checks are for an engineer to review.
+- **Code signing.** The Windows installers and the macOS .dmg are not signed, so Windows may warn and macOS asks for a right-click, then Open.
 
-Everything else is in [What is not built yet](topic:not-built-yet).
+Earlier changes are in [What's new in 0.7](topic:whats-new-0-7).

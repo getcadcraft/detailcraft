@@ -8,7 +8,8 @@
  * from and how each is drawn:
  *   AISC — "AISC Shapes Database v16.0": W, S, C, equal-leg L, HSS (rectangular, square, round) and Pipe, US units.
  *   EN   — EN 10365:2017: IPE, HEA, HEB, UPN, mm.
- * Unequal-leg angles stay out of this catalog: members, holes, IFC and NC files here draw an angle's two legs alike.
+ *   UK   — the Blue Book: UB, UC, PFC, EA, UEA, SHS, RHS, CHS (hot finished), CFSHS, CFRHS, CFCHS (cold formed), mm.
+ * Angles carry b (the leg along u) and, when the legs differ, h (the leg along v): members, holes, IFC and NC files use both.
  * The 45 sizes DetailCraft listed before the shared table (LEGACY below) resolve exactly as they did. A model saved before
  * a size joined the catalog may carry a custom profile of that name: it still opens, and the model's own profile wins.
  * Plates (PL<t>x<w>) are parametric: any thickness and width. Users can add custom parametric profiles.
@@ -18,13 +19,14 @@
  */
 
 import { t } from './i18n.js';
-import { sectionRows, outline, exactArea, bbox, shoelace, loopLength, STEEL_DENSITY } from './shapes/sections.js';
+import { sectionRows, findSection, outline, exactArea, bbox, shoelace, loopLength, STEEL_DENSITY } from './shapes/sections.js';
 
 export { outline, exactArea, bbox, shoelace, loopLength, STEEL_DENSITY };
 
 export const SOURCES = {
   aisc: 'AISC Shapes Database v16.0',   // i18n-ignore (a published table's title)
   en: 'EN 10365:2017',
+  uk: 'Steel for Life Blue Book (UK)',   // i18n-ignore (a published table's title)
   get param() { return t('prof.source.param'); },
   get custom() { return t('prof.source.custom'); },
 };
@@ -39,11 +41,14 @@ export const isLegacyName = (name) => LEGACY.has(String(name).trim().toUpperCase
 
 function build() {
   const out = new Map();
-  for (const p of sectionRows()) if (!(p.kind === 'L' && p.h !== undefined)) out.set(p.name.toUpperCase(), p);
+  for (const p of sectionRows()) out.set(p.name.toUpperCase(), p);
   return out;
 }
 
 export const CATALOG = build();
+
+const NAMES_BY_FAMILY = new Map();   // the picker is rebuilt on every selection: 2,311 sizes, so do not walk them per family each time
+for (const p of CATALOG.values()) { if (!NAMES_BY_FAMILY.has(p.family)) NAMES_BY_FAMILY.set(p.family, []); NAMES_BY_FAMILY.get(p.family).push(p.name); }
 
 /** Catalog groups for pickers: [{label, source, names[]}] in a sensible order. */
 export function catalogGroups(custom = []) {
@@ -51,8 +56,9 @@ export function catalogGroups(custom = []) {
     [t('prof.group.w'), 'W'], [t('prof.group.c'), 'C'], [t('prof.group.l'), 'L'], ['HSS', 'HSS'],
     ['IPE', 'IPE'], ['HEA', 'HEA'], ['HEB', 'HEB'],
     [t('prof.group.s'), 'S'], [t('prof.group.pipe'), 'Pipe'], ['UPN', 'UPN'],
+    ...['UB', 'UC', 'PFC', 'EA', 'UEA', 'SHS', 'RHS', 'CHS', 'CFSHS', 'CFRHS', 'CFCHS'].map((f) => [f, f]),
   ].map(([label, fam]) => {
-    const names = [...CATALOG.values()].filter((p) => p.family === fam).map((p) => p.name);
+    const names = NAMES_BY_FAMILY.get(fam);
     const src = CATALOG.get(names[0].toUpperCase()).source;
     return { label, source: SOURCES[src], names };
   });
@@ -104,6 +110,17 @@ export function cleanCustom(c, { saved = false } = {}) {
   return { ok: true, profile: p };
 }
 
+/** My profiles (kept in the browser for every new model): an untrusted stored list -> the valid, distinct entries, at most 200. */
+export function cleanLibrary(raw) {
+  const out = [];
+  for (const c of Array.isArray(raw) ? raw : []) {
+    const r = cleanCustom(c);
+    if (r.ok && !out.some((x) => x.name.toUpperCase() === r.profile.name.toUpperCase())) out.push(r.profile);
+    if (out.length >= 200) break;
+  }
+  return out;
+}
+
 /** Resolves a profile name against the catalog, plates and the model's custom profiles. Null if unknown. */
 export function getProfile(name, custom = []) {
   if (typeof name !== 'string') return null;
@@ -122,7 +139,8 @@ export function getProfile(name, custom = []) {
     const k = c.kind === 'FLAT' ? { ...c, kind: 'PL' } : c;
     return withDerived(k);
   }
-  return null;
+  const alias = findSection(name);   // the way a UK size is written on drawings: "305x165x40 UB", "L100x100x10"
+  return alias ? withDerived(CATALOG.get(alias.name.toUpperCase())) : null;
 }
 
 const derived = new WeakMap();
@@ -168,7 +186,7 @@ export function describe(p) {
   const mm = (v) => Number(v.toFixed(1)) + ' mm';
   if (p.kind === 'I' || p.kind === 'C') rows.push([L('depth'), mm(p.d)], [L('flange-width'), mm(p.bf)], [L('web'), mm(p.tw)], [L('flange'), mm(p.tf)]);
   if (p.kind === 'I') rows.push([L('fillet'), mm(p.r) + (p.source === 'aisc' ? ' (kdes − tf)' : '')]);   // i18n-ignore (symbols)
-  if (p.kind === 'L') rows.push([L('legs'), mm(p.b) + ' × ' + mm(p.b)], [L('thickness'), mm(p.t)]);
+  if (p.kind === 'L') rows.push([L('legs'), mm(p.h ?? p.b) + ' × ' + mm(p.b)], [L('thickness'), mm(p.t)]);
   if (p.kind === 'RHS') rows.push([L('size'), mm(p.h) + ' × ' + mm(p.b)], [L('wall'), mm(p.t)]);
   if (p.kind === 'CHS') rows.push([L('diameter'), mm(p.D)], [L('wall'), mm(p.t)]);
   if (p.kind === 'PL') rows.push([L('thickness'), mm(p.t)], [L('width'), mm(p.b)]);

@@ -1,55 +1,59 @@
 ---
-title: Šta je novo u 0.7
-summary: Provere projekta čeličnih I-profila sa kombinacijama opterećenja po ASCE 7 ili EN 1990 i provere elemenata po AISC 360 ili EN 1993-1-1, USD izvoz čeličnog modela, alatka asistenta za USD, Čelična traka sa velikim i malim dugmadima, paneli koji se sklanjaju i dijalozi koji se pomeraju.
-keywords: šta je novo, beleške o izdanju, izmene, promene, 0.7, verzija, nove funkcije, provere projekta, čelični proračun, iskorišćenost, kombinacije opterećenja, ASCE 7, EN 1990, AISC 360, EN 1993-1-1, Evrokod, nacionalni aneks, krovno korisno opterećenje, granica progiba, usd, usda, usdc, usdz, openusd, asistent, mcp, čelična traka, traka, podeljeno dugme, jedinice, zbijeno, paneli, dijalozi, portugalski
-from: 17d1e0bb
+title: Novosti u verzijama 0.8 i 0.8.1
+summary: Film montaže iz tablice nosivosti dizalice, automatski pilot veza, mapa zgusnutosti armature, provere temelja, paneli drvenog i lakog okvira, provere izvodljivosti i pristupa zavarivanju, zalihe dobavljača, šta pukne prvo, uživo ponovno rešavanje, više provera betona, ispravke iz 0.8.1.
+keywords: novosti, šta je novo, beleške o izdanju, izmene, 0.8, 0.8.1, verzija, nove funkcije, montaža, dizalica, tablica nosivosti, film, autopilot, veze, armatura, zgusnutost, temelj, mreža, sleganje, okvir, drvo, laki čelik, spisak za sečenje, izvodljivost, pristup zavarivanju, dobavljač, zaliha, rok isporuke, šta pukne prvo, uživo, beton, seizmički, ploča, jezici, asistent
+from: 6e33e052
 ---
 
-Ovo je šta se promenilo u DetailCraft 0.7 u odnosu na 0.6. Analiza okvira iz 0.6 sada ima drugi korak: proveru čeličnih elemenata prema projektnom propisu.
+Ovo je šta se promenilo u DetailCraft 0.8 (1. novembar 2026) i 0.8.1 (2. novembar 2026), u poređenju sa 0.7. Verzija 0.7 je proveravala čelične štapove; verzija 0.8 planira dizanja, predlaže veze, proverava temelje i armaturu, i okvirava drvene i lake zidove, podove i krovove.
 
 ## Novo
 
-### Gerovanje spojeva (0.7.1)
+### Montaža
 
-- **Dva I-profila koji se sastaju pod uglom**, kao kolenica portala ili sleme: izaberite oba, izaberite {{ui:Gerovanje}} u meniju {{ui:Više}} grupe {{ui:Poveži}}, i oba kraja se seku po ravni koja polovi ugao. Čeoni limovi zavrnuti jedan za drugi i rebra za ukrućenje su polja za štikliranje u novom dijalogu Gerovanje, čiji numerisani nazivi polja se poklapaju sa crtežom vašeg spoja koji se pravi dok kucate. Gerovanje prati elemente kada se oni pomere, i prenosi se na crteže, NC datoteke (kose preseke), IFC i spisak materijala. Pogledajte [Gerovanje spojeva](topic:mitres).
+- **Plan montaže i film.** U kartici {{ui:Montaža}} opišite dizalicu (gde stoji, njen najviši kuka, oprema koja nije u tablici) i unesite redove njene tablice nosivosti. DetailCraft podiže model jedan sklop po sklop, po redosledu faza i sloj po sloj, i proverava svako dizanje u odnosu na tablicu na njegovom radijusu i u odnosu na marginu koju ste zadali. {{ui:Sačuvaj film}} upisuje jednu HTML datoteku koja se reprodukuje van mreže u bilo kom pregledaču, pa i na telefonu. Dizanja koja premašuju tablicu, prelaze je ili su previsoka nalaze se u {{ui:Problemi}}. To je plan iz vaših brojeva, a ne plan dizanja. Pogledajte [Plan montaže i film](topic:erection-movie).
 
-### Proračunske provere
+### Veze
 
-- **Kombinacije opterećenja iz propisa.** Na kartici {{ui:Analiza}} novi blok {{ui:Proračunske provere}} ima {{ui:Projektni propis}}: ASCE 7 + AISC 360 (SAD, LRFD) ili EN 1990 + EN 1993-1-1 (Evrokod). Dajte svakom slučaju opterećenja njegovu vrstu (stalno, korisno, novo krovno korisno, sneg, vetar, seizmičko), pritisnite {{ui:Napravi kombinacije}}, i DetailCraft upisuje kombinacije propisa za nosivost i upotrebljivost vaših slučajeva. Kombinacije koje ste sami upisali ostaju. Pogledajte [Napravi kombinacije](topic:design-checks#make-the-combinations).
-- **Vrednosti nacionalnog aneksa.** Za Evrokod faktori počinju od preporučenih vrednosti; {{ui:Vrednosti nacionalnog aneksa}} vam omogućava da upišete vrednosti vaše zemlje, a one se čuvaju u modelu. Pogledajte [Napravi kombinacije](topic:design-checks#make-the-combinations).
-- **Proveri elemente.** {{ui:Proveri elemente}} proverava svaki čelični I-profil na zatezanje, pritisak sa izvijanjem, savijanje sa bočnim izvijanjem i torzijom, smicanje, savijanje sa aksijalnom silom i progib prema {{ui:Granica progiba}} koju postavite. Tabela pokazuje iskorišćenost svakog elementa, dominantnu proveru i njenu kombinaciju, a elementi su obojeni na modelu (plavo, zeleno, oker, crveno, sivo za neproveren). Pogledajte [Proveri elemente](topic:design-checks#check-the-members).
-- **U izveštaju.** {{ui:Izveštaj (PDF)}} i {{ui:Izveštaj (CSV)}} dodaju izdanja propisa, podešavanja, iskorišćenost po elementu i svaku korišćenu klauzulu. Pogledajte [Izveštaj](topic:design-checks#the-report).
-- **Pomoćno sredstvo dok inženjer ne pregleda.** Koristi samo sile prvog reda. Cevi, uglovnici, kanali, zavareni profili i vitki ili delovi klase 4 se označavaju kao „nije proveren”, uz razlog; torzija, veze i beton se ne proveravaju. Pogledajte [Šta nije proveren](topic:design-checks#what-is-not-checked).
+- **Automatski pilot veza.** Kartica {{ui:Automatski pilot}} pregleda svaki spoj bez veze i predlaže vezu prema oblicima: bazne limove, smičuće limove, čeone limove za grede koje označite kao momentne grede, nastavke i čvorne limove. Zadajte ravnomerno opterećenje ili jednu krajnju silu smicanja, a broj zavrtnja prati projektnu čvrstoću zavrtnja. {{ui:Dodaj sve}} dodaje predloge kao jedan korak opozivanja. To su početne vrednosti za pregled, a ne projekat veze.
+- **Provere izvodljivosti.** {{ui:Problemi}} za zavrtanj do kojeg ključ ne može da dođe, zavrtnje previše blizu za nasadni ključ, ugaone zavare van njihovih granica veličine i šuplje profile koji zadržavaju vodu. Pristup za zavarivanje je nov: ugaoni zavar po celom obimu do kojeg baklja zavarivača ne može da dođe prikazan je sa delom koji smeta i udelom zavara koji je pogođen. Pogledajte [Provere izvodljivosti](topic:constructability).
 
-### USD
+### Temelji i armatura
 
-- **Izvoz čeličnog modela kao USD.** {{ui:USD}} u grupi {{ui:Izlaz}} upisuje model kao {{ui:Tekst (.usda)}}, {{ui:Binarni (.usdc)}} ili {{ui:Paket (.usdz)}} za programe za renderovanje i sastavljanje scene: svaki sklop sadrži svoje delove, svaki deo je njegov presek duž dužine sa izrezima, a svaki nosi oznaku dela, profil, klasu čelika, dužinu i težinu. Rupe za zavrtnje, zavrtnji, zavari i temelji nisu u USD mrežama. Pogledajte [Izvoz čeličnog modela kao USD](topic:usd).
+- **Provere temelja.** Kartica {{ui:Temelj}} proverava temelje, kombinovane temelje i ploče na tlu koje opišete: nosivost, klizanje i prevrtanje pod radnim opterećenjima; savijanje, smicanje, proboj, razvijanje i minimalni čelik iz faktorisanih opterećenja (ACI 318-19). Stub blizu ivice ili ugla proverava se sa presekom odsečenim ivicom temelja. Sleganje dolazi iz modula tla, fleksibilna ploča se rešava na oprugama iz modula podloge, a grupe pilota i potporni zidovi imaju sopstvene panele. Opterećenja stubova mogu se uneti ili preuzeti iz {{ui:Analiza}}. Pogledajte [Provere temelja](topic:foundation-checks).
+- **Mapa zgusnutosti armature.** Kartica {{ui:Zgusnutost}} crta toplotnu mapu svakog temelja kako se vidi odozgo: gde šipke ostavljaju premalo prostora da beton dođe do dna, prema pravilu čistog razmaka i, ako ih zadate, najvećem agregatu i glavi vibratora. Pogledajte [Mapa zgusnutosti armature](topic:rebar-congestion).
 
-### AI asistenti
+### Okvir i snabdevanje
 
-- **USD za asistente.** Vaš sopstveni asistent, povezan preko CadCraft Studio, može da izveze model kao USD (`usd_export`), a u Studio ga upisuje u fasciklu koju ste dozvolili. Pogledajte [Šta asistent može da traži](topic:use-with-ai-assistants#what-an-assistant-can-ask-for).
+- **Drveni i laki okvir.** Kartica {{ui:Okvir}} okvirava zidne, podne i krovne panele sa svakim komadom, spiskom za sečenje, građom za kupovinu i radioničkim crtežom u razmeri. {{ui:Postavi kao štapove}} stavlja komade u model, a {{ui:PDF listovi}} čuva jedan list za svaki panel. Dimenzije, razmak i nadvratnici su vaši: DetailCraft ne proverava da li nose opterećenje. Pogledajte [Paneli drvenog i lakog okvira](topic:framing-panels).
+- **Zalihe dobavljača i rokovi.** Kartica {{ui:Snabdevanje}} čita spisak zaliha dobavljača (CSV) i za svaki presek koji spisak za sečenje kupuje pokazuje da li ima dovoljno na zalihi i koliko traje čekanje. Manjkovi i kasni preseci nalaze se u {{ui:Problemi}}. Ništa se ne naručuje. Pogledajte [Zalihe dobavljača i rokovi](topic:supplier-stock).
 
-## Promenjeno
+### Analiza i projektovanje
 
-- **Čelična traka** ima velika i mala dugmad: veliko {{ui:Greda}} pored malih {{ui:Stub}}, {{ui:Dijagonala}} i {{ui:Lim}} na {{ui:Modelovanje}} › {{ui:Elementi}}; veliko {{ui:Čeoni limovi}} na {{ui:Detaljisanje}} › {{ui:Veze}}, sa {{ui:Nastavak}} i {{ui:Čvorni lim}} u jednom podeljenom dugmetu; veliko {{ui:Nalepi}} na {{ui:Uredi}} › {{ui:Ostava}}, sa {{ui:Nalepi na mestu}} i {{ui:Dupliraj}} iza strelice grupe. {{ui:Izrada}} › {{ui:Razmena}} ima {{ui:Izvezi USD}} pored IFC. Drugi stilovi menija izgledaju kao ranije. Pogledajte [Meniji, tasteri i miš](topic:menus-keys-and-mouse#the-three-styles).
-- [Analiza okvira](topic:frame-analysis) sada upućuje na proveru projekta, a njene kombinacije mogu da se naprave prema propisu.
+- **Šta pukne prvo?** U kartici {{ui:Analiza}} dugme pronalazi merodavnu kombinaciju opterećenja, najslabiji štap, koliko opterećenja mogu da rastu pre nego što prvi štap dostigne svoju granicu, i najslabiji čeoni lim ili smičući lim, tamo gde je poznata čvrstoća smicanja njegovih zavrtnja. Potrebne su prvo kombinacije i projektni standard. Pritisak u ležištu, smicanje bloka, zavari i dejstvo poluge nisu provereni. Vaš povezani asistent može da pita isto.
+- **Uživo.** Označite {{ui:Uživo: ponovo rešavaj posle svake izmene}} i okvir se ponovo rešava posle svake izmene.
+- **Beton i još.** Vitak stub u okviru bez pomeranja projektuje se za svoj uvećani moment (ACI 318-19 6.6.4.5). Seizmički period može da se uzme iz analize Rejlijevom metodom. Ploča od limova dobija čelik koji svaki sloj treba iz svojih momenata, kao i jednosmerno smicanje. Pogledajte [Provere betonskih elemenata i seizmička opterećenja](topic:concrete-and-seismic).
+- **Za inženjera na proveru.** Rezultati temelja, betona i „Šta pukne prvo?” su pomoćna sredstva. Opterećenja vetrom nisu izrađena.
 
-## U svim aplikacijama
+### U svakoj aplikaciji
 
-- **Jedinice.** {{ui:Podešavanja}} › {{ui:Opšte}} › {{ui:Jedinice}} ima po jednu listu za dužinu, površinu, zapreminu, ugao i nagib, sa tačnim veličinama koje daju definicije jedinica (američka anketna stopa je sopstvena jedinica). Isključite jedinice koje nikada ne koristite i one napuštaju liste; označite jednu zvezdicom i novi rad počinje u njoj. Datoteka uvek zadržava sopstvenu jedinicu. Polja DetailCraft-a još ne prate liste: njegove dužine se i dalje unose u milimetrima. Pogledajte [Jedinice, uneseni brojevi i liste jedinica](common:unit-lists).
-- **Gušći raspored i paneli koji se sklanjaju.** {{ui:Podešavanja}} › {{ui:Opšte}} › {{ui:Gustina rasporeda}} › {{ui:Zbijeno}} stane više na ekran (ekrani osetljivi na dodir i telefoni zadržavaju velika dugmad). Svaki bočni panel ima tanku naslovnu traku: prevucite je da pričvrstite ili otkačite panel, ispustite je na naslovnu traku drugog panela da delite jedan okvir kao kartice, zakačite da panel skliže do ivice, ili ga sakrijte i vratite sa ivice. Pogledajte [Rasporedite panele](common:arrange-panels#make-the-layout-denser).
-- **Dijalozi se pomeraju.** Prevucite dijalog za naslovnu traku van puta crteža; vraća se tamo gde ste ga ostavili. Dvostruki klik na naslovnu traku ga ponovo centrira. Pogledajte [Pomerite dijalog](common:arrange-panels#move-a-dialog).
-- **Recepti za AI asistente.** Deset gotovih zahteva za vašeg asistenta (srediti crtež, iscrtati skup, proveriti crteže, postaviti pitanja o modelu, zbrojiti predmer, isprobati varijantu dela…), svaki sa alatima koje poziva i dozvolama koje mu trebaju, i svaki ponovljen našim testovima. Aplikacije ne sadrže AI. Pogledajte [Recepti za AI asistente](common:assistants-recipes).
-- **Jezici.** **Português (Portugal)** je nov u {{ui:Podešavanja}} › {{ui:Opšte}} › {{ui:Jezik}}. Ona, **Português (Brasil)**, **Español (México)** i **Bahasa Indonesia** sada imaju svaku reč aplikacija, kao nacrte koje izvorni govornik još nije pregledao. Teme pomoći su na engleskom.
-- **CadCraft Studio** kaže zašto provera ažuriranja nije uspela (još nema datoteke za vaš sistem, nema mreže, loš potpis), umesto samo „Gotovo”, i prestaje da vraća karticu „Šta je novo” koju ste zatvorili, dok ne bude novijeg izdanja.
+- **Jezici.** Pomoć je na 54 jezika. Svi osim engleskog su mašinski prevodi dok ih ne pročita izvorni govornik; deset je novo (litvanski, letonski, bosanski, marati, telugu, albanski, afrikaans, filipinski, svahili, uzbečki).
+- **Redovi alatki.** {{ui:Podešavanja}} › {{ui:Opšte}} › {{ui:Redovi alatki}} bira prelom, 2 reda ili 1 red. Traka koja već staje ostaje kakva jeste; ostale se pomeraju bočno.
+- **Mreža svojstava.** Polja temelja koriste zajedničku mrežu: sklopive kategorije i kompaktnu gustinu. Unesena aritmetika, kao 2*450, i dalje radi.
+- **Ulazni uređaji.** Tačpad, olovka, 3D miš, kontroler i MIDI mogu da upravljaju aplikacijama. Pogledajte [Kretanje u 3D](topic:navigate-3d).
+- **Panel problema.** Upozorenja novih provera iznad pojavljuju se u istom panelu {{ui:Problemi}} kao ranije.
+- **Povežite svoj AI.** Vaš sopstveni asistent, povezan preko CadCraft Studio, radi sa svih osam aplikacija i vidi samo ono što dozvolite. Povezivanje jednim klikom, hostovani konektor i vaš sopstveni API ključ u Studiju još dolaze. Pogledajte [Korišćenje DetailCraft sa AI asistentom](topic:use-with-ai-assistants).
 
-## Još nije u ovoj verziji
+## Ispravljeno u 0.8.1
 
-- **0.7 nije potpisan kodom.** Potpisivanje i Microsoft Store paket prebačeni su u 0.8, jer provera sertifikata još nije stigla. Proverite SHA-256 uz svaku datoteku na getcadcraft.com/download. Na Windows-u, ako SmartScreen zaustavi instalater, izaberite {{ui:Više informacija}}, pa {{ui:Ipak pokreni}}. Na Mac-u, prvi put, desnim klikom na CadCraft Studio izaberite {{ui:Otvori}}. CadCraft Studio još nije u prodavnici aplikacija, i još nema verzije za iPad ili iPhone.
-- Liste uglova i nagiba u {{ui:Jedinice}} se čuvaju, ali ih nijedno polje još ne čita.
-- **Proračunske provere još nije pregledao inženjer.** Naši testovi ih upoređuju sa odštampanim vrednostima tabela i formulama urađenim ručno, a ne još sa radnim primerima iz priručnika za projektovanje. Do pregleda, to su pomoćna sredstva: ručno proverite elemente koji su bitni.
-- Proračunske provere koriste sile prvog reda (bez efekata drugog reda) i proveravaju samo I-profile. Nije izgrađeno: cevi, uglovnici, kanali, zavareni profili, vitki (AISC) ili delovi klase 4 (Evrokod) u savijanju, torzija, smicanje sa izvijanjem zajedno sa savijanjem, veze, zamor, požar, seizmičko detaljisanje i beton. Vitki element u pritisku izostavlja provere pritiska, a element glasi „prolazi, delimično proveren”.
-- Analiza okvira je i dalje linearna i prvog reda, i još je nije isprobao inženjer na pravom poslu.
-- Rupe za zavrtnje, zavrtnji, zavari i temelji nisu u USD izvozu.
+- **Jezici u Studiju.** Studio i pakovana izdanja mogu da promene jezik za vreme rada; ranije su bili samo na engleskom. Još nije testirano na svim platformama: javite nam ako se jezik ne menja.
+- **Izbor ukrštenim prozorom.** Instalateri 0.8.1 nose ponašanje izbora prozorom koje je već bilo ispravno u web verziji 0.8; stariji instalater ga nije imao.
+- **Tableti u uspravnom položaju.** Višak visine mreže ide platnu, a raspored lista počinje na 760 px ili manje.
 
-Sve ostalo je u [Šta još nije izgrađeno](topic:not-built-yet).
+## Nije još u ovoj verziji
+
+- **Slanje NC u mašinu** nije objavljeno.
+- **Opterećenja vetrom** za beton nisu izrađena, a provere betona i temelja su za inženjera na pregled.
+- **Potpisivanje koda.** Instalateri za Windows i .dmg za macOS nisu potpisani, pa Windows može da upozori, a macOS traži desni klik, pa Otvori.
+
+Ranije promene su u [Novosti u verziji 0.7](topic:whats-new-0-7).

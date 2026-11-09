@@ -40,6 +40,8 @@ import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { clipLoopV, endX } from './geom.js';
 import { nodes as gridNodes } from './model.js';
 import { barPolyline, BARS } from './rebar.js';
+import { barOf as rcBarOf } from './rc-detail.js';   // 0.9 RC.1
+import { tessellate } from './rc/bars.js';
 import { lassoMode, nextMode, thin } from './lasso-core.js';
 import { snapOffset } from './transform.js';
 import { onMouse, panButton } from './input-mouse.js';   // 0.5 IP.3: the menu style's wheel and buttons (input-detailcraft.js)
@@ -317,6 +319,48 @@ export class View3D {
           const tube = new THREE.Mesh(new THREE.TubeGeometry(path, pts.length * 2, r, 6, false), this.mats.bar);
           addPick(tube, { kind: 'footing', id: f.id }, 'bar');
         }
+      }
+    }
+    // reinforced concrete elements and their bars (0.9 RC.1, rc-detail.js): see-through bodies (openings cut), bars as tubes
+    // (lines past 3000 bars, so a big slab stays quick); loose bars read from a file pick as themselves
+    const rcb = built.rc;
+    if (rcb) {
+      const nBars = rcb.items.reduce((s, it) => s + it.res.groups.reduce((t2, g) => t2 + g.polys.length, 0), 0) + rcb.loose.reduce((s, g) => s + g.polys.length, 0);
+      const tubes = nBars <= 3000;
+      const drawBar = (pts, r, ref) => {
+        const v = pts.map((p) => v3(p));
+        if (!tubes) { const geo = new THREE.BufferGeometry().setFromPoints(v); const l = new THREE.Line(geo, this.mats.barLine || (this.mats.barLine = new THREE.LineBasicMaterial({ color: this.colors.bar }))); this.root.add(l); return; }
+        const path = new THREE.CurvePath();
+        for (let i = 1; i < v.length; i++) path.add(new THREE.LineCurve3(v[i - 1], v[i]));
+        addPick(new THREE.Mesh(new THREE.TubeGeometry(path, Math.max(2, v.length * 2), r, 6, false), this.mats.bar), ref, 'bar');
+      };
+      for (const it of rcb.items) {
+        const el = it.el;
+        if (!shown(el.phase)) continue;
+        const B = it.res.body, [a, b, c] = B.size;
+        const shp = new THREE.Shape([new THREE.Vector2(0, 0), new THREE.Vector2(a, 0), new THREE.Vector2(a, b), new THREE.Vector2(0, b)]);
+        for (const [u0, v0, u1, v1] of B.openings || []) shp.holes.push(new THREE.Path([new THREE.Vector2(u0, v0), new THREE.Vector2(u0, v1), new THREE.Vector2(u1, v1), new THREE.Vector2(u1, v0)]));
+        const geo = new THREE.ExtrudeGeometry(shp, { depth: c, bevelEnabled: false });
+        const basis = new THREE.Matrix4().makeBasis(v3(B.ex), v3(B.ey), v3(B.ez));
+        basis.setPosition(new THREE.Vector3(...B.o));
+        const m = new THREE.Mesh(geo, this.mats.concrete);
+        m.applyMatrix4(basis);
+        m.renderOrder = 2;
+        addPick(m, { kind: 'rc', id: el.id }, 'concrete');
+        const e = new THREE.LineSegments(new THREE.EdgesGeometry(geo), this.mats.edge);
+        e.applyMatrix4(basis);
+        this.root.add(e);
+        geo.computeBoundingBox();
+        this.box.union(geo.boundingBox.clone().applyMatrix4(basis));
+        for (const g of it.res.groups) {
+          const bar = rcBarOf(g.bar);
+          for (const pts of g.polys) drawBar(tessellate(pts, g.rc, 4), bar.db / 2, { kind: 'rc', id: el.id });
+        }
+      }
+      for (const g of rcb.loose) {
+        const bar = rcBarOf(g.bar);
+        g.polys.forEach((pts, i) => drawBar(tessellate(pts, g.rc, 4), bar.db / 2, { kind: 'rcbar', id: g.ids[i] }));
+        for (const pts of g.polys) for (const p of pts) this.box.expandByPoint(v3(p));
       }
     }
     this.addPictures(state.pictures || [], addPick);

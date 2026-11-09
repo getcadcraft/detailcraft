@@ -53,7 +53,7 @@ export const ACTIONS_3D = ['orbit', 'pan', 'zoom', 'none'];
 /** 0.7.1: a click of the button opens the context menu for what is under the pointer (registries with MOUSE_MENU; never the left). */
 export const MENU_ACTION = 'menu';
 export const MOUSE_DEFAULT = Object.freeze({ wheel: 1, zoomSpeed: 1, pan2d: ['middle', 'right'], orbit3d: { left: 'orbit', middle: 'zoom', right: 'pan' } });
-export const LIMITS = Object.freeze({ name: 40, label: 40, menus: 16, items: 80, split: 6, more: 40, control: 32, tabs: 12, panels: 12, keysPerCommand: 3, words: 4, word: 16, macros: 300, macro: 200, custom: 20, bytes: 200000 });
+export const LIMITS = Object.freeze({ name: 40, label: 40, menus: 16, items: 80, split: 16, more: 40, control: 32, tabs: 12, panels: 12, keysPerCommand: 3, words: 4, word: 16, macros: 300, macro: 200, custom: 20, bytes: 200000 });
 /** IP.4: the style families every app can answer ("use this style in every app"). 'own' = each app's own toolbar. */
 export const FAMILIES = ['own', 'menus', 'ribbon', 'classic'];
 /** IP.4: where the family for every app is kept (one origin: every app in the browser, the hub and every app in Studio). */

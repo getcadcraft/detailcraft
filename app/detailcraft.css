@@ -66,10 +66,8 @@ body.app-shell .sp-tab { bottom: 15rem; }
 .dc-sec { padding: .85rem 1rem; border-bottom: var(--pen-1) solid var(--line); }
 .dc-sec:last-child { border-bottom: 0; }
 .dc-h { font-size: var(--fs-sm); font-weight: 700; font-stretch: 112%; margin: 0 0 .5rem; }
-.dc-fold > summary { cursor: pointer; list-style: none; display: flex; align-items: center; gap: .35rem; margin: 0; }
-.dc-fold > summary::-webkit-details-marker { display: none; }
-.dc-fold > summary::before { content: ""; width: .45rem; height: .45rem; border-right: var(--pen-2) solid var(--ink-2); border-bottom: var(--pen-2) solid var(--ink-2); transform: rotate(-45deg); transition: transform .12s; }
-.dc-fold[open] > summary::before { transform: rotate(45deg); }
+/* 2026-11-09: the fold's caret is the shell's (app-shell.css, FOLD: title, caret at the far right, open down / closed up); only the cursor and spacing stay here */
+.dc-fold > summary { cursor: pointer; margin: 0; }
 .dc-fold[open] > summary { margin-bottom: .6rem; }
 .dc-fold > summary:focus-visible { outline: var(--pen-2) solid var(--action); outline-offset: 2px; }
 .dc-note { color: var(--ink-2); font-size: .875rem; margin: .5rem 0 0; }
@@ -300,6 +298,7 @@ body.app-shell .sp-tab { bottom: 15rem; }
 
 /* the sheet-size picker in a dialog's head: a real control even before a model gives it sizes (owner 2026-10-24, dialog audit: 26 px stub) */
 .dc-dlg-head .dc-paper-sel { min-height: 2.25rem; min-width: 9rem; }
+.dc-dlg-head [data-shop-sheet] { max-width: 24rem; }
 .dc-dlg-head .dc-x { min-width: 2.25rem; min-height: 2.25rem; font-size: 1rem; }   /* a dialog's close button, not a row's small × */
 /* Check against IDS (0.7.1 71.25): ids-ui.js */
 .dc-ids-body { padding: .75rem 1rem; overflow: auto; }

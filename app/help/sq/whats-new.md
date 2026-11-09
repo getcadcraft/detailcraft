@@ -1,55 +1,59 @@
 ---
-title: Çfarë është e re në 0.7
-summary: Kontrolle projektimi të profileve I të çelikut me kombinime ngarkesash nga ASCE 7 ose EN 1990, dhe kontrolle elementësh sipas AISC 360 ose EN 1993-1-1; eksport USD i modelit të çelikut, një mjet ndihmës për USD, një shirit Çeliku me butona të mëdhenj dhe të vegjël, panele që fshihen dhe dialogë që lëvizin.
-keywords: çfarë është e re, what's new, shënime lëshimi, ndryshimet, ndryshime, 0.7, version, veçori të reja, kontrollet e projektimit, projektimi i çelikut, shfrytëzimi, utilization, kombinime ngarkesash, ASCE 7, EN 1990, AISC 360, EN 1993-1-1, Eurocode, Shtojca Kombëtare, ngarkesa e gjallë e çatisë, kufiri i deformimit, usd, usda, usdc, usdz, openusd, asistent, mcp, shirit çeliku, shirit, buton i ndarë, njësitë, kompakt, panele, dialogë, portugalisht
-from: 17d1e0bb
+title: Çfarë është e re në 0.8 dhe 0.8.1
+summary: Një film ngritjeje nga tabela e ngarkesave të një vinçi, një autopilot lidhjesh, një hartë ngjeshjeje të armaturës, kontrolle themelesh, panele skeleti prej druri dhe çeliku të lehtë, kontrolle ndërtueshmërie dhe qasjeje saldimi, stoku i furnizuesit, çfarë prishet së pari, një rillogaritje e drejtpërdrejtë, më shumë kontrolle betoni dhe rregullimet e 0.8.1.
+keywords: çfarë është e re, shënime versioni, ndryshimet, 0.8, 0.8.1, versioni, veçori të reja, ngritja, vinç, tabela e ngarkesave, film, autopilot, lidhjet, armatura, ngjeshja, themeli, këmbë, mat, zhvendosja, skeleti, dru, çelik i lehtë, lista e prerjeve, ndërtueshmëria, qasja e saldimit, furnizuesi, stoku, koha e pritjes, çfarë prishet së pari, drejtpërdrejt, beton, sizmik, pllakë, gjuhët, asistenti
+from: 6e33e052
 ---
 
-Kjo është ajo që ndryshoi në DetailCraft 0.7, krahasuar me 0.6. Analiza e kornizës së 0.6 ka tani një hap të dytë: kontrollimin e elementëve të çelikut sipas një kodi projektimi.
+Kjo është ajo që ndryshoi në DetailCraft 0.8 (1 nëntor 2026) dhe 0.8.1 (2 nëntor 2026), krahasuar me 0.7. 0.7 kontrollonte elementët e çelikut; 0.8 planifikon ngritjet, propozon lidhjet, kontrollon themelet dhe armaturën, dhe skelet muret, dyshemetë dhe çatitë prej druri dhe çeliku të lehtë.
 
 ## E re
 
-### Bashkime mitër (0.7.1)
+### Ngritja
 
-- **Dy profile I që takohen me kënd**, si gjuri i një portali ose kulmi i çatisë: zgjidh të dyja, zgjidh {{ui:Mitre}} te menuja {{ui:More}} e grupit {{ui:Connect}}, dhe të dy skajet pritet në planin që përgjysmon këndin. Pllakat e skajit të bulonuara së bashku dhe nervat e shpinës së profilit janë kutiza zgjedhjeje në dialogun e ri Mitër, ku fushat e numëruara përputhen me një vizatim të bashkimit tënd të bërë ndërsa shkruan. Mitra ndjek elementët kur lëvizin, dhe kalon te vizatimet, skedarët NC (prerje të anuara), IFC dhe lista e materialeve. Shih [Bashkimet mitër](topic:mitres).
+- **Plani i ngritjes dhe filmi.** Në skedën {{ui:Ngritja}}, përshkruaj një vinç (ku qëndron, grepi i tij më i lartë, pajisjet e ngritjes që nuk janë në tabelë) dhe shkruaj rreshtat e tabelës së ngarkesave të tij. DetailCraft ngre modelin një montim në një herë, sipas radhës së fazave dhe shtresë për shtresë, dhe kontrollon çdo ngritje me tabelën sipas rrezes së saj dhe marzhit që vendos ti. {{ui:Ruaj filmin}} shkruan një skedar HTML që luhet offline në çdo shfletues, edhe në telefon. Ngritjet mbi tabelë, jashtë saj ose shumë të larta janë në {{ui:Problemet}}. Është një plan nga numrat e tu, jo një plan ngritjeje. Shih [Plani i ngritjes dhe filmi](topic:erection-movie).
 
-### Kontrollet e projektimit
+### Lidhjet
 
-- **Kombinime ngarkesash nga kodi.** Te skeda {{ui:Analysis}}, blloku i ri {{ui:Design checks}} ka një {{ui:Design code}}: ASCE 7 + AISC 360 (SHBA, LRFD) ose EN 1990 + EN 1993-1-1 (Eurocode). Jep çdo rasti ngarkese llojin e vet (e vdekur, e gjallë, ngarkesa e re e gjallë e çatisë, bora, era, sizmike), shtyp {{ui:Make combinations}}, dhe DetailCraft shkruan kombinimet e kodit për forcën dhe shërbimin e rasteve të tua. Kombinimet që shkrove vetë mbeten. Shih [Bëj kombinimet](topic:design-checks#make-the-combinations).
-- **Vlerat e Shtojcës Kombëtare.** Për Eurokodin faktorët fillojnë me vlerat e rekomanduara; {{ui:National Annex values}} të lejon të shkruash ato të vendit tënd, dhe ruhen në model. Shih [Bëj kombinimet](topic:design-checks#make-the-combinations).
-- **Kontrollo elementët.** {{ui:Check members}} kontrollon çdo profil I çeliku për tërheqje, shtypje me bukling, përkulje me bukling anësor-rrotullues, prerje, përkulje me forcë aksiale dhe deformim kundrejt {{ui:Deflection limit}} që vendose. Tabela shfaq shfrytëzimin e çdo elementi, kontrollin që e udhëheq dhe kombinimin e tij, dhe elementët ngjyrosen në model (blu, jeshile, ocër, e kuqe, gri për ata që nuk u kontrolluan). Shih [Kontrollo elementët](topic:design-checks#check-the-members).
-- **Në raport.** {{ui:Report (PDF)}} dhe {{ui:Report (CSV)}} shtojnë edicionet e kodit, cilësimet, shfrytëzimin sipas elementit dhe çdo klauzolë të përdorur. Shih [Raporti](topic:design-checks#the-report).
-- **Një ndihmë derisa një inxhinier ta ketë rishikuar.** Përdor vetëm forca të rendit të parë; tubat, këndoret, kanalet, format e saldura dhe pjesët e holla ose të klasës 4 shfaqen "nuk u kontrollua", me arsyen; torsioni, lidhjet dhe betoni nuk kontrollohen. Shih [Çfarë nuk kontrollohet](topic:design-checks#what-is-not-checked).
+- **Autopilot i lidhjeve.** Skeda {{ui:Autopilot}} shikon çdo bashkim që nuk ka lidhje dhe propozon një sipas formave: pllaka baze, pllaka prerjeje, pllaka skaji për trarët që shënon si trarë momenti, bashkime dhe pllaka lidhëse. Jep një ngarkesë uniforme ose një prerje fundi dhe numri i bulonave ndjek forcën e projektimit të bulonit. {{ui:Shto të gjitha}} shton propozimet si një hap të vetëm zhbërjeje. Janë vlera fillestare për t'u shqyrtuar, jo një projektim lidhjeje.
+- **Kontrolle ndërtueshmërie.** {{ui:Problemet}} për një bulon që çelësi nuk e arrin, bulona shumë afër për çelësin e kapakut, saldime këndore jashtë kufijve të madhësisë së tyre dhe profile të zbrazëta që mbajnë ujë. Qasja e saldimit është e re: një saldim këndor i plotë që pistoleta e saldatorit nuk e arrin shfaqet me pjesën që pengon dhe përqindjen e saldimit që preket. Shih [Kontrollet e ndërtueshmërisë](topic:constructability).
 
-### USD
+### Themelet dhe armatura
 
-- **Eksporto modelin e çelikut si USD.** {{ui:USD}} te grupi {{ui:Output}} e shkruan modelin si {{ui:Text (.usda)}}, {{ui:Binary (.usdc)}} ose {{ui:Package (.usdz)}} për programet e renderimit dhe montimin e skenës: çdo montim mban pjesët e veta, çdo pjesë është profili i saj i shtrirë gjatë gjatësisë me prerjet e bëra, dhe secila mban shenjën e pjesës, profilin, klasën, gjatësinë dhe peshën. Vrimat e bulonave, bulonat, saldimet dhe themelet nuk janë në rrjetat USD. Shih [Eksporto modelin e çelikut si USD](topic:usd).
+- **Kontrolle themelesh.** Skeda {{ui:Themeli}} kontrollon themelet, themelet e kombinuara dhe bllokët mbi tokën që përshkruan: mbajtjen, rrëshqitjen dhe përmbysjen nga ngarkesat e shërbimit; përkuljen, prerjen, shpimin, zhvillimin dhe çelikun minimal nga ngarkesat e faktorizuara (ACI 318-19). Një kolonë pranë një skaji ose këndi kontrollohet me prerjen e kufizuar nga skaji i themelit. Zhvendosja vjen nga moduli i tokës, një bllok fleksibël zgjidhet mbi susta nga një modul nënshtrese, dhe grupet e pilotave dhe murët mbajtës kanë panele të tyre. Ngarkesat e kolonave mund t'i shkruash ose t'i marrësh nga {{ui:Analiza}}. Shih [Kontrollet e themeleve](topic:foundation-checks).
+- **Harta e ngjeshjes së armaturës.** Skeda {{ui:Ngjeshja}} vizaton një hartë ngrohjeje të çdo themeli sikur të shihej nga lart: ku shufrat lënë shumë pak hapësirë që betoni të zbresë, krahasuar me rregullin e hapësirës së lirë dhe, nëse i jep, agregatin më të madh dhe kokën e vibratorit. Shih [Harta e ngjeshjes së armaturës](topic:rebar-congestion).
 
-### Asistentët AI
+### Skeleti dhe furnizimi
 
-- **USD për asistentët.** Asistenti yt, i lidhur përmes CadCraft Studio, mund ta eksportojë modelin si USD (`usd_export`), dhe në Studio ta shkruajë në një dosje që ke lejuar. Shih [Çfarë kërkon një asistent](topic:use-with-ai-assistants#what-an-assistant-can-ask-for).
+- **Panele skeleti prej druri dhe çeliku të lehtë.** Skeda {{ui:Skeleti}} skelet panele muri, dyshemeje dhe çatie me çdo pjesë, një listë prerjesh, materialin për të blerë dhe një vizatim punëtorie në shkallë. {{ui:Vendos si elemente}} i vendos pjesët në model, dhe {{ui:Fletë PDF}} ruan një fletë për çdo panel. Madhësitë, hapësirat dhe kornizat janë të tua: DetailCraft nuk kontrollon që ato mbajnë ngarkesën. Shih [Panelet e skeletit prej druri dhe çeliku të lehtë](topic:framing-panels).
+- **Stoku i furnizuesit dhe kohët e pritjes.** Skeda {{ui:Furnizimi}} lexon listën e stokut të një furnizuesi (CSV) dhe tregon, për çdo prerje që lista e prerjeve blen, nëse ka mjaftueshëm në stok dhe sa zgjat pritja. Mungesat dhe prerjet e vonuara janë në {{ui:Problemet}}. Asgjë nuk porositet. Shih [Stoku i furnizuesit dhe kohët e pritjes](topic:supplier-stock).
 
-## Ndryshuar
+### Analiza dhe projektimi
 
-- **Shiriti i çelikut** ka butona të mëdhenj dhe të vegjël: një {{ui:Beam}} i madh pranë {{ui:Column}}, {{ui:Brace}} dhe {{ui:Plate}} të vegjël te {{ui:Modelimi}} › {{ui:Elementët}}; një {{ui:End plates}} i madh te {{ui:Detajimi}} › {{ui:Lidhjet}}, me {{ui:Splice}} dhe {{ui:Gusset}} që ndajnë një buton të ndarë; një {{ui:Paste}} i madh te {{ui:Edit}} › {{ui:Clipboard}}, me {{ui:Paste in place}} dhe {{ui:Duplicate}} pas shigjetës së grupit. {{ui:Prodhimi}} › {{ui:Shkëmbimi}} ka {{ui:Export USD}} pranë IFC. Stilet e tjera të menusë duken si më parë. Shih [Menutë, tastet dhe miu](topic:menus-keys-and-mouse#the-three-styles).
-- [Analizo kornizën](topic:frame-analysis) tani tregon te kontrollet e projektimit, dhe kombinimet e saj mund të bëhen sipas kodit.
+- **Çfarë prishet së pari?** Në skedën {{ui:Analiza}}, butoni gjen kombinimin e forcës që mbizotëron, elementin më të dobët, sa mund të rriten ngarkesat para se elementi i parë të arrijë kufirin e tij, dhe pllakën ose prerjen më të dobët ku njihet forca e prerjes së bulonave të tij. Kërkon fillimisht kombinimet dhe një kod projektimi. Mbajtja, prerja e bllokut, saldimet dhe prizmimi nuk kontrollohen. Asistenti yt i lidhur mund ta pyesë të njëjtën gjë.
+- **Drejtpërdrejt.** Vendos shenjën te {{ui:Drejtpërdrejt: zgjidh përsëri pas çdo ndryshimi}} dhe skeleti rillogaritet pas çdo ndryshimi.
+- **Beton, më shumë.** Një kolonë e hollë në një skelet pa lëvizje projektohet për momentin e saj të zmadhuar (ACI 318-19 6.6.4.5). Periudha sizmike mund të merret nga analiza me metodën e Rayleigh-it. Një pllakë e bërë nga pllaka merr çelikun që i duhet çdo shtrese nga momentet e saj, dhe prerjen njëdrejtimshe. Shih [Kontrollo elementët e betonit dhe bëj ngarkesat sizmike](topic:concrete-and-seismic).
+- **Për një inxhinier për t'u kontrolluar.** Rezultatet e themeleve, betonit dhe "Çfarë prishet së pari?" janë ndihmëse. Ngarkesat e erës nuk janë ndërtuar.
 
-## Në çdo aplikacion
+### Në çdo aplikacion
 
-- **Njësitë.** {{ui:Cilësimet}} › {{ui:Të përgjithshme}} › {{ui:Njësitë}} ka një listë për gjatësinë, sipërfaqen, vëllimin, këndin dhe pjerrësinë, me madhësitë e sakta që japin përkufizimet e njësive (këmba e anketimit të SHBA-së është njësi e vetme). Fik njësitë që nuk i përdor kurrë dhe ato largohen nga listat; vendos yll një dhe puna e re fillon me të. Një skedar gjithmonë mban njësinë e vet. Kutitë e vetë DetailCraft nuk ndjekin ende listat: gjatësitë e tij shkruhen ende në milimetra. Shih [Njësitë, vlerat e shkruara dhe listat e njësive](common:unit-lists).
-- **Një paraqitje më e dendur dhe panele që fshihen.** {{ui:Cilësimet}} › {{ui:Të përgjithshme}} › {{ui:Dendësia e paraqitjes}} › {{ui:Kompakte}} zë më shumë në ekran (ekranet me prekje dhe telefonat mbajnë butonat e tyre të mëdhenj). Çdo panel anësor ka një shirit titulli të hollë: tërhiqe për ta vendosur ose për ta bërë të lundrojë, lëshoje mbi shiritin e një paneli tjetër për të ndarë një kornizë si skeda, fiksoje për ta fshehur në anë, ose fshihe dhe kthe nga anësa. Shih [Rregullo panelet](common:arrange-panels#make-the-layout-denser).
-- **Dialogët lëvizin.** Tërhiq një dialog nga shiriti i titullit jashtë rrugës së vizatimit; kthehet atje ku e le. Klik dy herë mbi shiritin e titullit për ta vendosur përsëri në qendër. Shih [Zhvendos një dialog](common:arrange-panels#move-a-dialog).
-- **Recetat për asistentët AI.** Dhjetë kërkesa të punuara për asistentin tënd (pastro një vizatim, shfaq një grup, kontrollo vizatimet, pyet një model, mblidh një llogaritje sasish, provo një variant pjese…), secila me veglat që thërret dhe lejet që i nevojiten, dhe secila riluhet nga testet tona. Aplikacionet nuk përmbajnë AI. Shih [Recetat për asistentët AI](common:assistants-recipes).
-- **Gjuhët.** **Português (Portugal)** është e re te {{ui:Cilësimet}} › {{ui:Të përgjithshme}} › {{ui:Gjuha}}. Ajo, **Português (Brasil)**, **Español (México)** dhe **Bahasa Indonesia** kanë tani çdo fjalë të aplikacioneve, si draft të pa rishikuar nga një folës amtar. Faqet e {{ui:Ndihmë}} janë në anglisht.
-- **CadCraft Studio** tregon pse një kontroll përditësimi dështoi (s'ka ende skedar për sistemin tënd, s'ka rrjet, nënshkrim i gabuar), në vend që të thotë vetëm "U krye", dhe ndalon t'i kthehet një kartë Çfarë është e re që ke mbyllur, derisa të ketë një lëshim më të ri.
+- **Gjuhët.** Ndihma është në 54 gjuhë. Ato përveç anglishtes janë drafte të bëra me makinë derisa t'i lexojë një folës amtar; dhjetë janë të reja (lituanisht, letonisht, boshnjakisht, marathi, telugu, shqip, afrikanisht, filipinisht, suahili, uzbekisht).
+- **Rreshtat e shiritit të veglave.** {{ui:Cilësimet}} › {{ui:Të përgjithshme}} › {{ui:Rreshtat e shiritit të veglave}} zgjedh mbështjellje, 2 rreshta ose 1 rresht. Një shirit që tashmë përshtatet mbetet ashtu; pjesa tjetër lëviz anash.
+- **Rrjeti i vetive.** Fushat e themelit përdorin rrjetin e përbashkët: kategori që palosen dhe një dendësi kompakte. Aritmetika e shkruar si 2*450 funksionon ende.
+- **Pajisjet e hyrjes.** Touchpad-i, stilolapsi, miu 3D, kontrolluesi dhe MIDI mund t'i drejtojnë aplikacionet. Shih [Lëviz në 3D](topic:navigate-3d).
+- **Paneli i problemeve.** Paralajmërimet e kontrolleve të reja më sipër shfaqen në të njëjtin panel {{ui:Problemet}} si më parë.
+- **Lidh AI-në tënde.** Asistenti yt, i lidhur përmes CadCraft Studio, punon me të tetë aplikacionet dhe sheh vetëm atë që lejon. Lidhja me një klik, lidhësi i hostuar dhe çelësi yt API në Studio janë ende për të ardhur. Shih [Përdor DetailCraft me një asistent AI](topic:use-with-ai-assistants).
+
+## Rregulluar në 0.8.1
+
+- **Gjuhët në Studio.** Studio dhe edicionet e paketuara mund të ndërrojnë gjuhën gjatë ekzekutimit; më parë ishin vetëm anglisht. Nuk është testuar ende në çdo platformë: na thuaj nëse gjuha nuk ndryshon.
+- **Zgjedhja me dritare kryqëzuese.** Instaluesit 0.8.1 e kanë sjelljen e zgjedhjes me dritare të saktë që ishte tashmë në versionin web 0.8; një instalues më i vjetër nuk e kishte.
+- **Tabletët në portret.** Lartësia e lirë e rrjetës i shkon kanavacës, dhe paraqitja e fletës fillon në 760 px ose më pak.
 
 ## Jo ende në këtë version
 
-- **0.7 nuk është e nënshkruar me kod.** Nënshkrimi dhe paketa e Microsoft Store u zhvendosën në 0.8, sepse validimi i certifikatës nuk ka mbërritur ende. Kontrollo SHA-256 pranë çdo skedari në getcadcraft.com/download. Në Windows, nëse SmartScreen ndalon instaluesin, zgjidh {{ui:Më shumë informacion}}, pastaj {{ui:Ekzekuto gjithsesi}}. Në Mac, herën e parë, kliko me të djathtën mbi CadCraft Studio dhe zgjidh {{ui:Hap}}. CadCraft Studio nuk është ende në një dyqan aplikacionesh, dhe nuk ka ende version për iPad ose iPhone.
-- Listat e këndit dhe pjerrësisë në {{ui:Njësitë}} ruhen, por asnjë kuti nuk i lexon ende.
-- **Kontrollet e projektimit nuk janë rishikuar ende nga një inxhinier.** Testet tona i krahasojnë me vlerat e printuara të tabelave dhe me formulat e punuara me dorë, jo ende me shembujt e punuar të një udhëzuesi projektimi. Deri në një rishikim, janë një ndihmë: kontrollo me dorë elementët që kanë rëndësi.
-- Kontrollet e projektimit përdorin forca të rendit të parë (pa efekte të rendit të dytë) dhe kontrollojnë vetëm profile I. Nuk janë ndërtuar ende: tubat, këndoret, kanalet, format e saldura, pjesët e holla (AISC) ose të klasës 4 (Eurocode) në përkulje, torsioni, buklimi nga prerja së bashku me përkuljen, lidhjet, lodhja, zjarri, detajimi sizmik dhe betoni. Një pjesë e hollë në shtypje lë jashtë kontrollet e shtypjes, dhe elementi shfaqet "kalon, pjesërisht i kontrolluar".
-- Analiza e kornizës është ende e rendit të parë dhe lineare, dhe nuk është provuar ende nga një inxhinier në një punë reale.
-- Vrimat e bulonave, bulonat, saldimet dhe themelet nuk janë në eksportin USD.
+- **Dërgimi i NC te një makinë** nuk është lëshuar.
+- **Ngarkesat e erës** për betonin nuk janë ndërtuar, dhe kontrollet e betonit dhe të themeleve janë për t'u shqyrtuar nga një inxhinier.
+- **Nënshkrimi i kodit.** Instaluesit e Windows dhe skedari .dmg i macOS nuk janë të nënshkruar, kështu Windows mund të paralajmërojë dhe macOS kërkon klik me butonin e djathtë, pastaj Hap.
 
-Gjithçka tjetër është në [Çfarë nuk është ndërtuar ende](topic:not-built-yet).
+Ndryshimet e mëparshme janë te [Çfarë është e re në 0.7](topic:whats-new-0-7).

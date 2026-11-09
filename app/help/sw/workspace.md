@@ -1,87 +1,87 @@
 ---
 title: Ziara ya skrini
-summary: Kila upau, kidirisha na kichupo cha DetailCraft kwa jina lake la skrini, na kila kimoja kinatumika kwa nini.
-keywords: skrini, mpangilio, upau wa zana, vidirisha, sifa, upau wa hali, ripoti, kiolesura, ui, vichupo
-from: 454f74fd
+summary: Kila upau, paneli na kichupo cha DetailCraft kwa jina lake kwenye skrini, na kazi ya kila kimoja.
+keywords: skrini, mpangilio, upau wa zana, paneli, sifa, upau wa hali, ripoti, kiolesura, ui, vichupo
+from: 94f81073
 ---
 
-DetailCraft inajaza dirisha la kivinjari chini ya upau wa programu. Kutoka juu hadi chini: upau wa zana, kisha safu tatu (kidirisha cha {{ui:Modeli}}, mwonekano, kidirisha cha {{ui:Sifa}}), kisha vichupo vya ripoti, kisha upau wa hali.
+DetailCraft inajaza dirisha la kivinjari chini ya upau wa programu. Kutoka juu hadi chini: upau wa zana, kisha safu tatu (paneli ya {{ui:Model}}, mwonekano, paneli ya {{ui:Properties}}), kisha vichupo vya ripoti, kisha upau wa hali.
 
 ## Upau wa programu
 
-Upau mwembamba juu kabisa ni wa tovuti ya CadCraft, si wa modeli. Unaonyesha jina na toleo la programu, kiungo cha {{ui:Kuhusu DetailCraft}}, {{ui:Msaada}} (au {{key:F1}}) kwa msaada huu, {{ui:Hifadhi kwa matumizi ya nje ya mtandao}}, kitufe cha hali ya skrini, na kibadilishaji cha {{ui:Karatasi}} / {{ui:Modeli}}.
+Upau mwembamba kabisa juu unahusu tovuti ya CadCraft, si modeli. Unaonyesha jina la programu na toleo, kiungo cha {{ui:About DetailCraft}}, {{ui:Help}} (au {{key:F1}}) kwa msaada huu, {{ui:Save for offline}}, kitufe cha hali ya skrini, na swichi ya {{ui:Paper}} / {{ui:Model}}.
 
-- {{ui:Hifadhi kwa matumizi ya nje ya mtandao}} huweka DetailCraft, mwonekano wake wa 3D na msaada huu kwenye kivinjari chako ili ufunguke bila muunganisho. Inasoma {{ui:Tayari kwa matumizi ya nje ya mtandao}} baada ya kuhifadhiwa; bofya kisha kwa {{ui:Hifadhi tena (pata toleo la hivi karibuni)}} au {{ui:Ondoa nakala ya nje ya mtandao}}. Tazama [Kufanya kazi nje ya mtandao](common:offline).
-- {{ui:Karatasi}} inatoa skrini nyepesi na {{ui:Modeli}} ya giza. Mwonekano wa 3D unafuata mara moja; hakuna kitu kwenye modeli yako kinachobadilika.
-- Kitufe cha hali ya skrini na {{key:Ctrl+Shift+F}} vinazunguka kati ya kawaida, skrini nzima, na skrini nzima yenye pau zimefichwa. {{key:Ctrl+Shift+F}} hutumia kitufe cha Control kwenye kila kompyuta, pamoja na Mac. Pau zikiwa zimefichwa, elekeza juu kabisa ya skrini (au gusa) ili zirudi. {{key:Esc}} inatoka kwenye skrini nzima.
+- {{ui:Save for offline}} inahifadhi DetailCraft, mwonekano wake wa 3D na msaada huu kwenye kivinjari chako ili ifunguke bila muunganisho. Inasoma {{ui:Offline ready}} ikishahifadhiwa; bofya hapo kisha kwa {{ui:Save again (get the newest version)}} au {{ui:Remove the offline copy}}. Angalia [Kufanya kazi nje ya mtandao](common:offline).
+- {{ui:Paper}} inatoa skrini nyepesi na {{ui:Model}} ya giza. Mwonekano wa 3D unafuata mara moja; hakuna kitu kwenye modeli yako kinachobadilika.
+- Kitufe cha hali ya skrini na {{key:Ctrl+Shift+F}} vinazunguka kati ya kawaida, skrini nzima, na skrini nzima yenye pau zilizofichwa. {{key:Ctrl+Shift+F}} inatumia kitufe cha Control kwenye kila kompyuta, pamoja na Mac. Pau zikiwa zimefichwa, elekeza juu ya skrini (au gusa) ili zirudi. {{key:Esc}} inatoka kwenye skrini nzima.
 
 ## Upau wa zana
 
-Upau wa zana una makundi matano. Elekeza juu ya kitufe ili kuona kinachofanya na kitufe chake.
+Upau wa zana una makundi matano. Elekeza kwenye kitufe ili uone kinachofanya na njia yake ya mkato.
 
-| Kundi | Vitufe | Vinachofanya |
+| Kundi | Vitufe | Kazi yake |
 |---|---|---|
-| {{ui:Faili}} | {{ui:Mpya}}, {{ui:Fungua}}, {{ui:Ingiza IFC}}, {{ui:Hifadhi}}, {{ui:Sampuli}} | Anzisha modeli, fungua `.detailcraft.json` iliyohifadhiwa au faili ya IFC, hifadhi moja, au fungua fremu ya sampuli |
-| {{ui:Mahali}} | {{ui:Chagua}}, {{ui:Boriti}}, {{ui:Nguzo}}, {{ui:Mshikio}}, {{ui:Bamba}}, {{ui:Msingi}}, {{ui:Ngazi}} | Zana ambayo bofya inayofuata kwenye mwonekano inatumia |
-| {{ui:Unganisha}} | {{ui:Sahani za mwisho}}, {{ui:Sahani ya msingi}}, na katika {{ui:Zaidi}}: {{ui:Vichupo vya kukata}}, {{ui:Kiunganishi}}, {{ui:Gusset}}, {{ui:Zinazofanana}} | Ongeza muunganisho kwenye boriti, nguzo au mshikio uliochaguliwa, au nakili muunganisho uliochaguliwa kwenye kila kiungo kinachofanana nao |
-| {{ui:Hariri}} | {{ui:Tendua}}, {{ui:Rudia}}, {{ui:Nakili}}, {{ui:Bandika}}, {{ui:Zaidi}} | Rudi nyuma na mbele kupitia mabadiliko; nakili uteuzi na ubandike. {{ui:Zaidi}} hufungua menyu yenye {{ui:Kata}}, {{ui:Nakili}}, {{ui:Bandika}}, {{ui:Bandika mahali pale}}, {{ui:Nakili mara mbili}}, {{ui:Futa}}, {{ui:Chagua zote}} na {{ui:Ondoa uteuzi wote}}, kila moja na kitufe chake |
-| {{ui:Matokeo}} | {{ui:IFC}}, {{ui:Faili za NC}}, {{ui:BOM}}, {{ui:Mchoro wa warsha}}, {{ui:Michoro}}, na katika {{ui:Zaidi}}: {{ui:Kupinda}}, {{ui:Ripoti ya uzito kwa awamu}}, {{ui:Faili ya KISS kwa programu ya uundaji}} | Pakua hamisho, au fungua karatasi za michoro |
+| {{ui:File}} | {{ui:New}}, {{ui:Open}}, {{ui:Import IFC}}, {{ui:Save}}, {{ui:Sample}} | Anzisha modeli, fungua `.detailcraft.json` iliyohifadhiwa au faili ya IFC, hifadhi moja, au fungua fremu ya sampuli |
+| {{ui:Place}} | {{ui:Select}}, {{ui:Beam}}, {{ui:Column}}, {{ui:Brace}}, {{ui:Plate}}, {{ui:Footing}}, {{ui:Stair}} | Zana ambayo bofyo lijalo kwenye mwonekano linatumia |
+| {{ui:Connect}} | {{ui:End plates}}, {{ui:Base plate}}, na katika {{ui:More}}: {{ui:Shear tabs}}, {{ui:Splice}}, {{ui:Gusset}}, {{ui:Similar}} | Ongeza muunganisho kwenye boriti, nguzo au mshikio uliochaguliwa, au nakili muunganisho uliochaguliwa kwenye kila kiungio kinachofanana nao |
+| {{ui:Edit}} | {{ui:Undo}}, {{ui:Redo}}, {{ui:Copy}}, {{ui:Paste}}, {{ui:More}} | Rudi nyuma na mbele kupitia mabadiliko; nakili uteuzi na ubandike. {{ui:More}} inafungua menyu yenye {{ui:Cut}}, {{ui:Copy}}, {{ui:Paste}}, {{ui:Paste in place}}, {{ui:Duplicate}}, {{ui:Delete}}, {{ui:Select all}} na {{ui:Select none}}, kila moja na njia yake ya mkato |
+| {{ui:Output}} | {{ui:IFC}}, {{ui:NC files}}, {{ui:BOM}}, {{ui:Shop drawing}}, {{ui:Drawings}}, na katika {{ui:More}}: {{ui:Bending}}, {{ui:Weight report by phase}}, {{ui:KISS file for fabrication software}} | Pakua uhamishaji nje, au fungua karatasi za michoro |
 
-Vitufe na vipengee vya menyu visivyoweza kufanya kazi kwa sasa vimefifishwa, na kuelekeza juu ya kimoja kunasema kwa nini. {{ui:Sahani za mwisho}} zinahitaji boriti iliyochaguliwa, {{ui:Sahani ya msingi}} nguzo iliyochaguliwa, {{ui:Zinazofanana}} muunganisho uliochaguliwa, {{ui:Mchoro wa warsha}} sehemu ya umbo-I au bamba iliyochaguliwa, {{ui:Nakili}} kipengele au msingi uliochaguliwa, na {{ui:Bandika}} kitu kilichonakiliwa. Tazama [Nakili, bandika na nakili mara mbili](topic:copy-paste).
+Vitufe na vipengee vya menyu visivyoweza kufanya kazi kwa sasa vinafifia, na kuelekeza juu yake kunaonyesha sababu. {{ui:End plates}} inahitaji boriti iliyochaguliwa, {{ui:Base plate}} nguzo iliyochaguliwa, {{ui:Similar}} muunganisho uliochaguliwa, {{ui:Shop drawing}} modeli yenye sehemu, {{ui:Copy}} kipengele au msingi uliochaguliwa, na {{ui:Paste}} kitu kilichonakiliwa. Angalia [Nakili, bandika na nakili mara mbili](topic:copy-paste).
 
-## Kidirisha cha Modeli (kushoto)
+## Paneli ya Modeli (kushoto)
 
-- {{ui:Modeli}}: {{ui:Jina}} la modeli. Linataja kila faili unayohifadhi au kuhamisha.
-- {{ui:Gridi}}: mistari ya gridi na nafasi zake, na {{ui:Tumia gridi}}. Tazama [Weka gridi na viwango](topic:grids-and-levels).
-- {{ui:Viwango}}: safu moja kwa kila kiwango (jina na mwinuko kwa mm), {{ui:Ongeza kiwango}} na {{ui:Tumia viwango}}.
-- {{ui:Wasifu maalum}}: tengeneza sehemu yako ya kiparamita. Imefungwa hadi uifungue.
-- {{ui:Alama za sehemu}}: kila alama ya sehemu kwenye modeli pamoja na wasifu wake, urefu na idadi. Bofya alama ili kuchagua sehemu ya kwanza yenye alama hiyo.
+- {{ui:Model}}: {{ui:Name}} ya modeli. Inataja kila faili unayohifadhi au kuhamisha nje.
+- {{ui:Grids}}: mistari ya gridi na nafasi zake, na {{ui:Apply grids}}. Angalia [Weka gridi na viwango](topic:grids-and-levels).
+- {{ui:Levels}}: safu moja kwa kila kiwango (jina na mwinuko kwa mm), {{ui:Add level}} na {{ui:Apply levels}}.
+- {{ui:Custom profile}}: tengeneza sehemu yako ya kiparamentri. Imefungwa hadi uifungue.
+- {{ui:Part marks}}: kila alama ya sehemu kwenye modeli pamoja na wasifu wake, urefu na idadi. Bofya alama ili kuchagua sehemu ya kwanza yenye alama hiyo.
 
-{{ui:Gridi}}, {{ui:Viwango}} na {{ui:Wasifu maalum}} hujikunja: bofya vichwa vyake.
+{{ui:Grids}}, {{ui:Levels}} na {{ui:Custom profile}} zinakunjwa: bofya vichwa vyake.
 
 ## Mwonekano (katikati)
 
 Mwonekano unaonyesha modeli kwa 3D. Juu yake, upau wa mwonekano una vitufe vitatu na orodha:
 
 - {{ui:3D}}: zunguka modeli kwa uhuru.
-- {{ui:Mpango}}: angalia moja kwa moja chini kwenye kiwango kimoja. Orodha ya viwango inaonekana kando ya vitufe. Chochote kilicho zaidi ya 1.5 m juu ya kiwango kinakatwa ili uweze kuona na kubofya kiwango waziwazi.
-- {{ui:Mwinuko}}: angalia moja kwa moja mstari mmoja wa gridi wenye herufi (Grid A, Grid B …). Orodha ya gridi zenye herufi inaonekana. Chuma kilicho ndani ya 1 m kutoka mstari huo ndicho kinachoonyeshwa.
-- Kitufe cha kutosha kwenye ncha ya kulia ya upau wa mwonekano hukuza ili kuonyesha modeli nzima.
+- {{ui:Plan}}: angalia moja kwa moja chini kwenye kiwango kimoja. Orodha ya viwango inaonekana kando ya vitufe. Kila kitu kilicho zaidi ya 1.5 m juu ya kiwango kinakatwa ili uone na ubofye kiwango wazi.
+- {{ui:Elevation}}: angalia moja kwa moja mstari mmoja wa gridi wenye herufi (Gridi A, Gridi B …). Orodha ya gridi zenye herufi inaonekana. Chuma kilicho ndani ya 1 m kutoka mstari huo tu ndicho kinachoonyeshwa.
+- Kitufe cha kutoshea kilicho mwisho wa kulia wa upau wa mwonekano kinakuza ili uone modeli nzima.
 
-Nukta ndogo zinaashiria kila makutano ya gridi kwenye kila kiwango. Zana ya kuweka ikiwa imewashwa, nukta iliyo karibu zaidi na kielekezi inawaka na upau wa hali unaitaja, kwa mfano "A/2 at Level 1". Rangi zinatofautisha aina za vipengele: nguzo, mihimili, mishikio na bamba kila moja ina rangi yake, bolti na vijiti vina nyingine, misingi ni ya uwazi na chuma cha kuimarisha kinachorwa kama mirija. Mashimo yanaonekana kama vifuniko vyeusi; kupunguzwa kumekatwa.
+Nukta ndogo zinaashiria kila makutano ya gridi kwenye kila kiwango. Zana ya kuweka ikiwa imewashwa, nukta iliyo karibu zaidi na kielekezi inawaka na upau wa hali unaitaja, kwa mfano "A/2 kwenye Kiwango 1". Rangi zinatofautisha aina za vipengele: nguzo, mihimili, mishikio na bamba kila moja ina rangi yake, bolti na vijiti vya nanga nyingine, misingi ni ya uwazi, na nondo zinachorwa kama mirija. Matundu yanaonekana kama plagi nyeusi; mikato imekatwa.
 
-Jinsi ya kuzunguka, kusogeza na kukuza: [Sogeza kwenye mwonekano wa 3D](topic:navigate-3d).
+Jinsi ya kuzungusha, kuhamisha na kukuza: [Zunguka kwenye mwonekano wa 3D](topic:navigate-3d).
 
-Modeli ikiwa tupu, mwonekano unaonyesha orodha fupi ya "Anza modeli". Unaweza pia kudondosha faili ya modeli iliyohifadhiwa popote kwenye mwonekano ili kuifungua.
+Modeli ikiwa tupu, mwonekano unaonyesha orodha fupi ya "Anza modeli". Unaweza pia kuacha faili ya modeli iliyohifadhiwa popote kwenye mwonekano ili kuifungua.
 
-## Kidirisha cha Sifa (kulia)
+## Paneli ya Sifa (kulia)
 
-Kidirisha hiki kinaonyesha nini kinategemea unachofanya, na kichwa chake kinasema ni nini: "Modeli", "Weka boriti", "Boriti b2", "Muunganisho wa sahani ya mwisho", "Sahani ya msingi", "Msingi F1", "3 zilizochaguliwa" au "Bandika".
+Paneli hii inaonyesha kitu kinachotegemea unachofanya, na kichwa chake kinasema ni nini: "Modeli", "Weka boriti", "Boriti b2", "Muunganisho wa sahani ya mwisho", "Sahani ya msingi", "Msingi F1", "3 zimechaguliwa" au "Bandika".
 
-- **Hakuna kilichochaguliwa:** muhtasari wa modeli (vipengele, miunganiko, misingi, sehemu, alama, bolti, uzito wa chuma na chuma cha kuimarisha, gridi, viwango).
-- **Zana ya kuweka imewashwa:** chaguzi za kipande kijacho (wasifu, nyenzo, nafasi, mzunguko, na kwa nguzo {{ui:Hadi}}), muhtasari wa wasifu uliochaguliwa, na fomu ya {{ui:Ongeza kwa gridi}} ya kuweka bila kubofya kwenye mwonekano.
-- **Kipengele kimechaguliwa:** jina lake, wasifu, nyenzo, nafasi, mzunguko, viwianishi vya ncha zake mbili, alama zake, urefu wa kukata na uzito, mashimo na kupunguzwa kwake, na vitufe vya miunganiko, mchoro wake wa warsha na {{ui:Futa}}.
-- **Muunganisho umechaguliwa:** kila mpangilio wa bamba, bolti na uchomeleaji, bolti na uchomeleaji unaotengeneza, onyo zake, na {{ui:Tumia kwa zinazofanana}}.
-- **Msingi umechaguliwa:** nafasi yake na ukubwa wake, mkeka wa chini, baa za kuanzia, na alama za baa inazotumia.
-- **Vitu kadhaa vimechaguliwa:** vipengele vingapi vya kila aina, miunganiko na misingi, uzito wao wa chuma, na {{ui:Nakili}}, {{ui:Nakili mara mbili}} na {{ui:Futa}}.
-- **Kubandika:** kilichopo kwenye ubao wa kunakili, na fomu za kubandika kwa mpangilio ulioandikwa au kwenye makutano ya gridi unayochagua kutoka kwenye orodha.
+- **Hakuna kilichochaguliwa:** muhtasari wa modeli (vipengele, miunganisho, misingi, sehemu, alama, bolti, uzito wa chuma na nondo, gridi, viwango).
+- **Zana ya kuweka imewashwa:** chaguo za kipande kijacho (wasifu, nyenzo, nafasi, mzunguko, na kwa nguzo {{ui:Up to}}), muhtasari wa wasifu uliochaguliwa, na fomu ya {{ui:Add by grid}} ya kuweka bila kubofya kwenye mwonekano.
+- **Kipengele kimechaguliwa:** jina lake, wasifu, nyenzo, nafasi, mzunguko, kuratibu za ncha zake mbili, alama zake, urefu wa kukata na uzito, matundu na mikato yake, na vitufe vya miunganisho, mchoro wake wa warsha na {{ui:Delete}}.
+- **Muunganisho umechaguliwa:** kila mpangilio wa sahani, bolti na uchomeleaji, bolti na uchomeleaji unaotengeneza, maonyo yake, na {{ui:Apply to similar}}.
+- **Msingi umechaguliwa:** nafasi na ukubwa wake, mkeka wa chini, nondo za kuanzia, na alama za nondo unazotumia.
+- **Vitu kadhaa vimechaguliwa:** idadi ya vipengele vya kila aina, miunganisho na misingi, uzito wa chuma, na {{ui:Copy}}, {{ui:Duplicate}} na {{ui:Delete}}.
+- **Kubandika:** kilichopo kwenye ubao wa kunakili, na fomu za kubandika kwa kukabiliana kilichoandikwa, au kwenye makutano ya gridi unayochagua kutoka orodha.
 
-Sehemu za namba zinaanza kutumika ukibonyeza {{key:Enter}} au ukiondoka kwenye sehemu hiyo. Kila mabadiliko ni hatua moja unayoweza kuitendua.
+Sehemu za namba zinaanza kutumika unapobonyeza {{key:Enter}} au kuondoka kwenye sehemu. Kila mabadiliko ni hatua moja unayoweza kutendua.
 
 ## Vichupo vya ripoti (chini)
 
-- {{ui:Matatizo}}: kila kitu ambacho DetailCraft haikuweza kujenga au inataka uangalie, pamoja na kitufe cha {{ui:Chagua}} kwenye kila mstari. Kichupo kinaonyesha idadi kwenye mabano.
-- {{ui:Orodha ya vifaa}}: sehemu, mikusanyiko, na bolti na vijiti vya kutia nanga, pamoja na uzito na kiungo cha {{ui:Pakua CSV}}. Bofya alama ya sehemu ili kuchagua sehemu hiyo.
-- {{ui:Ratiba ya kupinda}}: kila alama ya baa katika kila msingi, pamoja na kiungo cha {{ui:Pakua CSV}}.
+- {{ui:Problems}}: kila kitu ambacho DetailCraft haikuweza kujenga au inataka uangalie, pamoja na kitufe cha {{ui:Select}} kwenye kila mstari. Kichupo kinaonyesha idadi kwenye mabano.
+- {{ui:Bill of materials}}: sehemu, mikusanyiko, na bolti na vijiti vya nanga, pamoja na uzito na kiungo cha {{ui:Download CSV}}. Bofya alama ya sehemu ili kuchagua sehemu hiyo.
+- {{ui:Bending schedule}}: kila alama ya nondo katika kila msingi, pamoja na kiungo cha {{ui:Download CSV}}.
 
-Kichupo kikiwa kimeangaziwa, {{key:Left}} na {{key:Right}} husogeza kati ya vichupo.
+Kichupo kikiwa kimelengwa, {{key:Left}} na {{key:Right}} husogeza kati ya vichupo.
 
 ## Upau wa hali
 
-Upau chini una sehemu tatu: makutano ya gridi chini ya kielekezi wakati wa kuweka, ujumbe wa karibuni (kilichotokea hivi punde, au kwa nini kitu kilikataliwa), na jumla zinazoendelea za sehemu, bolti, uzito wa chuma na uzito wa chuma cha kuimarisha. Kitendo kinapoonekana hakifanyi chochote, soma ujumbe hapa kwanza.
+Upau kando ya chini una sehemu tatu: makutano ya gridi chini ya kielekezi wakati wa kuweka, ujumbe wa karibuni (kilichotokea hivi karibuni, au kwa nini kitu kilikataliwa), na jumla zinazoendelea za sehemu, bolti, uzito wa chuma na uzito wa nondo. Kitendo kinapoonekana hakifanyi kitu, soma ujumbe hapa kwanza.
 
-Kichwa cha kichupo cha kivinjari kinaanza na nukta (•) wakati modeli ina mabadiliko ambayo hujayahifadhi.
+Kichupo cha kivinjari kinaanza na nukta (•) wakati modeli ina mabadiliko ambayo hujahifadhi.
 
 ## Kwenye skrini nyembamba
 
-Chini ya takriban pikseli 760 kwa upana, safu zinapangwa juu ya nyingine: upau wa zana, mwonekano, upau wa hali, {{ui:Sifa}}, vichupo vya ripoti, kisha kidirisha cha {{ui:Modeli}} mwisho. Sogeza ukurasa ili kuvifikia. DetailCraft imepangwa kwa skrini ya kompyuta ya mezani au ya laptop; simu inafaa kwa kutazama, si kwa uchoraji wa kina.
+Chini ya takriban pikseli 760 kwa upana, safu zinapangwa juu ya nyingine: upau wa zana, mwonekano, upau wa hali, {{ui:Properties}}, vichupo vya ripoti, kisha paneli ya {{ui:Model}} mwisho. Sogeza ukurasa kuzifikia. DetailCraft imepangwa kwa skrini ya kompyuta ya mezani au kompyuta ndogo; simu inafaa kwa kutazama, si kwa kuunda.

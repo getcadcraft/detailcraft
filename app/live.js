@@ -17,6 +17,8 @@
 
 import { pack, unpack } from './live-client.js';
 import { t } from './i18n.js';
+import { attachPresence, threeView, pointsBox } from './live-presence.js';
+import { threeFollow } from './live-follow.js';   // 0.9 ED.1: follow a view (the camera)
 
 export const SCHEMA = 1;
 export const ID_BLOCK = 1e6;
@@ -328,11 +330,38 @@ export function createLiveAdapter({ host } = {}) {
     let offs = [];
     const say = (m) => { try { app.print && app.print(m); } catch { /* no message line */ } };
     const off = lv.on((c) => {
-      if (c && c.adapter === a) { a.bind(c); offs = messages(c, say); app.live = a; }
+      if (c && c.adapter === a) { a.bind(c); offs = messages(c, say); offs.push(attachPresence(c, a, presenceView(app), { t })); app.live = a; }
       else if (!c && a.client) { offs.forEach((f) => f()); a.unbind(); app.live = null; off(); }
     });
   }
   return a;
+}
+
+/**
+ * Where DetailCraft's pointer is and where others' go (0.9 SU.1112, live-presence.js): model millimetres, the point on the
+ * part under the pointer (else the plane through the view's centre); selections as boxes round each part's points.
+ */
+export function presenceView(app) {
+  const v = () => app.view;
+  const tv = threeView({
+    camera: () => v() && v().camera, scale: 0.001,
+    target: () => { const c = v() && v().controls && v().controls.target; return c ? [c.x, c.y, c.z] : null; },
+    hit: (x, y, w, h) => { const r = v() && v().pickRef ? v().pickRef({ x, y, w, h }) : null; return r && r.point ? r.point : null; },
+  });
+  const boxOf = (m, r) => {
+    if (!r) return null;
+    if (r.kind === 'member') { const x = m.member(r.id); return x ? pointsBox({ s: x.start, e: x.end }) : null; }
+    if (r.kind === 'conn') { const x = m.connection(r.id); return x ? pointsBox([x.a, x.b, x.support, x.brace, x.beam, x.column].filter(Boolean).map((id) => { const q = m.member(id); return q ? [q.start, q.end] : null; })) : null; }
+    const x = r.kind === 'footing' ? m.footing(r.id) : r.kind === 'stair' ? m.stair(r.id) : null;
+    return x ? pointsBox(x) : null;
+  };
+  return {
+    get el() { return v() && v().canvas; },
+    toModel: tv.toModel, toScreen: tv.toScreen,
+    ...threeFollow({ camera: () => v() && v().camera, controls: () => v() && v().controls, scale: 0.001, render: () => { const x = v(); if (x && x.render) x.render(); } }),   // 0.9 ED.1
+    selection: () => { const m = app.model; return (app.selected || []).slice(0, 64).map((r) => boxOf(m, r)).filter(Boolean); },
+    hidden: () => { const c = v() && v().canvas; return !c || !c.isConnected || c.offsetParent === null; },
+  };
 }
 /** A browser opening a link with #live=<code> (a page a host serves on the LAN) or ?live=<ROOM>#<secret> joins. */
 export async function joinFromPage(app, fileHost, w = globalThis) {

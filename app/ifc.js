@@ -15,6 +15,8 @@
  * IfcMechanicalFastener (.BOLT. / .ANCHORBOLT.) with NominalDiameter, NominalLength and a cylinder.
  * Footings: IfcFooting (.PAD_FOOTING.); each placed bar an IfcReinforcingBar (.MAIN.) with NominalDiameter,
  * CrossSectionArea, BarLength and an IfcSweptDiskSolid along an IfcIndexedPolyCurve (lines + true arcs).
+ * Reinforced concrete (0.9 RC.1): IfcBeam / IfcColumn / IfcSlab (.FLOOR.) / IfcWall with openings, the "DetailCraft" property set
+ * holding the element's definition (Definition, JSON), and their IfcReinforcingBar (.MAIN. / .LIGATURE. / .EDGE.) aggregated to them; loose bars in their storey.
  * Grids: IfcGrid with IfcGridAxis polylines. Materials: IfcMaterial per grade. Properties: a "DetailCraft"
  * property set (part mark, assembly mark, profile, weight).
  * GlobalIds are derived from the model name + part ids, so exporting the same model twice gives the same ids.
@@ -24,6 +26,8 @@
  */
 import { add, mul, sub, cross, norm, dot, toWorld } from './geom.js';
 import { centerline2d, BARS } from './rebar.js';
+import { barOf as rcBarOf } from './rc-detail.js';   // 0.9 RC.1
+import { segments as rcSegments } from './rc/bars.js';
 import { t } from './i18n.js';
 
 const B64 = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz_$';
@@ -129,7 +133,7 @@ export function writeIfc(state, built, marks, schedule, { name = state.name || '
     switch (p.kind) {
       case 'I': return w.add('IFCISHAPEPROFILEDEF(.AREA.,' + nm + ',' + pos + ',' + [p.bf, p.d, p.tw, p.tf].map(R).join(',') + ',' + (p.r > 0 ? R(p.r) : '$') + ',$,$)');
       case 'C': return w.add('IFCUSHAPEPROFILEDEF(.AREA.,' + nm + ',' + pos + ',' + [p.d, p.bf, p.tw, p.tf].map(R).join(',') + ',$,$,$)');
-      case 'L': return w.add('IFCLSHAPEPROFILEDEF(.AREA.,' + nm + ',' + pos + ',' + [p.b, p.b, p.t].map(R).join(',') + ',$,$,$)');
+      case 'L': return w.add('IFCLSHAPEPROFILEDEF(.AREA.,' + nm + ',' + pos + ',' + [p.h ?? p.b, p.b, p.t].map(R).join(',') + ',$,$,$)');
       case 'RHS': return w.add('IFCRECTANGLEHOLLOWPROFILEDEF(.AREA.,' + nm + ',' + pos + ',' + [p.b, p.h, p.t, p.ri, p.ro].map(R).join(',') + ')');
       case 'CHS': return w.add('IFCCIRCLEHOLLOWPROFILEDEF(.AREA.,' + nm + ',' + pos + ',' + R(p.D / 2) + ',' + R(p.t) + ')');
       case 'PL': return w.add('IFCRECTANGLEPROFILEDEF(.AREA.,' + nm + ',' + pos + ',' + R(p.b) + ',' + R(p.t) + ')');
@@ -137,7 +141,7 @@ export function writeIfc(state, built, marks, schedule, { name = state.name || '
     }
   };
 
-  const voids = [];
+  const voids = [], voidsRc = [];
   const materials = new Map();
   const psets = [];
   const elementOf = new Map();
@@ -244,6 +248,75 @@ export function writeIfc(state, built, marks, schedule, { name = state.name || '
         st.contents.push(id);
       });
     });
+  }
+
+  // reinforced concrete (0.9 RC.1, rc-detail.js): beams, columns, slabs, walls (openings as IfcOpeningElement) with their bars aggregated to
+  // them (IfcRelAggregates), each IfcReinforcingBar an IfcSweptDiskSolid along an IfcIndexedPolyCurve (lines + true arcs at the bends); the
+  // element's DetailCraft definition in the "DetailCraft" property set (property Definition), so DetailCraft reads its own export back as the same element.
+  // Bars read from another file (loose bars) go out as they came in, in their storey.
+  const rcb = built.rc;
+  if (rcb) {
+    const barCurve = (pts, rc, st) => {
+      const rel = (p) => [p[0], p[1], p[2] - st.lv.z];
+      if (!(rc > 0.01)) return w.add('IFCINDEXEDPOLYCURVE(' + w.add('IFCCARTESIANPOINTLIST3D((' + pts.map((p) => '(' + rel(p).map(R).join(',') + ')').join(',') + '),$)') + ',$,.F.)');
+      const segs = rcSegments(pts, rc), list = [segs[0].a], idx = [];
+      for (const g of segs) {
+        const i0 = list.length;
+        if (g.k === 'L') { list.push(g.b); idx.push('IFCLINEINDEX((' + i0 + ',' + (i0 + 1) + '))'); }
+        else { list.push(g.m, g.b); idx.push('IFCARCINDEX((' + i0 + ',' + (i0 + 1) + ',' + (i0 + 2) + '))'); }
+      }
+      return w.add('IFCINDEXEDPOLYCURVE(' + w.add('IFCCARTESIANPOINTLIST3D((' + list.map((p) => '(' + rel(p).map(R).join(',') + ')').join(',') + '),$)') + ',(' + idx.join(',') + '),.F.)');
+    };
+    const PRED_BAR = { stir: '.LIGATURE.', tie: '.LIGATURE.', edge: '.EDGE.' };
+    const writeBar = (g, pts, st, key, mark, desc) => {
+      const b = rcBarOf(g.bar);
+      const disk = w.add('IFCSWEPTDISKSOLID(' + barCurve(pts, g.rc, st) + ',' + R(b.db / 2) + ',$,$,$)');
+      const blp = w.add('IFCLOCALPLACEMENT(' + st.lp + ',' + w.add('IFCAXIS2PLACEMENT3D(' + O + ',$,$)') + ')');
+      const len = g.length;
+      return w.add('IFCREINFORCINGBAR(' + S(seed(key)) + ',$,' + S((mark ? mark + ' ' : '') + g.bar) + ',' + S(desc) + ',' + S(g.shape) + ',' + blp + ',' + shape([disk], 'AdvancedSweptSolid') + ',' + S(mark) + ',$,' + R(b.db) + ',' + R(b.area) + ',' + R(len) + ',' + (PRED_BAR[g.role.replace(/:.*$/, '')] || '.MAIN.') + ',.TEXTURED.)');
+    };
+    const CLS = { beam: ['IFCBEAM', '.BEAM.'], column: ['IFCCOLUMN', '.COLUMN.'], slab: ['IFCSLAB', '.FLOOR.'], wall: ['IFCWALL', '.STANDARD.'] };
+    for (const it of rcb.items) {
+      const el = it.el, B = it.res.body, [a, bsz, c] = B.size;
+      const zs = [0, 1].flatMap((i) => [0, 1].flatMap((j) => [0, 1].map((k) => B.o[2] + B.ex[2] * a * i + B.ey[2] * bsz * j + B.ez[2] * c * k)));
+      const st = storeyFor(Math.min(...zs));
+      let lp, solid;
+      if (el.kind === 'beam') {   // extruded along the beam (profile X across, Y up), as a beam is
+        lp = place(st, el.a, B.ex, B.ey);
+        solid = extrude(w.add('IFCRECTANGLEPROFILEDEF(.AREA.,$,' + pos2(0, -el.h / 2) + ',' + R(el.w) + ',' + R(el.h) + ')'), a);
+      } else if (el.kind === 'column') {
+        lp = place(st, [el.x, el.y, el.z0], [0, 0, 1], B.ex);
+        solid = extrude(w.add('IFCRECTANGLEPROFILEDEF(.AREA.,$,' + pos2(0, 0) + ',' + R(el.w) + ',' + R(el.d) + ')'), c);
+      } else {   // a slab or a wall: the panel through its thickness
+        lp = place(st, B.o, B.ez, B.ex);
+        solid = extrude(w.add('IFCRECTANGLEPROFILEDEF(.AREA.,$,' + pos2(a / 2, bsz / 2) + ',' + R(a) + ',' + R(bsz) + ')'), c);
+      }
+      const label = rcb.labels.get(el.id) || el.kind;
+      const mat = 'Concrete ' + rcb.settings.fc + ' MPa';
+      const [cls, pred] = CLS[el.kind];
+      const hid = w.add(cls + '(' + S(seed('rc' + el.id)) + ',$,' + S(label) + ',$,' + S(mat) + ',' + lp + ',' + shape([solid]) + ',' + S(label) + ',' + pred + ')');
+      st.contents.push(hid);
+      if (!materials.has(mat)) materials.set(mat, []);
+      materials.get(mat).push(hid);
+      const { id: _id, ...def } = el;
+      psets.push([hid, [['Definition', 'IFCTEXT', JSON.stringify({ format: 'detailcraft-rc', version: 1, element: def })], ['Phase', 'IFCINTEGER', el.phase || 1]]]);
+      (B.openings || []).forEach(([u0, v0, u1, v1], i) => {
+        const olp = w.add('IFCLOCALPLACEMENT(' + lp + ',' + w.add('IFCAXIS2PLACEMENT3D(' + w.pt([(u0 + u1) / 2, (v0 + v1) / 2, -1]) + ',$,$)') + ')');
+        const rect = w.add('IFCRECTANGLEPROFILEDEF(.AREA.,$,' + pos2(0, 0) + ',' + R(u1 - u0) + ',' + R(v1 - v0) + ')');
+        const op = w.add('IFCOPENINGELEMENT(' + S(seed('rcopen' + el.id + ':' + i)) + ",$,'Opening',$,$," + olp + ',' + shape([extrude(rect, c + 2)]) + ',$,.OPENING.)');
+        voidsRc.push([hid, op, 'rcopen' + el.id + ':' + i]);
+      });
+      const markOf = new Map((schedule?.byElement?.get(el.id) || []).map((m) => [m.group, m.mark]));
+      const barIds = [];
+      it.res.groups.forEach((g, gi) => g.polys.forEach((pts, pi) => barIds.push(writeBar(g, pts, st, 'rcbar' + el.id + ':' + gi + ':' + pi, markOf.get(g) || '', g.role))));
+      if (barIds.length) w.add('IFCRELAGGREGATES(' + S(seed('rel-rc' + el.id)) + ',$,$,$,' + hid + ',(' + barIds.join(',') + '))');
+    }
+    const looseMarks = new Map((schedule?.byElement?.get('loose') || []).map((m) => [m.group, m.mark]));
+    for (const g of rcb.loose) g.polys.forEach((pts, i) => {
+      const st = storeyFor(Math.min(...pts.map((p) => p[2])));
+      st.contents.push(writeBar(g, pts, st, 'loose' + g.ids[i], looseMarks.get(g) || g.mark || '', g.hostName || 'loose'));
+    });
+    for (const [el, op, k] of voidsRc) w.add('IFCRELVOIDSELEMENT(' + S(seed('void' + k)) + ',$,$,$,' + el + ',' + op + ')');
   }
 
   // grids

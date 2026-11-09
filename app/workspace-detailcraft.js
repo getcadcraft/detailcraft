@@ -25,10 +25,10 @@ import { t as tr } from './i18n.js';
 
 const MAP = { open: 'file.open', save: 'file.save', undo: 'edit.undo', redo: 'edit.redo', select: 'place.select', clear: 'edit.select-none', fit: 'view.fit' };
 const TOOLBOX = [
-  ['place', ['place.select', 'place.beam', 'place.column', 'place.brace', 'place.plate', 'place.footing', 'place.stair']],
+  ['place', ['place.select', 'place.beam', 'place.column', 'place.brace', 'place.plate', 'place.footing', 'place.stair', 'place.concrete']],
   ['connect', ['connect.endplates', 'connect.baseplate', 'connect.sheartabs', 'connect.splice', 'connect.gusset', 'connect.mitre', 'connect.similar']],
   ['edit', ['edit.move', 'edit.duplicate', 'edit.copy', 'edit.paste', 'edit.delete']],
-  ['output', ['output.drawings', 'output.shop', 'output.bom', 'output.report']],
+  ['output', ['output.drawings', 'output.shop', 'output.rc-sheets', 'output.bom', 'output.report']],
 ];
 const MEMBER_KINDS = ['beam', 'column', 'brace', 'plate'];
 const CONN_KINDS = ['endplate', 'baseplate', 'sheartab', 'splice', 'gusset', 'mitre'];

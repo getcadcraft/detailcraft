@@ -1,55 +1,59 @@
 ---
-title: Novinky v 0.7
-summary: Návrhové kontroly ocelových I-profilů s kombinacemi zatížení podle ASCE 7 nebo EN 1990 a kontrolami prutů podle AISC 360 nebo EN 1993-1-1, export USD ocelového modelu, nástroj asistenta pro USD, ocelářský pás s velkými a malými tlačítky, panely, které se uklidí, a dialogy, které se přesouvají.
-keywords: novinky, co je nového, poznámky k vydání, seznam změn, změny, 0.7, verze, nové funkce, návrhové kontroly, návrh oceli, využití, kombinace zatížení, ASCE 7, EN 1990, AISC 360, EN 1993-1-1, Eurokód, národní příloha, užitné zatížení střechy, mezní průhyb, usd, usda, usdc, usdz, openusd, asistent, mcp, ocelářský pás, pás karet, rozdělené tlačítko, jednotky, kompaktní, panely, dialogy, portugalština
-from: 17d1e0bb
+title: Co je nového ve verzích 0.8 a 0.8.1
+summary: Montážní film z diagramu nosnosti jeřábu, autopilot spojů, mapa přeplněné výztuže, kontroly základů, panely dřevěné a lehké ocelové konstrukce, kontroly zhotovitelnosti a přístupu ke svarům, zásoby dodavatele, co se porouchá jako první, živý přepočet, další kontroly betonu a opravy verze 0.8.1.
+keywords: co je nového, novinky, poznámky k vydání, changelog, změny, 0.8, 0.8.1, verze, nové funkce, montáž, jeřáb, diagram nosnosti, film, autopilot, spoje, výztuž, přeplněnost, základy, patka, plošná výztuž, sedání, rámování, dřevo, lehká ocel, seznam řezů, zhotovitelnost, přístup ke svaru, dodavatel, zásoby, dodací lhůta, co se porouchá jako první, živě, beton, seismicita, deska, jazyky, asistent
+from: 6e33e052
 ---
 
-Zde je přehled změn v DetailCraftu 0.7 oproti 0.6. Analýza rámu z 0.6 má nyní druhý krok: kontrolu ocelových prutů podle návrhové normy.
+Toto se změnilo ve verzi DetailCraft 0.8 (1. listopadu 2026) a 0.8.1 (2. listopadu 2026), ve srovnání s verzí 0.7. Verze 0.7 kontrolovala ocelové pruty; verze 0.8 plánuje zdvihy, navrhuje spoje, kontroluje základy a výztuž a rámuje dřevěné a lehké ocelové stěny, podlahy a střechy.
 
 ## Nové
 
-### Pokosové spoje (0.7.1)
+### Montáž
 
-- **Dva I-profily setkávající se pod úhlem**, například rámový roh nebo hřeben: vyberte oba, zvolte {{ui:Pokos}} v nabídce {{ui:Více}} skupiny {{ui:Spojit}} a oba konce se seříznou v rovině, která půlí úhel. Čelní desky sešroubované k sobě a výztuhy stojiny jsou zaškrtávací pole v novém dialogu Pokos, jehož číslovaná pole odpovídají výkresu Vašeho spoje vytvářenému při psaní. Pokos sleduje pruty, když se pohybují, a přenáší se do výkresů, souborů NC (šikmé řezy), IFC a kusovníku. Viz [Pokosové spoje](topic:mitres).
+- **Plán montáže a film.** Na kartě {{ui:Montáž}} popište jeřáb (kde stojí, jeho nejvyšší háček, závěsné vybavení, které není v diagramu) a zadejte řádky jeho diagramu nosnosti. DetailCraft zvedá model po jedné sestavě, v pořadí fází a patro po patře, a kontroluje každé zvednutí podle diagramu při jeho vyložení a podle rezervy, kterou nastavíte. {{ui:Uložit film}} zapíše jeden soubor HTML, který se přehraje offline v jakémkoli prohlížeči, i v telefonu. Zvednutí nad diagramem, za ním nebo příliš vysoko jsou v {{ui:Problémy}}. Je to plán z vašich čísel, ne plán zdvihu. Viz [Plán montáže a film](topic:erection-movie).
 
-### Návrhové kontroly
+### Spoje
 
-- **Kombinace zatížení podle normy.** Na kartě {{ui:Analýza}} má nový blok {{ui:Kontroly návrhu}} položku {{ui:Návrhová norma}}: ASCE 7 + AISC 360 (USA, LRFD) nebo EN 1990 + EN 1993-1-1 (Eurokód). Zadejte každému zatěžovacímu stavu jeho druh (stálé, užitné, nově užitné zatížení střechy, sníh, vítr, seismické), stiskněte {{ui:Vytvořit kombinace}} a DetailCraft zapíše kombinace mezního stavu únosnosti a použitelnosti normy pro Vaše stavy. Kombinace, které jste zadali sami, zůstanou. Viz [Vytvoření kombinací](topic:design-checks#make-the-combinations).
-- **Hodnoty národní přílohy.** U Eurokódu součinitele začínají u doporučených hodnot; {{ui:Hodnoty národní přílohy}} umožňuje zadat hodnoty Vaší země a ukládají se v modelu. Viz [Vytvoření kombinací](topic:design-checks#make-the-combinations).
-- **Kontrola prutů.** {{ui:Zkontrolovat prvky}} zkontroluje každý ocelový I-profil na tah, tlak s vybočením, ohyb s klopením, smyk, ohyb s osovou silou a průhyb proti {{ui:Mezní průhyb}}, který nastavíte. Tabulka ukazuje využití každého prutu, rozhodující kontrolu a její kombinaci a pruty se na modelu obarví (modrá, zelená, okrová, červená, šedá pro nekontrolováno). Viz [Kontrola prutů](topic:design-checks#check-the-members).
-- **Ve zprávě.** {{ui:Zpráva (PDF)}} a {{ui:Zpráva (CSV)}} přidávají vydání norem, nastavení, využití podle prutu a každý použitý článek. Viz [Zpráva](topic:design-checks#the-report).
-- **Pomůcka, dokud ji statik neprověří.** Používá jen síly prvního řádu. Trubky, úhelníky, profily U, svařované profily a štíhlé části nebo části třídy 4 uvádějí „nekontrolováno“ s důvodem; kroucení, spoje a beton se nekontrolují. Viz [Co se nekontroluje](topic:design-checks#what-is-not-checked).
+- **Autopilot spojů.** Karta {{ui:Autopilot}} prohlédne každý styk, který nemá spoj, a navrhne ho podle tvarů: patní plechy, smykové plechy, čelní desky pro nosníky, které označíte jako momentové, spojky a styčníky. Zadejte rovnoměrné zatížení nebo jednu posouvající sílu na konci a počet šroubů se řídí návrhovou pevností šroubu. {{ui:Přidat všechny}} přidá návrhy jako jeden krok zpět. Jsou to výchozí hodnoty k prohlédnutí, ne návrh spoje.
+- **Kontroly zhotovitelnosti.** {{ui:Problémy}} hlídají šroub, na který klíč nedosáhne, šrouby příliš blízko u sebe pro nástrčný klíč, koutové svary mimo jejich mezní velikosti a dutých profilů, které zadržují vodu. Přístup ke svaru je nový: obvodový koutový svar, na který nedosáhne hořák svářeče, je uveden s dílem, který překáží, a podílem dotčeného svaru. Viz [Kontroly zhotovitelnosti](topic:constructability).
 
-### USD
+### Základy a výztuž
 
-- **Export ocelového modelu jako USD.** {{ui:USD}} ve skupině {{ui:Výstup}} zapíše model jako {{ui:Text (.usda)}}, {{ui:Binární (.usdc)}} nebo {{ui:Balíček (.usdz)}} pro vykreslovací programy a sestavování scén: každá sestava obsahuje své díly, každý díl je jeho průřez vedený po délce s vyříznutými výřezy a každý nese své označení dílu, profil, jakost, délku a hmotnost. Otvory pro šrouby, šrouby, svary a patky v sítích USD nejsou. Viz [Export ocelového modelu jako USD](topic:usd).
+- **Kontroly základů.** Karta {{ui:Základy}} kontroluje patky, spojené patky a plošné základy na zemině, kterou popíšete: únosnost, posun a překlopení od provozních zatížení; ohyb, smyk, průraz, zakotvení a minimální výztuž z návrhových zatížení (ACI 318-19). Sloup blízko okraje nebo rohu se kontroluje s průřezem oříznutým hranou patky. Sedání vychází z modulu zeminy, pružný plošný základ se řeší na pružinách z modulu podloží a skupiny pilot a opěrné zdi mají vlastní panely. Zatížení sloupů lze zadat ručně, nebo vzít z {{ui:Analýza}}. Viz [Kontroly základů](topic:foundation-checks).
+- **Mapa přeplněné výztuže.** Karta {{ui:Hustota výztuže}} kreslí tepelnou mapu každé patky při pohledu shora: kde pruty ponechávají příliš málo místa, aby se beton dostal dolů, proti pravidlu čisté vzdálenosti a, pokud je zadáte, největšímu kamenivu a hlavici vibrátoru. Viz [Mapa přeplněné výztuže](topic:rebar-congestion).
 
-### Asistenti s umělou inteligencí
+### Rámování a zásoby
 
-- **USD pro asistenty.** Váš vlastní asistent, připojený přes CadCraft Studio, může exportovat model jako USD (`usd_export`) a ve Studiu jej zapsat do složky, kterou jste povolili. Viz [O co může asistent žádat](topic:use-with-ai-assistants#what-an-assistant-can-ask-for).
+- **Rámování ze dřeva a lehké oceli.** Karta {{ui:Rámování}} rámuje panely stěn, podlah a střech se všemi kusy, seznamem řezů, zásobami k nákupu a dílenským výkresem v měřítku. {{ui:Umístit jako pruty}} vloží kusy do modelu a {{ui:Listy PDF}} uloží jeden list pro každý panel. Rozměry, rozteče a záhlaví určujete vy: DetailCraft nekontroluje, že nesou zatížení. Viz [Panely rámování ze dřeva a lehké oceli](topic:framing-panels).
+- **Zásoby dodavatele a dodací lhůty.** Karta {{ui:Dodávky}} načte seznam zásob dodavatele (CSV) a u každého profilu, který seznam řezů kupuje, ukáže, zda je dost na skladě a jak dlouho se čeká. Nedostatky a opožděné profily jsou v {{ui:Problémy}}. Nic se neobjednává. Viz [Zásoby dodavatele a dodací lhůty](topic:supplier-stock).
 
-## Změněno
+### Analýza a návrh
 
-- **Ocelářský pás** má velká a malá tlačítka: velký {{ui:Nosník}} vedle malých {{ui:Sloup}}, {{ui:Ztužidlo}} a {{ui:Plech}} v {{ui:Modelování}} › {{ui:Pruty}}; velké {{ui:Čelní desky}} v {{ui:Detailování}} › {{ui:Spoje}}, s {{ui:Spojka}} a {{ui:Styčník}} sdílejícími jedno rozdělené tlačítko; velké {{ui:Vložit}} v {{ui:Úpravy}} › {{ui:Schránka}}, s {{ui:Vložit na stejné místo}} a {{ui:Duplikovat}} za šipkou skupiny. {{ui:Výroba}} › {{ui:Výměna}} má {{ui:Exportovat USD}} vedle IFC. Ostatní styly nabídek vypadají jako dříve. Viz [Nabídky, klávesy a myš](topic:menus-keys-and-mouse#the-three-styles).
-- Téma [Analýza rámu](topic:frame-analysis) nyní odkazuje na návrhové kontroly a jeho kombinace lze vytvořit podle normy.
+- **Co se porouchá jako první?** Na kartě {{ui:Analýza}} tlačítko najde rozhodující kombinaci pevnosti, nejslabší prut, o kolik lze zatížení zvýšit, než první prut dosáhne svého limitu, a nejslabší čelní desku nebo smykový plech, pokud je známa smyková pevnost jejich šroubů. Nejdřív potřebuje kombinace a návrhový předpis. Únosnost v otlačení, smyk bloku, svary a páčení se nekontrolují. Váš připojený asistent může totéž zadat také.
+- **Živě.** Zaškrtněte {{ui:Živě: po každé úpravě řešit znovu}} a rám se po každé úpravě přepočítá.
+- **Beton a další.** Štíhlý sloup v rámu bez posunu se navrhuje na svůj zvětšený moment (ACI 318-19 6.6.4.5). Seismickou periodu lze vzít z analýzy Rayleighovou metodou. Deska z plechů dostane výztuž, kterou každá vrstva potřebuje, podle svých momentů, a také jednosměrný smyk. Viz [Kontroly betonových prvků a seismická zatížení](topic:concrete-and-seismic).
+- **Pro inženýra ke kontrole.** Výsledky kontroly základů, betonu a funkce Co se porouchá jako první jsou pomůcky. Větrná zatížení nejsou zatím zabudována.
 
-## V každé aplikaci
+### Ve všech aplikacích
 
-- **Jednotky.** {{ui:Nastavení}} › {{ui:Obecné}} › {{ui:Jednotky}} má po jednom seznamu pro délku, plochu, objem, úhel a sklon s přesnými velikostmi podle definic jednotek (americká zeměměřičská stopa je samostatná jednotka). Vypněte jednotky, které nikdy nepoužíváte, a z seznamů jednotek zmizí; označte jednu hvězdičkou a nová práce v ní začne. Soubor si vždy ponechává vlastní jednotku. Vlastní pole DetailCraftu seznamy zatím nesledují: jeho délky se stále zadávají v milimetrech. Viz [Jednotky, zadávané hodnoty a seznamy jednotek](common:unit-lists).
-- **Hustší rozvržení a panely, které se uklidí.** {{ui:Nastavení}} › {{ui:Obecné}} › {{ui:Hustota rozložení}} › {{ui:Kompaktní}} vměstná na obrazovku víc (dotykové obrazovky a telefony si ponechávají velká tlačítka). Každý boční panel má štíhlou záhlavní lištu: přetažením panel ukotvíte nebo necháte plovoucí, puštěním na lištu jiného panelu je sloučíte do jednoho rámu jako karty, připnutím jej necháte zasunout k okraji, nebo jej skryjete a vrátíte z okraje. Viz [Uspořádání panelů](common:arrange-panels#make-the-layout-denser).
-- **Dialogy se přesouvají.** Přetáhněte dialog za záhlaví z cesty kresbě; vrátí se tam, kde jste jej nechali. Dvojitým kliknutím na záhlaví jej znovu vycentrujete. Viz [Přesunutí dialogu](common:arrange-panels#move-a-dialog).
-- **Návody pro asistenty s umělou inteligencí.** Deset ukázkových požadavků pro Vašeho vlastního asistenta (uklidit výkres, vykreslit sadu, zkontrolovat výkresy, ptát se modelu, sečíst výkaz výměr, vyzkoušet variantu dílu…), každý s nástroji, které volá, a oprávněními, která potřebuje, a každý přehraný našimi testy. Aplikace neobsahují žádnou AI. Viz [Návody pro asistenty s umělou inteligencí](common:assistants-recipes).
-- **Jazyky.** **Português (Portugal)** je nově v {{ui:Nastavení}} › {{ui:Obecné}} › {{ui:Jazyk}}. Ten, **Português (Brasil)**, **Español (México)** a **Bahasa Indonesia** mají nyní každé slovo aplikací, jako koncepty dosud nezkontrolované rodilým mluvčím. Témata nápovědy jsou v angličtině.
-- **CadCraft Studio** říká, proč kontrola aktualizací selhala (pro Váš systém zatím není soubor, chybí síť, chybný podpis), místo pouhého „Hotovo“, a přestane vracet kartu Novinky, kterou jste zavřeli, dokud nevyjde novější vydání.
+- **Jazyky.** Nápověda je ve 54 jazycích. Ty kromě angličtiny jsou strojové koncepty, dokud je nepřečte rodilý mluvčí; deset je nových (litevština, lotyština, bosenština, maráthí, telugu, albánština, afrikánština, filipínština, svahilština, uzbečtina).
+- **Řádky panelu nástrojů.** {{ui:Nastavení}} › {{ui:Obecné}} › {{ui:Řádky panelu nástrojů}} volí zalamování, 2 řádky nebo 1 řádek. Panel, který se již vejde, zůstane beze změny; zbytek se posouvá do stran.
+- **Mřížka vlastností.** Pole patky používají společnou mřížku: sbalitelné kategorie a kompaktní hustota. Zadané výpočty jako 2*450 stále fungují.
+- **Vstupní zařízení.** Touchpad, pero, 3D myš, ovladač a MIDI mohou ovládat aplikace. Viz [Pohyb ve 3D](topic:navigate-3d).
+- **Panel Problémy.** Upozornění nových kontrol výše se objevují ve stejném panelu {{ui:Problémy}} jako dříve.
+- **Připojte svou AI.** Váš vlastní asistent, připojený přes CadCraft Studio, funguje se všemi osmi aplikacemi a vidí jen to, co povolíte. Připojení jedním kliknutím, hostovaný konektor a váš vlastní API klíč ve Studiu teprve přijdou. Viz [Použití DetailCraftu s asistentem AI](topic:use-with-ai-assistants).
 
-## V této verzi ještě není
+## Opraveno ve verzi 0.8.1
 
-- **0.7 není podepsáno kódem.** Podepisování a balíček Microsoft Store se přesunuly do 0.8, protože ověření certifikátu zatím neprošlo. Zkontrolujte SHA-256 vedle každého souboru na getcadcraft.com/download. Pokud ve Windows instalátor zastaví SmartScreen, zvolte {{ui:Další informace}} a potom {{ui:Přesto spustit}}. Na Macu poprvé klikněte pravým tlačítkem na CadCraft Studio a zvolte {{ui:Otevřít}}. CadCraft Studio zatím není v žádném obchodě s aplikacemi a verze pro iPad ani iPhone zatím neexistuje.
-- Seznamy úhlu a sklonu v {{ui:Jednotky}} se ukládají, ale zatím je nečte žádné pole.
-- **Návrhové kontroly zatím neprověřil statik.** Naše testy je porovnávají s tištěnými hodnotami z tabulek a vzorci počítanými ručně, zatím ne s řešenými příklady z návrhových příruček. Do prověření jsou pomůckou: důležité pruty zkontrolujte ručně.
-- Návrhové kontroly používají síly prvního řádu (žádné účinky druhého řádu) a kontrolují jen I-profily. Není hotovo: trubky, úhelníky, profily U, svařované profily, štíhlé části (AISC) nebo části třídy 4 (Eurokód) v ohybu, kroucení, boulení smykem spolu s ohybem, spoje, únava, požár, seismické detailování a beton. Štíhlá část v tlaku vynechá kontroly tlaku a prut uvádí „vyhovuje, částečně zkontrolováno“.
-- Analýza rámu je stále prvního řádu a lineární a statik ji zatím nevyzkoušel na skutečné zakázce.
-- Otvory pro šrouby, šrouby, svary a patky v exportu USD nejsou.
+- **Jazyky ve Studiu.** Studio a balíčkované verze mohou přepínat jazyk za běhu; dříve byly jen v angličtině. Zatím nebylo otestováno na každé platformě: dejte nám vědět, pokud se jazyk nemění.
+- **Výběr oknem.** Instalátory 0.8.1 obsahují chování výběru oknem, které už bylo správně ve webovém sestavení 0.8; starší instalátor ho neměl.
+- **Tablety na výšku.** Volná výška mřížky připadá plátnu a rozložení listu začíná při 760 px nebo méně.
 
-Vše ostatní je v tématu [Co ještě není hotovo](topic:not-built-yet).
+## Zatím není v této verzi
+
+- **Odeslání NC na stroj** není vydáno.
+- **Větrná zatížení** pro beton nejsou zabudována a kontroly betonu a základů jsou pro inženýra k posouzení.
+- **Podepisování kódu.** Instalátory pro Windows a soubor .dmg pro macOS nejsou podepsány, takže Windows může varovat a macOS vyžaduje kliknutí pravým tlačítkem, pak Otevřít.
+
+Dřívější změny jsou v [Co je nového ve verzi 0.7](topic:whats-new-0-7).

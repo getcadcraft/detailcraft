@@ -28,7 +28,7 @@ The toolbar has five groups. Hover over a button to see what it does and its key
 | {{ui:Edit}} | {{ui:Undo}}, {{ui:Redo}}, {{ui:Copy}}, {{ui:Paste}}, {{ui:More}} | Step back and forward through edits; copy the selection and paste it. {{ui:More}} opens a menu with {{ui:Cut}}, {{ui:Copy}}, {{ui:Paste}}, {{ui:Paste in place}}, {{ui:Duplicate}}, {{ui:Delete}}, {{ui:Select all}} and {{ui:Select none}}, each with its key |
 | {{ui:Output}} | {{ui:IFC}}, {{ui:NC files}}, {{ui:BOM}}, {{ui:Shop drawing}}, {{ui:Drawings}}, and in {{ui:More}}: {{ui:Bending}}, {{ui:Weight report by phase}}, {{ui:KISS file for fabrication software}} | Download an export, or open the drawing sheets |
 
-Buttons and menu items that cannot act right now are grayed out, and hovering over one says why. {{ui:End plates}} needs a selected beam, {{ui:Base plate}} a selected column, {{ui:Similar}} a selected connection, {{ui:Shop drawing}} a selected I-shape or plate part, {{ui:Copy}} a selected member or footing, and {{ui:Paste}} something copied. See [Copy, paste and duplicate](topic:copy-paste).
+Buttons and menu items that cannot act right now are grayed out, and hovering over one says why. {{ui:End plates}} needs a selected beam, {{ui:Base plate}} a selected column, {{ui:Similar}} a selected connection, {{ui:Shop drawing}} a model with parts, {{ui:Copy}} a selected member or footing, and {{ui:Paste}} something copied. See [Copy, paste and duplicate](topic:copy-paste).
 
 ## The Model panel (left)
 

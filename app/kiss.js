@@ -66,6 +66,7 @@ export function kissShape(profile, metric) {
     }
   }
   if (p.source === 'en') return [p.kind === 'C' ? 'C' : 'W', name];   // UPN is a channel
+  if (p.source === 'uk') return [{ I: 'W', C: 'C', L: 'L', RHS: 'HSS', CHS: 'HSS' }[p.kind], name];
   return [{ I: 'MI', C: 'MI', L: 'MI', RHS: 'MI', CHS: 'MI' }[p.kind] || 'MI', name];
 }
 const f2c = (v) => String(Math.round(v * 100) / 100);

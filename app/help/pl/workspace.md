@@ -1,19 +1,19 @@
 ---
 title: Przegląd ekranu
-summary: Każdy pasek, panel i karta w DetailCraft pod nazwą z ekranu oraz to, do czego służą.
-keywords: ekran, układ, pasek narzędzi, panele, właściwości, pasek stanu, raporty, interfejs, karty
-from: 454f74fd
+summary: Każdy pasek, panel i karta w DetailCraft pod nazwą widoczną na ekranie oraz to, do czego służą.
+keywords: ekran, układ, pasek narzędzi, panele, właściwości, pasek stanu, raporty, interfejs, ui, karty
+from: 94f81073
 ---
 
-DetailCraft wypełnia okno przeglądarki pod paskiem aplikacji. Od góry do dołu: pasek narzędzi, potem trzy kolumny (panel {{ui:Model}}, widok, panel {{ui:Właściwości}}), potem karty raportów, potem pasek stanu.
+DetailCraft wypełnia okno przeglądarki poniżej paska aplikacji. Od góry: pasek narzędzi, potem trzy kolumny (panel {{ui:Model}}, widok, panel {{ui:Properties}}), potem karty raportów, a na końcu pasek stanu.
 
 ## Pasek aplikacji
 
-Wąski pasek na samej górze należy do witryny CadCraft, nie do modelu. Pokazuje nazwę i wersję aplikacji, odsyłacz {{ui:O DetailCraft}}, {{ui:Pomoc}} (albo {{key:F1}}) dla tej pomocy, {{ui:Zapisz do pracy offline}}, przycisk trybu ekranu i przełącznik {{ui:Papier}} / {{ui:Model}}.
+Cienki pasek na samej górze należy do strony CadCraft, a nie do modelu. Pokazuje nazwę aplikacji i wersję, link do {{ui:About DetailCraft}} (O programie DetailCraft), {{ui:Help}} (albo {{key:F1}}) dla tej pomocy, {{ui:Save for offline}}, przycisk trybu ekranu oraz przełącznik {{ui:Paper}} / {{ui:Model}}.
 
-- {{ui:Zapisz do pracy offline}} zachowuje w przeglądarce DetailCraft, jego widok 3D i tę pomoc, żeby otwierał się bez połączenia. Po zapisie pokazuje {{ui:Gotowe offline}}; naciśnij go wtedy, aby użyć {{ui:Zapisz ponownie (pobierz najnowszą wersję)}} lub {{ui:Usuń kopię offline}}. Zobacz [Praca offline](common:offline).
-- {{ui:Papier}} daje jasny ekran, a {{ui:Model}} ciemny. Widok 3D podąża od razu; nic w modelu się nie zmienia.
-- Przycisk trybu ekranu i {{key:Ctrl+Shift+F}} przełączają tryby: normalny, pełny ekran i pełny ekran z ukrytymi paskami. {{key:Ctrl+Shift+F}} używa klawisza Control na każdym komputerze, także na Macu. Przy ukrytych paskach wskaż górną krawędź ekranu (albo dotknij jej), aby je przywrócić. {{key:Esc}} opuszcza pełny ekran.
+- {{ui:Save for offline}} zachowuje DetailCraft, jego widok 3D i tę pomoc w przeglądarce, aby otwierał się bez połączenia. Po zapisaniu pokazuje {{ui:Offline ready}}; kliknij go wtedy, aby uzyskać {{ui:Save again (get the newest version)}} albo {{ui:Remove the offline copy}}. Zobacz [Praca offline](common:offline).
+- {{ui:Paper}} daje jasny ekran, a {{ui:Model}} ciemny. Widok 3D zmienia się od razu; nic w modelu się nie zmienia.
+- Przycisk trybu ekranu i {{key:Ctrl+Shift+F}} przełączają kolejno między trybem normalnym, pełnym ekranem i pełnym ekranem z ukrytymi paskami. {{key:Ctrl+Shift+F}} używa klawisza Ctrl na każdym komputerze, także na Macu. Gdy paski są ukryte, wskaż górną krawędź ekranu (albo ją dotknij), aby je przywrócić. {{key:Esc}} wychodzi z pełnego ekranu.
 
 ## Pasek narzędzi
 
@@ -21,67 +21,67 @@ Pasek narzędzi ma pięć grup. Najedź na przycisk, aby zobaczyć, co robi, i j
 
 | Grupa | Przyciski | Co robią |
 |---|---|---|
-| {{ui:Plik}} | {{ui:Nowy}}, {{ui:Otwórz}}, {{ui:Importuj IFC}}, {{ui:Zapisz}}, {{ui:Przykład}} | Rozpocząć model, otworzyć zapisany `.detailcraft.json` albo plik IFC, zapisać model lub otworzyć przykładową ramę |
-| {{ui:Umieść}} | {{ui:Zaznacz}}, {{ui:Belka}}, {{ui:Słup}}, {{ui:Stężenie}}, {{ui:Blacha}}, {{ui:Ława}}, {{ui:Schody}} | Narzędzie, którego użyje następne kliknięcie w widoku |
-| {{ui:Połącz}} | {{ui:Blachy czołowe}}, {{ui:Blacha podstawy}}, a w {{ui:Więcej}}: {{ui:Blachy przyłączeniowe}}, {{ui:Połączenie doczołowe}}, {{ui:Blacha węzłowa}}, {{ui:Podobne}} | Dodać połączenie do zaznaczonej belki, słupa lub stężenia albo skopiować zaznaczone połączenie na każdy taki sam węzeł |
-| {{ui:Edycja}} | {{ui:Cofnij}}, {{ui:Ponów}}, {{ui:Kopiuj}}, {{ui:Wklej}}, {{ui:Więcej}} | Cofać i ponawiać edycje; kopiować zaznaczenie i je wklejać. {{ui:Więcej}} otwiera menu z {{ui:Wytnij}}, {{ui:Kopiuj}}, {{ui:Wklej}}, {{ui:Wklej w miejscu}}, {{ui:Duplikuj}}, {{ui:Usuń}}, {{ui:Zaznacz wszystko}} i {{ui:Odznacz wszystko}}, każde z własnym klawiszem |
-| {{ui:Wyjście}} | {{ui:IFC}}, {{ui:Pliki NC}}, {{ui:Zestawienie}}, {{ui:Rysunek warsztatowy}}, {{ui:Rysunki}}, a w {{ui:Więcej}}: {{ui:Gięcie}}, {{ui:Raport masy według etapu}}, {{ui:Plik KISS dla oprogramowania do produkcji}} | Pobrać eksport albo otworzyć arkusze rysunkowe |
+| {{ui:File}} | {{ui:New}}, {{ui:Open}}, {{ui:Import IFC}}, {{ui:Save}}, {{ui:Sample}} | Rozpoczynają model, otwierają zapisany `.detailcraft.json` lub plik IFC, zapisują model albo otwierają przykładową ramę |
+| {{ui:Place}} | {{ui:Select}}, {{ui:Beam}}, {{ui:Column}}, {{ui:Brace}}, {{ui:Plate}}, {{ui:Footing}}, {{ui:Stair}} | Narzędzie, którego używa następne kliknięcie w widoku |
+| {{ui:Connect}} | {{ui:End plates}}, {{ui:Base plate}}, a w {{ui:More}}: {{ui:Shear tabs}}, {{ui:Splice}}, {{ui:Gusset}}, {{ui:Similar}} | Dodają połączenie do zaznaczonej belki, słupa lub stężenia albo kopiują zaznaczone połączenie do każdego podobnego węzła |
+| {{ui:Edit}} | {{ui:Undo}}, {{ui:Redo}}, {{ui:Copy}}, {{ui:Paste}}, {{ui:More}} | Cofają i ponawiają zmiany; kopiują zaznaczenie i wklejają je. {{ui:More}} otwiera menu z {{ui:Cut}}, {{ui:Copy}}, {{ui:Paste}}, {{ui:Paste in place}}, {{ui:Duplicate}}, {{ui:Delete}}, {{ui:Select all}} i {{ui:Select none}}, każde z klawiszem |
+| {{ui:Output}} | {{ui:IFC}}, {{ui:NC files}}, {{ui:BOM}}, {{ui:Shop drawing}}, {{ui:Drawings}}, a w {{ui:More}}: {{ui:Bending}}, {{ui:Weight report by phase}}, {{ui:KISS file for fabrication software}} | Pobierają eksport albo otwierają arkusze rysunków |
 
-Przyciski i pozycje menu, które w danej chwili nie mogą działać, są wyszarzone, a najechanie na nie mówi dlaczego. {{ui:Blachy czołowe}} wymagają zaznaczonej belki, {{ui:Blacha podstawy}} zaznaczonego słupa, {{ui:Podobne}} zaznaczonego połączenia, {{ui:Rysunek warsztatowy}} zaznaczonej części będącej kształtownikiem dwuteowym lub blachą, {{ui:Kopiuj}} zaznaczonego elementu lub ławy, a {{ui:Wklej}} czegoś skopiowanego. Zobacz [Kopiowanie, wklejanie i duplikowanie](topic:copy-paste).
+Przyciski i pozycje menu, których nie można teraz użyć, są wyszarzone, a najechanie na nie mówi dlaczego. {{ui:End plates}} wymaga zaznaczonej belki, {{ui:Base plate}} zaznaczonego słupa, {{ui:Similar}} zaznaczonego połączenia, {{ui:Shop drawing}} modelu z częściami, {{ui:Copy}} zaznaczonego elementu lub stopy, a {{ui:Paste}} czegoś skopiowanego. Zobacz [Kopiowanie, wklejanie i duplikowanie](topic:copy-paste).
 
-## Panel Model (po lewej)
+## Panel modelu (lewy)
 
-- {{ui:Model}}: {{ui:Nazwa}} modelu. Nazywa każdy zapisywany lub eksportowany plik.
-- {{ui:Siatki}}: linie siatek i ich rozstawy oraz {{ui:Zastosuj siatki}}. Zobacz [Przygotowanie siatek i poziomów](topic:grids-and-levels).
-- {{ui:Poziomy}}: po jednym wierszu na poziom (nazwa i rzędna w mm), {{ui:Dodaj poziom}} i {{ui:Zastosuj poziomy}}.
-- {{ui:Profil niestandardowy}}: utwórz własny przekrój parametryczny. Zamknięty, dopóki go nie otworzysz.
-- {{ui:Znaczniki elementów}}: każdy znacznik części w modelu z profilem, długością i liczbą. Naciśnij znacznik, aby zaznaczyć pierwszą część z nim.
+- {{ui:Model}}: {{ui:Name}} modelu. Nadaje nazwę każdemu zapisywanemu lub eksportowanemu plikowi.
+- {{ui:Grids}}: linie siatki i ich rozstawy oraz {{ui:Apply grids}}. Zobacz [Ustawianie siatek i poziomów](topic:grids-and-levels).
+- {{ui:Levels}}: jeden wiersz na poziom (nazwa i rzędna w mm), {{ui:Add level}} i {{ui:Apply levels}}.
+- {{ui:Custom profile}}: stwórz własny parametryczny przekrój. Jest zamknięty, dopóki go nie otworzysz.
+- {{ui:Part marks}}: każdy znacznik części w modelu z jego profilem, długością i liczbą. Kliknij znacznik, aby zaznaczyć pierwszą część z nim.
 
-{{ui:Siatki}}, {{ui:Poziomy}} i {{ui:Profil niestandardowy}} się zwijają: naciśnij ich nagłówki.
+{{ui:Grids}}, {{ui:Levels}} i {{ui:Custom profile}} składają się: kliknij ich nagłówki.
 
-## Widok (pośrodku)
+## Widok (środek)
 
 Widok pokazuje model w 3D. Nad nim pasek widoku ma trzy przyciski i listę:
 
-- {{ui:3D}}: obracaj model swobodnie.
-- {{ui:Rzut}}: patrz prosto w dół na jeden poziom. Obok przycisków pojawia się lista poziomów. Wszystko wyżej niż 1,5 m nad poziomem jest ucięte, żebyś mógł wyraźnie widzieć i klikać ten poziom.
-- {{ui:Elewacja}}: patrz prosto na jedną literowaną linię siatki (Siatka A, Siatka B …). Pojawia się lista siatek literowanych. Pokazana jest tylko stal w odległości do 1 m od tej linii.
-- Przycisk dopasowania na prawym końcu paska widoku powiększa tak, by pokazać cały model.
+- {{ui:3D}}: swobodnie obracaj model.
+- {{ui:Plan}}: patrz prosto w dół na jeden poziom. Obok przycisków pojawia się lista poziomów. Wszystko ponad 1,5 m nad poziomem jest odcięte, abyś wyraźnie widział i klikał poziom.
+- {{ui:Elevation}}: patrz prosto na jedną literowaną linię siatki (Siatka A, Siatka B …). Pojawia się lista literowanych siatek. Widoczna jest tylko stal w odległości 1 m od tej linii.
+- Przycisk dopasowania na prawym końcu paska widoku powiększa, by pokazać cały model.
 
-Małe kropki oznaczają każde przecięcie siatek na każdym poziomie. Gdy narzędzie umieszczania jest włączone, kropka najbliższa wskaźnikowi się zaświeca, a pasek stanu ją nazywa, na przykład „A/2 at Level 1”. Kolory odróżniają typy elementów: słupy, belki, stężenia i blachy mają każde własny kolor, śruby i pręty inny, ławy są przezroczyste, a zbrojenie jest rysowane jako rurki. Otwory pokazują się jako ciemne wtyczki; wycięcia są wycięte.
+Małe kropki oznaczają każde przecięcie siatki na każdym poziomie. Gdy narzędzie umieszczania jest włączone, kropka najbliższa wskaźnikowi się zapala, a pasek stanu ją nazywa, na przykład „A/2 at Level 1”. Kolory pozwalają odróżnić typy elementów: słupy, belki, stężenia i blachy mają każdy własny kolor, śruby i pręty kotwiące inny, stopy są półprzezroczyste, a zbrojenie rysowane jest jako rurki. Otwory widać jako ciemne zatyczki, a wycięcia są widoczne jako wycięte fragmenty.
 
-Jak obracać, przesuwać i powiększać: [Poruszanie się w widoku 3D](topic:navigate-3d).
+Jak obracać, przesuwać i powiększać: [Poruszanie się po widoku 3D](topic:navigate-3d).
 
-Gdy model jest pusty, widok pokazuje krótką listę „Start a model”. Zapisany plik modelu możesz też upuścić w dowolnym miejscu widoku, aby go otworzyć.
+Gdy model jest pusty, widok pokazuje krótką listę „Rozpocznij model”. Zapisany plik modelu możesz też upuścić gdziekolwiek na widok, aby go otworzyć.
 
-## Panel Właściwości (po prawej)
+## Panel właściwości (prawy)
 
-To, co pokazuje ten panel, zależy od tego, co robisz, a mówi o tym jego nagłówek: „Model”, „Place a beam”, „Beam b2”, „End plate connection”, „Base plate”, „Footing F1”, „3 selected” lub „Paste”.
+To, co pokazuje ten panel, zależy od tego, co robisz, a nagłówek mówi, co to jest: „Model”, „Umieść belkę”, „Belka b2”, „Połączenie blachą czołową”, „Blacha podstawy”, „Ława F1”, „Zaznaczono: 3” lub „Wklej”.
 
 - **Nic nie zaznaczono:** podsumowanie modelu (elementy, połączenia, ławy, części, znaczniki, śruby, masa stali i zbrojenia, siatki, poziomy).
-- **Włączone narzędzie umieszczania:** opcje następnego elementu (profil, materiał, położenie, obrót, a dla słupów {{ui:Do}}), podsumowanie wybranego profilu i formularz {{ui:Dodaj według siatki}} do umieszczania bez klikania w widoku.
-- **Zaznaczony element:** jego nazwa, profil, materiał, położenie, obrót, współrzędne obu końców, znaczniki, długość cięcia i masa, otwory i wycięcia oraz przyciski połączeń, rysunku warsztatowego i {{ui:Usuń}}.
-- **Zaznaczone połączenie:** każde ustawienie blachy, śruby i spoiny, śruby i spoina, które wytwarza, jego ostrzeżenia i {{ui:Zastosuj do podobnych}}.
-- **Zaznaczona ława:** jej położenie i rozmiar, siatka dolna, pręty startowe i używane znaczniki prętów.
-- **Zaznaczonych kilka rzeczy:** ile elementów każdego typu, połączeń i ław, ich masa stali oraz {{ui:Kopiuj}}, {{ui:Duplikuj}} i {{ui:Usuń}}.
-- **Wklejanie:** co jest w schowku oraz formularze wklejania z wpisanym przesunięciem albo na przecięcie siatek wybrane z list.
+- **Narzędzie umieszczania włączone:** opcje następnego elementu (profil, materiał, położenie, obrót, a dla słupów {{ui:Up to}}), podsumowanie wybranego profilu oraz formularz {{ui:Add by grid}} do umieszczania bez klikania w widoku.
+- **Zaznaczony element:** jego nazwa, profil, materiał, położenie, obrót, współrzędne obu końców, znaczniki, długość cięcia i masa, otwory i wycięcia oraz przyciski połączeń, jego rysunku warsztatowego i {{ui:Delete}}.
+- **Zaznaczone połączenie:** każde ustawienie blachy, śruby i spoiny, śruby i spoina, które tworzy, jego ostrzeżenia oraz {{ui:Apply to similar}} (Zastosuj do podobnych).
+- **Zaznaczona stopa:** jej położenie i wymiary, dolna mata, pręty wstępne i znaczniki prętów, których używa.
+- **Kilka zaznaczonych rzeczy:** ile elementów każdego typu, połączeń i stóp, ich masa stali oraz {{ui:Copy}}, {{ui:Duplicate}} i {{ui:Delete}}.
+- **Wklejanie:** co jest w schowku oraz formularze do wklejania z wpisanym przesunięciem albo na przecięcie siatki wybrane z list.
 
 Pola liczbowe działają po naciśnięciu {{key:Enter}} lub opuszczeniu pola. Każda zmiana to jeden krok, który możesz cofnąć.
 
-## Karty raportów (na dole)
+## Karty raportów (dół)
 
-- {{ui:Problemy}}: wszystko, czego DetailCraft nie mógł zbudować albo co chce, abyś sprawdził, z przyciskiem {{ui:Zaznacz}} w każdym wierszu. Karta pokazuje liczbę w nawiasach.
-- {{ui:Zestawienie materiałów}}: części, zespoły oraz śruby i pręty kotwiące, z masami i odsyłaczem {{ui:Pobierz CSV}}. Naciśnij znacznik części, aby zaznaczyć tę część.
-- {{ui:Zestawienie gięcia}}: każdy znacznik pręta w każdej ławie, z odsyłaczem {{ui:Pobierz CSV}}.
+- {{ui:Problems}}: wszystko, czego DetailCraft nie mógł zbudować lub co chce, byś sprawdził, z przyciskiem {{ui:Select}} przy każdej linii. Karta pokazuje liczbę w nawiasach.
+- {{ui:Bill of materials}}: części, zespoły oraz śruby i pręty kotwiące z masami i linkiem {{ui:Download CSV}}. Kliknij znacznik części, aby zaznaczyć tę część.
+- {{ui:Bending schedule}}: każdy znacznik pręta w każdej stopie, z linkiem {{ui:Download CSV}}.
 
-Gdy karta ma fokus, {{key:Left}} i {{key:Right}} przechodzą między kartami.
+Gdy karta jest aktywna, {{key:Left}} i {{key:Right}} przechodzą między kartami.
 
 ## Pasek stanu
 
-Pasek wzdłuż dołu ma trzy części: przecięcie siatek pod wskaźnikiem podczas umieszczania, ostatni komunikat (co się właśnie stało albo dlaczego coś odrzucono) i bieżące sumy części, śrub, masy stali i masy zbrojenia. Gdy działanie wydaje się nic nie robić, najpierw przeczytaj komunikat tutaj.
+Pasek na dole ma trzy części: przecięcie siatki pod wskaźnikiem podczas umieszczania, najnowszy komunikat (co się właśnie stało albo dlaczego coś odrzucono) oraz sumy bieżące części, śrub, masy stali i masy zbrojenia. Gdy działanie wydaje się nic nie robić, najpierw przeczytaj komunikat tutaj.
 
-Tytuł karty przeglądarki zaczyna się kropką (•), gdy model ma niezapisane zmiany.
+Tytuł karty przeglądarki zaczyna się od kropki (•), gdy model ma niezapisane zmiany.
 
 ## Na wąskim ekranie
 
-Poniżej około 760 pikseli szerokości kolumny układają się jedna pod drugą: pasek narzędzi, widok, pasek stanu, {{ui:Właściwości}}, karty raportów, a na końcu panel {{ui:Model}}. Przewijaj stronę, aby do nich dotrzeć. DetailCraft jest ułożony pod ekran komputera stacjonarnego lub laptopa; telefon nadaje się do oglądania, nie do detalowania.
+Poniżej około 760 pikseli szerokości kolumny układają się jedna pod drugą: pasek narzędzi, widok, pasek stanu, {{ui:Properties}}, karty raportów, a na końcu panel {{ui:Model}}. Przewiń stronę, aby do nich dotrzeć. DetailCraft jest zaprojektowany na ekran komputera stacjonarnego lub laptopa; telefon nadaje się do oglądania, a nie do detailingu.

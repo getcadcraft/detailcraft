@@ -1,55 +1,59 @@
 ---
-title: Yang baru di 0.7
-summary: Pemeriksaan desain profil I baja dengan kombinasi beban dari ASCE 7 atau EN 1990 dan pemeriksaan batang menurut AISC 360 atau EN 1993-1-1, ekspor USD model baja, alat asisten untuk USD, pita Baja dengan tombol besar dan kecil, panel yang dapat dirapikan, dan dialog yang dapat dipindahkan.
-keywords: yang baru, rilis, catatan rilis, changelog, perubahan, 0.7, versi, fitur baru, pemeriksaan desain, desain baja, utilisasi, kombinasi beban, ASCE 7, EN 1990, AISC 360, EN 1993-1-1, Eurocode, National Annex, beban hidup atap, batas lendutan, usd, usda, usdc, usdz, openusd, asisten, mcp, pita baja, pita, tombol terbagi, satuan, ringkas, panel, dialog, portugis
-from: 17d1e0bb
+title: Yang baru di 0.8 dan 0.8.1
+summary: Film ereksi dari tabel beban derek, autopilot sambungan, peta kepadatan tulangan, pemeriksaan fondasi, panel rangka kayu dan baja ringan, pemeriksaan kemudahan konstruksi dan akses las, stok pemasok, apa yang rusak lebih dulu, penyelesaian ulang langsung, pemeriksaan beton yang lebih lanjut, perbaikan 0.8.1.
+keywords: yang baru, apa yang baru, catatan rilis, changelog, perubahan, 0.8, 0.8.1, versi, fitur baru, ereksi, derek, tabel beban, film, autopilot, sambungan, tulangan, kepadatan, fondasi, tikar, penurunan, rangka, kayu, baja ringan, daftar potong, kemudahan konstruksi, akses las, pemasok, stok, waktu tunggu, apa yang rusak dulu, langsung, beton, seismik, pelat, bahasa, asisten
+from: 6e33e052
 ---
 
-Berikut perubahan di DetailCraft 0.7 dibandingkan 0.6. Analisis rangka pada 0.6 kini memiliki langkah kedua: memeriksa batang baja terhadap standar desain.
+Ini adalah yang berubah di DetailCraft 0.8 (1 November 2026) dan 0.8.1 (2 November 2026), dibandingkan dengan 0.7. 0.7 memeriksa batang baja; 0.8 merencanakan pengangkatan, mengusulkan sambungan, memeriksa fondasi dan tulangan, serta membingkai dinding, lantai, dan atap kayu serta baja ringan.
 
 ## Baru
 
-### Sambungan mitre (0.7.1)
+### Ereksi
 
-- **Dua profil I bertemu pada sudut**, seperti sendi portal atau puncak atap: pilih keduanya, pilih {{ui:Mitre}} di menu {{ui:Lainnya}} pada grup {{ui:Sambung}}, dan kedua ujung dipotong pada bidang yang membagi dua sudut. Pelat ujung yang dibaut bersama dan pengaku badan adalah kotak centang di dialog Mitre yang baru, yang kolom bernomornya cocok dengan gambar sambungan Anda yang dibuat seiring Anda mengetik. Mitre mengikuti batang saat dipindahkan, dan berlanjut ke gambar, file NC (potongan miring), IFC, dan daftar material. Lihat [Sambungan mitre](topic:mitres).
+- **Rencana ereksi dan film.** Di tab {{ui:Ereksi}}, jelaskan derek (di mana ia berdiri, kait tertingginya, dan rigging yang tidak ada di tabel), lalu ketik baris-baris tabel beban deleknya. DetailCraft mengangkat model satu rakitan pada satu waktu, sesuai urutan fase dan tingkat demi tingkat, lalu memeriksa setiap pengangkatan terhadap tabel pada radiusnya serta terhadap margin yang Anda atur. {{ui:Simpan film}} menulis satu file HTML yang dapat diputar luring di peramban mana pun, termasuk di ponsel. Pengangkatan yang melebihi tabel, melewatinya, atau terlalu tinggi dicantumkan di {{ui:Masalah}}. Ini adalah rencana berdasarkan angka Anda, bukan rencana pengangkatan. Lihat [Rencana ereksi dan film](topic:erection-movie).
 
-### Pemeriksaan desain
+### Sambungan
 
-- **Kombinasi beban dari standar.** Di tab {{ui:Analisis}}, blok {{ui:Pemeriksaan desain}} yang baru memiliki {{ui:Standar desain}}: ASCE 7 + AISC 360 (AS, LRFD) atau EN 1990 + EN 1993-1-1 (Eurocode). Beri setiap kasus beban jenisnya (mati, hidup, hidup atap yang baru, salju, angin, seismik), tekan {{ui:Buat kombinasi}}, dan DetailCraft menulis kombinasi kekuatan dan kelayanan dari standar tersebut untuk kasus Anda. Kombinasi yang Anda ketik sendiri tetap ada. Lihat [Membuat kombinasi](topic:design-checks#make-the-combinations).
-- **Nilai National Annex.** Untuk Eurocode, faktor dimulai dari nilai yang direkomendasikan; {{ui:Nilai Lampiran Nasional}} memungkinkan Anda mengetik nilai negara Anda, dan nilai itu disimpan dalam model. Lihat [Membuat kombinasi](topic:design-checks#make-the-combinations).
-- **Periksa batang.** {{ui:Periksa batang}} memeriksa setiap profil I baja untuk tarik, tekan dengan tekuk, lentur dengan tekuk torsi-lateral, geser, lentur dengan gaya aksial, dan lendutan terhadap {{ui:Batas lendutan}} yang Anda atur. Tabel menunjukkan utilisasi setiap batang, pemeriksaan yang menentukan beserta kombinasinya, dan batang diberi warna pada model (biru, hijau, kuning tua, merah, abu-abu untuk tidak diperiksa). Lihat [Memeriksa batang](topic:design-checks#check-the-members).
-- **Dalam laporan.** {{ui:Laporan (PDF)}} dan {{ui:Laporan (CSV)}} menambahkan edisi standar, pengaturan, utilisasi per batang, dan setiap pasal yang dipakai. Lihat [Laporan](topic:design-checks#the-report).
-- **Alat bantu sampai ditinjau insinyur.** Hanya memakai gaya orde pertama. Tabung, siku, kanal, profil las, dan bagian langsing atau kelas 4 tertulis "tidak diperiksa", beserta alasannya; torsi, sambungan, dan beton tidak diperiksa. Lihat [Apa yang tidak diperiksa](topic:design-checks#what-is-not-checked).
+- **Autopilot sambungan.** Tab {{ui:Autopilot}} memeriksa setiap sambungan yang belum memiliki sambungan dan mengusulkannya dari bentuknya: pelat dasar, pelat geser, pelat ujung untuk balok yang Anda tandai sebagai balok momen, sambungan lewatan, dan pelat buhul. Berikan beban merata atau gaya geser satu ujung, dan jumlah baut mengikuti kekuatan desain baut. {{ui:Tambahkan semuanya}} menambahkan usulan sebagai satu langkah urungkan. Itu adalah nilai awal untuk ditinjau, bukan desain sambungan.
+- **Pemeriksaan kemudahan konstruksi.** {{ui:Masalah}} untuk baut yang tidak dapat dijangkau kunci, baut yang terlalu rapat untuk soket, las sudut di luar batas ukurannya, dan penampang berongga yang menampung air. Akses las baru: las sudut keliling yang tidak dapat dijangkau obor las dicantumkan beserta bagian yang menghalangi dan bagian las yang terdampak. Lihat [Pemeriksaan kemudahan konstruksi](topic:constructability).
 
-### USD
+### Fondasi dan tulangan
 
-- **Mengekspor model baja sebagai USD.** {{ui:USD}} di grup {{ui:Keluaran}} menulis model sebagai {{ui:Teks (.usda)}}, {{ui:Biner (.usdc)}}, atau {{ui:Paket (.usdz)}} untuk program render dan perakitan scene: setiap rakitan memuat part-nya, setiap part adalah penampangnya yang ditarik sepanjang bentangnya dengan coak dipotong, dan masing-masing membawa tanda part, profil, mutu, panjang, dan beratnya. Lubang baut, baut, las, dan fondasi tidak ada dalam mesh USD. Lihat [Mengekspor model baja sebagai USD](topic:usd).
+- **Pemeriksaan fondasi.** Tab {{ui:Fondasi}} memeriksa fondasi telapak, fondasi gabungan, dan tikar pada tanah yang Anda jelaskan: daya dukung, geser, dan guling dari beban layan; lentur, geser, penembusan, panjang penyaluran, dan tulangan minimum dari beban terfaktor (ACI 318-19). Kolom dekat tepi atau sudut diperiksa dengan penampang yang terpotong oleh tepi fondasi. Penurunan dihitung dari modulus tanah, tikar lentur diselesaikan pada pegas dari modulus reaksi tanah dasar, dan kelompok tiang serta dinding penahan memiliki panel sendiri. Beban kolom dapat diketik atau diambil dari {{ui:Analisis}}. Lihat [Pemeriksaan fondasi](topic:foundation-checks).
+- **Peta kepadatan tulangan.** Tab {{ui:Kepadatan}} menggambar peta panas setiap fondasi dari atas: di mana batang menyisakan terlalu sedikit ruang bagi beton untuk masuk ke bawah, dibandingkan dengan aturan jarak bersih dan, jika Anda memberikannya, agregat terbesar dan kepala penggetar. Lihat [Peta kepadatan tulangan](topic:rebar-congestion).
 
-### Asisten AI
+### Rangka dan pasokan
 
-- **USD untuk asisten.** Asisten Anda sendiri, yang terhubung melalui CadCraft Studio, dapat mengekspor model sebagai USD (`usd_export`), dan di Studio menuliskannya ke folder yang Anda izinkan. Lihat [Apa yang dapat diminta asisten](topic:use-with-ai-assistants#what-an-assistant-can-ask-for).
+- **Rangka kayu dan baja ringan.** Tab {{ui:Rangka}} membingkai panel dinding, lantai, dan atap dengan setiap potongannya, daftar potong, stok yang harus dibeli, dan gambar kerja berskala. {{ui:Tempatkan sebagai batang}} memasukkan potongan ke dalam model, dan {{ui:Lembar PDF}} menyimpan satu lembar untuk setiap panel. Ukuran, jarak, dan header sepenuhnya menjadi tanggung jawab Anda: DetailCraft tidak memeriksa apakah itu menahan beban. Lihat [Panel rangka kayu dan baja ringan](topic:framing-panels).
+- **Stok pemasok dan waktu tunggu.** Tab {{ui:Pasokan}} membaca daftar stok pemasok (CSV) dan menampilkan, untuk setiap penampang yang dibeli daftar potong, apakah stoknya cukup dan berapa lama waktu tunggunya. Kekurangan dan penampang yang terlambat ada di {{ui:Masalah}}. Tidak ada yang dipesan. Lihat [Stok pemasok dan waktu tunggu](topic:supplier-stock).
 
-## Diubah
+### Analisis dan desain
 
-- **Pita Baja** memiliki tombol besar dan kecil: {{ui:Balok}} besar di samping {{ui:Kolom}}, {{ui:Bresing}}, dan {{ui:Pelat}} kecil pada {{ui:Pemodelan}} › {{ui:Batang}}; {{ui:Pelat ujung}} besar pada {{ui:Detailing}} › {{ui:Sambungan}}, dengan {{ui:Sambungan lewatan}} dan {{ui:Pelat buhul}} berbagi satu tombol terbagi; {{ui:Tempel}} besar pada {{ui:Edit}} › {{ui:Papan klip}}, dengan {{ui:Tempel di tempat yang sama}} dan {{ui:Duplikat}} di balik panah grup. {{ui:Fabrikasi}} › {{ui:Pertukaran}} memiliki {{ui:Ekspor USD}} di samping IFC. Gaya menu lainnya tampak seperti sebelumnya. Lihat [Menu, tombol, dan mouse](topic:menus-keys-and-mouse#the-three-styles).
-- [Menganalisis rangka](topic:frame-analysis) kini menunjuk ke pemeriksaan desain, dan kombinasinya dapat dibuat oleh standar.
+- **Apa yang rusak lebih dulu?** Di tab {{ui:Analisis}}, tombol ini mencari kombinasi kekuatan yang menentukan, batang terlemah, seberapa jauh beban dapat bertambah sebelum batang pertama mencapai batasnya, dan pelat ujung atau pelat geser terlemah jika kekuatan geser bautnya diketahui. Itu memerlukan kombinasi dan kode desain terlebih dahulu. Daya dukung, geser blok, las, dan pengungkitan (prying) tidak diperiksa. Asisten terhubung Anda dapat menanyakan hal yang sama.
+- **Langsung.** Centang {{ui:Live: selesaikan ulang setelah setiap pengeditan}} dan rangka diselesaikan ulang setelah setiap pengeditan.
+- **Beton dan lainnya.** Kolom langsing pada rangka tanpa goyangan dirancang untuk momen yang diperbesar (ACI 318-19 6.6.4.5). Periode seismik dapat diambil dari analisis dengan metode Rayleigh. Pelat yang dibuat dari pelat-pelat mendapat baja yang dibutuhkan setiap lapisan dari momennya, serta geser satu arahnya. Lihat [Periksa komponen beton dan buat beban seismik](topic:concrete-and-seismic).
+- **Untuk diperiksa insinyur.** Hasil fondasi, beton, dan Apa yang rusak lebih dulu adalah alat bantu. Beban angin belum dibuat.
 
-## Di setiap aplikasi
+### Di setiap aplikasi
 
-- **Satuan.** {{ui:Pengaturan}} › {{ui:Umum}} › {{ui:Satuan}} memiliki satu daftar masing-masing untuk panjang, luas, volume, sudut, dan kemiringan, dengan ukuran persis sesuai definisi satuannya (kaki survei AS adalah satuan tersendiri). Matikan satuan yang tidak pernah Anda pakai dan satuan itu keluar dari daftar; beri bintang pada satu satuan dan pekerjaan baru dimulai dengannya. File selalu mempertahankan satuannya sendiri. Kotak milik DetailCraft sendiri belum mengikuti daftar: panjangnya masih diketik dalam milimeter. Lihat [Satuan, nilai yang diketik, dan daftar satuan](common:unit-lists).
-- **Tata letak lebih padat dan panel yang dapat dirapikan.** {{ui:Pengaturan}} › {{ui:Umum}} › {{ui:Kepadatan tata letak}} › {{ui:Padat}} memuat lebih banyak di layar (layar sentuh dan ponsel tetap memakai tombol besar). Setiap panel samping memiliki bilah judul ramping: seret untuk menambatkan atau mengambangkan panel, letakkan di bilah panel lain untuk berbagi satu bingkai sebagai tab, sematkan agar menggeser ke tepi, atau sembunyikan dan panggil kembali dari tepi. Lihat [Menata panel](common:arrange-panels#make-the-layout-denser).
-- **Dialog dapat dipindahkan.** Seret dialog pada bilah judulnya agar menyingkir dari gambar; dialog kembali ke tempat Anda meninggalkannya. Klik ganda bilah judul untuk memusatkannya lagi. Lihat [Memindahkan dialog](common:arrange-panels#move-a-dialog).
-- **Resep untuk asisten AI.** Sepuluh permintaan contoh untuk asisten Anda sendiri (merapikan gambar, mem-plot satu set, memeriksa gambar, mengajukan pertanyaan ke model, menjumlahkan takeoff, mencoba varian part…), masing-masing dengan alat yang dipanggil dan izin yang diperlukan, dan masing-masing diputar ulang oleh pengujian kami. Aplikasi tidak memuat AI. Lihat [Resep untuk asisten AI](common:assistants-recipes).
-- **Bahasa.** **Português (Portugal)** baru di {{ui:Pengaturan}} › {{ui:Umum}} › {{ui:Bahasa}}. Bahasa itu, **Português (Brasil)**, **Español (México)**, dan **Bahasa Indonesia** kini memiliki setiap kata dalam aplikasi, sebagai draf yang belum ditinjau penutur asli. Topik bantuan berbahasa Inggris.
-- **CadCraft Studio** menyebutkan mengapa pemeriksaan pembaruan gagal (belum ada file untuk sistem Anda, tidak ada jaringan, tanda tangan tidak valid) alih-alih hanya "Selesai", dan berhenti memunculkan kembali kartu Yang baru yang sudah Anda tutup sampai ada rilis yang lebih baru.
+- **Bahasa.** Bantuan tersedia dalam 54 bahasa. Yang selain bahasa Inggris adalah draf mesin sampai penutur asli membacanya; sepuluh di antaranya baru (Lituania, Latvia, Bosnia, Marathi, Telugu, Albania, Afrikaans, Filipino, Swahili, Uzbek).
+- **Baris bilah alat.** {{ui:Pengaturan}} › {{ui:Umum}} › {{ui:Baris bilah alat}} memilih bungkus, 2 baris, atau 1 baris. Bilah yang sudah muat tetap seperti semula; sisanya digulir ke samping.
+- **Kisi properti.** Kolom isian fondasi menggunakan kisi bersama: kategori yang dapat diciutkan dan kepadatan kompak. Aritmetika yang diketik seperti 2*450 tetap berfungsi.
+- **Perangkat masukan.** Trackpad, pena, mouse 3D, pengontrol, dan MIDI dapat mengendalikan aplikasi. Lihat [Navigasi di 3D](topic:navigate-3d).
+- **Panel masalah.** Peringatan dari pemeriksaan baru di atas muncul di panel {{ui:Masalah}} yang sama seperti sebelumnya.
+- **Hubungkan AI Anda.** Asisten Anda sendiri, terhubung melalui CadCraft Studio, bekerja dengan kedelapan aplikasi dan hanya melihat apa yang Anda izinkan. Hubungkan dengan satu klik, konektor yang di-host, dan kunci API Anda sendiri di Studio masih akan datang. Lihat [Memakai DetailCraft dengan asisten AI](topic:use-with-ai-assistants).
+
+## Diperbaiki di 0.8.1
+
+- **Bahasa di Studio.** Studio dan edisi paket dapat mengganti bahasa saat dijalankan; sebelumnya hanya bahasa Inggris. Belum diuji di setiap platform: beri tahu kami jika bahasanya tidak berubah.
+- **Pilih dengan jendela silang.** Penginstal 0.8.1 sudah membawa perilaku pilih-dengan-jendela yang benar dari build web 0.8; penginstal lama tidak.
+- **Tablet dalam potret.** Ruang grid yang tersisa diberikan ke kanvas, dan tata letak lembar dimulai pada 760 px atau kurang.
 
 ## Belum ada di versi ini
 
-- **0.7 belum ditandatangani kode.** Penandatanganan, dan paket Microsoft Store, dipindahkan ke 0.8 karena validasi sertifikat belum selesai. Periksa SHA-256 di samping setiap file pada getcadcraft.com/download. Di Windows, jika SmartScreen menghentikan pemasang, pilih {{ui:Info selengkapnya}}, lalu {{ui:Tetap jalankan}}. Di Mac, pada kali pertama, klik kanan CadCraft Studio dan pilih {{ui:Buka}}. CadCraft Studio belum ada di toko aplikasi, dan belum ada build untuk iPad atau iPhone.
-- Daftar sudut dan kemiringan di {{ui:Satuan}} tersimpan, tetapi belum ada kolom isian yang membacanya.
-- **Pemeriksaan desain belum ditinjau insinyur.** Pengujian kami membandingkannya dengan nilai tabel cetak dan rumus yang dihitung manual, belum dengan contoh hitungan dari panduan desain. Sampai ditinjau, pemeriksaan ini hanyalah alat bantu: periksa batang yang penting secara manual.
-- Pemeriksaan desain memakai gaya orde pertama (tanpa efek orde kedua) dan hanya memeriksa profil I. Belum dibuat: tabung, siku, kanal, profil las, bagian langsing (AISC) atau kelas 4 (Eurocode) pada lentur, torsi, tekuk geser bersama lentur, sambungan, kelelahan, api, detailing seismik, dan beton. Bagian langsing yang tertekan menghilangkan pemeriksaan tekan, dan batang tertulis "lulus, diperiksa sebagian".
-- Analisis rangka masih orde pertama dan linear, dan belum dicoba insinyur pada pekerjaan nyata.
-- Lubang baut, baut, las, dan fondasi tidak ada dalam ekspor USD.
+- **Kirim NC ke mesin** belum dirilis.
+- **Beban angin** untuk beton belum dibuat, dan pemeriksaan beton serta fondasi perlu ditinjau oleh insinyur.
+- **Penandatanganan kode.** Penginstal Windows dan .dmg macOS belum ditandatangani, sehingga Windows mungkin memberi peringatan dan macOS meminta klik kanan, lalu Buka.
 
-Selebihnya ada di [Apa yang belum dibuat](topic:not-built-yet).
+Perubahan sebelumnya ada di [Yang baru di 0.7](topic:whats-new-0-7).

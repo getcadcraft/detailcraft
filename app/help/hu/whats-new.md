@@ -1,55 +1,59 @@
 ---
-title: Újdonságok a 0.7-ben
-summary: Acél I-szelvények tervezési ellenőrzései az ASCE 7 vagy EN 1990 teherkombinációival és az AISC 360 vagy EN 1993-1-1 szerinti rúdelem-ellenőrzésekkel, az acélmodell USD-exportálása, USD-eszköz az asszisztenseknek, nagy és kis gombokkal ellátott Acél szalag, eltűnő panelek és mozgó párbeszédpanelek.
-keywords: újdonságok, kiadási jegyzet, változásnapló, változások, 0.7, verzió, új funkciók, tervezési ellenőrzések, acélszerkezet-tervezés, kihasználtság, teherkombinációk, ASCE 7, EN 1990, AISC 360, EN 1993-1-1, Eurocode, nemzeti melléklet, tetőhasznos teher, lehajlás, lehajlási határ, usd, usda, usdc, usdz, openusd, asszisztens, mcp, acél szalag, szalag, osztott gomb, mértékegységek, kompakt, panelek, párbeszédpanelek, portugál
-from: 17d1e0bb
+title: Újdonságok a 0.8 és 0.8.1 verzióban
+summary: Szerelési film egy daru teherdiagramjából, kapcsolat-autopilóta, betétvas-torlódási térkép, alapellenőrzések, fa- és könnyűacél-vázszerkezeti panelek, kivitelezhetőségi és hegesztés-hozzáférési ellenőrzések, beszállítói készlet, mi törik el először, élő újraszámolás, további betonellenőrzések és a 0.8.1 javítások.
+keywords: újdonságok, mi újdonság, kiadási jegyzetek, változásnapló, változások, 0.8, 0.8.1, verzió, új funkciók, szerelés, daru, teherdiagram, film, autopilóta, kapcsolatok, betétvas, torlódás, alap, talp, süllyedés, szerkezet, fa, könnyűacél, vágólista, kivitelezhetőség, hegesztés-hozzáférés, beszállító, készlet, szállítási idő, mi törik el először, élő, beton, szeizmikus, födém, nyelvek, asszisztens
+from: 6e33e052
 ---
 
-Ez változott a DetailCraft 0.7-ben a 0.6-hoz képest. A 0.6 keretanalízise most kapott egy második lépést: az acél rúdelemek ellenőrzését egy tervezési előírás szerint.
+Ez a változás a DetailCraft 0.7 verziójához képest a 0.8 (2026. november 1.) és a 0.8.1 (2026. november 2.) verzióban. A 0.7 acél rúdelemeket ellenőrzött; a 0.8 megtervezi az emeléseket, javasolja a kapcsolatokat, ellenőrzi az alapokat és a betétvasat, valamint fából és könnyűacélból készült falakat, födémeket és tetőket állít össze.
 
-## Újdonságok
+## Új
 
-### Gérvágott csomópontok (0.7.1)
+### Szerelés
 
-- **Két szögben találkozó I-szelvény**, például egy keretsarok vagy egy gerinc: jelölje ki mindkettőt, válassza a {{ui:Kapcsolás}} csoport {{ui:Továbbiak}} menüjében a {{ui:Gérvágás}} lehetőséget, és mindkét vég a szöget felező síkban vágódik. Az összecsavarozott homloklemezek és a gerincmerevítők jelölőnégyzetek az új Gérvágás párbeszédpanelen, amelynek számozott mezői egy, a gépelés közben készülő rajzzal egyeznek a csomópontról. A gérvágás követi a rúdelemeket, ha mozognak, és átmegy a rajzokba, az NC-fájlokba (ferde vágások), az IFC-be és az anyagjegyzékbe. Lásd: [Gérvágott csomópontok](topic:mitres).
+- **Szerelési terv és film.** A {{ui:Szerelés}} lapon írja le a darut (hol áll, a legmagasabb horgát, a diagramban nem szereplő kötélzetet), és írja be a teherdiagramja sorait. A DetailCraft összeállításonként emeli a modellt, fázissorrendben és szintenként, és minden emelést ellenőriz a diagram szerint az adott sugárnál, a beállított tartalékkal együtt. A {{ui:Videó mentése}} egy HTML-fájlt ír, amely bármely böngészőben lejátszható offline, telefonon is. A diagramon túli, azt meghaladó vagy túl magas emelések a {{ui:Problémák}} alatt vannak. Ez a számaiból készült terv, nem emelési terv. Lásd: [Szerelési terv és film](topic:erection-movie).
 
-### Tervezési ellenőrzések
+### Kapcsolatok
 
-- **Teherkombinációk az előírásból.** Az {{ui:Analízis}} lapon az új {{ui:Tervezési ellenőrzések}} blokknak van {{ui:Tervezési előírás}} választója: ASCE 7 + AISC 360 (US, LRFD) vagy EN 1990 + EN 1993-1-1 (Eurocode). Adja meg az egyes teheresetek fajtáját (állandó, hasznos, az új tetőhasznos, hó, szél, szeizmikus), nyomja meg a {{ui:Kombinációk készítése}} gombot, és a DetailCraft megírja az előírás szilárdsági és használhatósági kombinációit az Ön eseteiből. A saját maga beírt kombinációk megmaradnak. Lásd: [A kombinációk elkészítése](topic:design-checks#make-the-combinations).
-- **Nemzeti melléklet értékei.** Az Eurocode-nál a tényezők az ajánlott értékekkel indulnak; a {{ui:Nemzeti melléklet értékei}} lehetővé teszi az Ön országáét, és ezek a modellben mentődnek. Lásd: [A kombinációk elkészítése](topic:design-checks#make-the-combinations).
-- **Rúdelemek ellenőrzése.** A {{ui:Rúdelemek ellenőrzése}} minden acél I-szelvényt ellenőriz húzásra, kihajlással járó nyomásra, kifordulással járó hajlításra, nyírásra, hajlítás és normálerő együttesére, valamint lehajlásra az Ön által megadott {{ui:Lehajlási határ}} szerint. A táblázat mutatja az egyes rúdelemek kihasználtságát, a mértékadó ellenőrzést és annak kombinációját, a rúdelemek pedig színezve látszanak a modellen (kék, zöld, okker, piros, szürke a nem ellenőrzötteknél). Lásd: [A rúdelemek ellenőrzése](topic:design-checks#check-the-members).
-- **A jelentésben.** A {{ui:Jelentés (PDF)}} és a {{ui:Jelentés (CSV)}} hozzáadja az előírás kiadásait, a beállításokat, a kihasználtságot rúdelemenként és minden felhasznált szakaszt. Lásd: [A jelentés](topic:design-checks#the-report).
-- **Segédeszköz, amíg mérnök át nem nézte.** Csak elsőrendű erőket használ. A csövek, szögacélok, U-szelvények, hegesztett szelvények és a karcsú vagy 4. osztályú elemek „nincs ellenőrizve” jelzést kapnak az okkal; a csavarást, a kapcsolatokat és a betont nem ellenőrzi. Lásd: [Mit nem ellenőriz](topic:design-checks#what-is-not-checked).
+- **Kapcsolat-autopilóta.** Az {{ui:Automata}} lap minden olyan csomópontot megvizsgál, amelynek nincs kapcsolata, és az alakok alapján javasol egyet: talplemezek, nyírólemezek, homloklemezek azokhoz a gerendákhoz, amelyeket nyomatéki gerendának jelöl meg, toldások és csomólemezek. Adjon meg egyenletes terhelést vagy egy végi nyíróerőt, és a csavarok száma a csavar tervezési szilárdságát követi. A {{ui:Mind hozzáadása}} gomb a javaslatokat egyetlen visszavonási lépésként adja hozzá. Ezek átnézendő kiindulási értékek, nem kapcsolattervezés.
+- **Kivitelezhetőségi ellenőrzések.** A {{ui:Problémák}} lista azokat a csavarokat jelzi, amelyekhez nem fér hozzá a kulcs, azokat, amelyek túl közel vannak a dugókulcs számára, a sarokvarratokat, amelyek mérethatáron kívül esnek, és a vizet megtartó üreges szelvényeket. Új a hegesztés-hozzáférés: a körbefutó sarokvarrat, amelyhez a hegesztő égője nem fér hozzá, felkerül a listára, a takarásban lévő alkatrésszel és a varrat érintett arányával együtt. Lásd: [Kivitelezhetőségi ellenőrzések](topic:constructability).
 
-### USD
+### Alapok és betétvas
 
-- **Az acélmodell exportálása USD-be.** A {{ui:Kimenet}} csoport {{ui:USD}} gombja a modellt {{ui:Szöveg (.usda)}}, {{ui:Bináris (.usdc)}} vagy {{ui:Csomag (.usdz)}} formában írja renderelő programokhoz és jelenetösszeállításhoz: minden összeállítás tartalmazza az alkatrészeit, minden alkatrész a szelvénye a hossza mentén kihúzva a kivágásokkal, és mindegyik hordozza az alkatrészjelét, szelvényét, minőségét, hosszát és tömegét. A csavarfuratok, csavarok, hegesztések és alapok nincsenek az USD-hálókban. Lásd: [Az acélmodell exportálása USD-be](topic:usd).
+- **Alapellenőrzések.** Az {{ui:Alapozás}} lap a megadott talajon ellenőrzi a talpakat, az összevont talpakat és a lemezalapokat: teherbírás, csúszás és felborulás használati terhekből; hajlítás, nyírás, átszúródás, betétvas-kifejlesztés és minimális vasalás a tényezőkkel szorzott terhekből (ACI 318-19). A szél vagy sarok közelében álló oszlopot a talp szélével levágott keresztmetszettel ellenőrzi. A süllyedés a talaj modulusából adódik, a rugalmas lemezt altalaj-modulus alapján, rugókon oldja meg, a cölöpcsoportoknak és a támfalaknak pedig saját paneljük van. Az oszlopterhek beírhatók, vagy átvehetők az {{ui:Analízis}} lapról. Lásd: [Alapellenőrzések](topic:foundation-checks).
+- **Betétvas-torlódási térkép.** A {{ui:Zsúfoltság}} lap minden talpról felülnézeti hőtérképet rajzol: ott, ahol a vasak túl kevés helyet hagynak a betonnak a lejutáshoz, a szabad távolság szabálya szerint, és ha megadja, a legnagyobb adalékanyag-szemcsét és a vibrátorfejet is figyelembe véve. Lásd: [Betétvas-torlódási térkép](topic:rebar-congestion).
 
-### MI-asszisztensek
+### Szerkezet és beszerzés
 
-- **USD az asszisztenseknek.** A saját asszisztense, a CadCraft Studión át csatlakozva, exportálhatja a modellt USD-be (`usd_export`), és a Studióban egy engedélyezett mappába írhatja. Lásd: [Mit kérhet az asszisztens](topic:use-with-ai-assistants#what-an-assistant-can-ask-for).
+- **Fa- és könnyűacél-vázszerkezet.** A {{ui:Szerkezet}} lap fal-, födém- és tetőpaneleket szerkeszt minden darabbal, vágólistával, a megvásárlandó készlettel és léptékhelyes gyártmányrajzzal. A {{ui:Elhelyezés rúdelemekként}} gomb a darabokat a modellbe helyezi, a {{ui:PDF rajzlapok}} pedig panelenként egy lapot ment. A méretek, a távolságok és a fejgerendák a megadott értékek: a DetailCraft nem ellenőrzi, hogy teherbírók-e. Lásd: [Fa- és könnyűacél-vázszerkezeti panelek](topic:framing-panels).
+- **Beszállítói készlet és szállítási idő.** A {{ui:Beszerzés}} lap beolvassa a beszállító készletlistáját (CSV), és minden olyan szelvényhez, amelyet a vágólista vásárol, megmutatja, van-e elegendő készlet, és mennyit kell várni. A hiányok és a késő szelvények a {{ui:Problémák}} alatt vannak. Nem történik rendelés. Lásd: [Beszállítói készlet és szállítási idők](topic:supplier-stock).
 
-## Módosult
+### Analízis és tervezés
 
-- **Az Acél szalagnak** vannak nagy és kis gombjai: egy nagy {{ui:Gerenda}} a kis {{ui:Oszlop}}, {{ui:Merevítő}} és {{ui:Lemez}} mellett a {{ui:Modellezés}} › {{ui:Rúdelemek}} alatt; egy nagy {{ui:Homloklemezek}} a {{ui:Részletezés}} › {{ui:Kapcsolatok}} alatt, a {{ui:Toldás}} és a {{ui:Csomólemez}} egy osztott gombon osztozva; egy nagy {{ui:Beillesztés}} a {{ui:Szerkesztés}} › {{ui:Vágólap}} alatt, a {{ui:Beillesztés helyben}} és a {{ui:Kettőzés}} a csoport nyila mögött. A {{ui:Gyártás}} › {{ui:Csere}} alatt van {{ui:USD exportálása}} az IFC mellett. A többi menüstílus úgy néz ki, mint korábban. Lásd: [Menük, billentyűk és egér](topic:menus-keys-and-mouse#the-three-styles).
-- Az [A keret analízise](topic:frame-analysis) most a tervezési ellenőrzésekre mutat, a kombinációit pedig az előírás szerint is el lehet készíteni.
+- **Mi törik el először?** Az {{ui:Analízis}} lapon a gomb megkeresi a mérvadó szilárdsági kombinációt, a leggyengébb rudat, azt, hogy a terhek mennyire nőhetnek, mielőtt az első rúd eléri a határát, valamint a leggyengébb homloklemezt vagy nyírólemezt, ahol a csavarok nyírószilárdsága ismert. Ehhez előbb a kombinációk és egy tervezési szabvány kell. A felfekvés, a blokknyírás, a varratok és a kiemelés nincs ellenőrizve. A csatlakoztatott asszisztens ugyanezt kérdezheti meg.
+- **Élő.** Jelölje be a {{ui:Élő: újraszámolás minden szerkesztés után}} jelölőnégyzetet, és a vázat minden szerkesztés után újraszámolja.
+- **Beton, továbbiak.** A nem eltolódó vázban lévő karcsú oszlopot a megnövelt nyomatékára tervezi (ACI 318-19 6.6.4.5). A szeizmikus periódus a Rayleigh-módszerrel vehető át az analízisből. A lemezekből álló födém minden rétegéhez a nyomatékokból és az egyirányú nyírásból adódó acélt kapja meg. Lásd: [Betonelemek ellenőrzése és szeizmikus terhek készítése](topic:concrete-and-seismic).
+- **Mérnöki ellenőrzésre.** Az alap-, beton- és a „Mi törik el először?” eredmények segédeszközök. A szélterhek még nincsenek elkészítve.
 
-## Minden alkalmazásban
+### Minden alkalmazásban
 
-- **Mértékegységek.** A {{ui:Beállítások}} › {{ui:Általános}} › {{ui:Mértékegységek}} hossznak, területnek, térfogatnak, szögnek és lejtésnek külön listát ad, a mértékegységek definíciói szerinti pontos méretekkel (az amerikai geodéziai láb külön mértékegység). Kapcsolja ki a soha nem használtakat, és kikerülnek a listákból; csillagozzon meg egyet, és az új munka azzal indul. A fájl mindig megtartja a saját mértékegységét. A DetailCraft saját mezői még nem követik a listákat: a hosszait továbbra is milliméterben kell beírni. Lásd: [Mértékegységek, beírt értékek és a mértékegységlisták](common:unit-lists).
-- **Sűrűbb elrendezés és eltűnő panelek.** A {{ui:Beállítások}} › {{ui:Általános}} › {{ui:Elrendezés sűrűsége}} › {{ui:Kompakt}} több mindent elhelyez a képernyőn (az érintőképernyők és a telefonok megtartják a nagy gombjaikat). Minden oldalpanelnek van egy karcsú címsora: húzza a panel dokkolásához vagy lebegtetéséhez, ejtse egy másik panel sávjára, hogy egy keretben osztozzanak lapokként, rögzítse, hogy a szélre csússzon, vagy rejtse el, és hozza vissza a szélről. Lásd: [A panelek elrendezése](common:arrange-panels#make-the-layout-denser).
-- **A párbeszédpanelek mozognak.** Húzza a párbeszédpanelt a címsoránál fogva a rajz elől; oda tér vissza, ahol hagyta. A címsorra duplán kattintva újra középre kerül. Lásd: [Párbeszédpanel mozgatása](common:arrange-panels#move-a-dialog).
-- **Receptek MI-asszisztensekhez.** Tíz kidolgozott kérés a saját asszisztensének (rajz rendbetétele, rajzkészlet plottolása, rajzok ellenőrzése, kérdések egy modellről, mennyiségkimutatás összesítése, alkatrészváltozat kipróbálása…), mindegyikhez a hívott eszközökkel és a szükséges engedélyekkel, és mindegyiket lejátszották a tesztjeink. Az alkalmazások nem tartalmaznak MI-t. Lásd: [Receptek MI-asszisztensekhez](common:assistants-recipes).
-- **Nyelvek.** Új a **Português (Portugal)** a {{ui:Beállítások}} › {{ui:Általános}} › {{ui:Nyelv}} alatt. Ez, a **Português (Brasil)**, az **Español (México)** és a **Bahasa Indonesia** most már az alkalmazások minden szavát tartalmazza, anyanyelvi beszélő által még nem ellenőrzött piszkozatként. A súgótémakörök angolul vannak.
-- **A CadCraft Studio** megmondja, miért hiúsult meg egy frissítésellenőrzés (még nincs fájl az Ön rendszeréhez, nincs hálózat, hibás aláírás), a puszta „Kész” helyett, és nem hozza vissza a bezárt Újdonságok kártyát, amíg nincs újabb kiadás.
+- **Nyelvek.** A súgó 54 nyelven érhető el. Az angolon kívüliek gépi piszkozatok, amíg anyanyelvi beszélő el nem olvassa őket; tíz új (litván, lett, bosnyák, maráthi, telugu, albán, afrikaans, filippínó, szuahéli, üzbég).
+- **Eszköztársorok.** {{ui:Beállítások}} › {{ui:Általános}} › {{ui:Eszköztársorok}}: a tördelés, 2 sor vagy 1 sor közül választhat. A már elférő sáv marad, ahogy van; a többi oldalra görgethető.
+- **Tulajdonságrács.** A talp mezői a közös rácsot használják: összecsukható kategóriákkal és tömör sűrűséggel. A beírt számtani műveletek, például a 2*450, továbbra is működnek.
+- **Beviteli eszközök.** Érintőpad, toll, 3D-egér, kontroller és MIDI vezérelheti az alkalmazásokat. Lásd: [Mozgás 3D-ben](topic:navigate-3d).
+- **Problémák panel.** A fenti új ellenőrzések figyelmeztetései ugyanabban a {{ui:Problémák}} panelben jelennek meg, mint korábban.
+- **Csatlakoztassa az AI-asszisztensét.** A saját asszisztense, amelyet a CadCraft Studion keresztül csatlakoztat, mind a nyolc alkalmazással működik, és csak azt látja, amit engedélyez. Az egykattintásos csatlakozás, a kiszolgált összekötő és a saját API-kulcs a Studióban még hátravan. Lásd: [A DetailCraft használata AI-asszisztenssel](topic:use-with-ai-assistants).
 
-## Ebben a verzióban még nincs
+## A 0.8.1 verzióban javítva
 
-- **A 0.7 nincs kódaláírással ellátva.** Az aláírás és a Microsoft Store csomag átkerült a 0.8-ba, mert a tanúsítvány érvényesítése még nem érkezett meg. Ellenőrizze a getcadcraft.com/download oldalon az egyes fájlok melletti SHA-256 értéket. Windowson, ha a SmartScreen megállítja a telepítőt, válassza a {{ui:További információ}}, majd a {{ui:Futtatás mindenképp}} lehetőséget. Macen az első alkalommal kattintson jobb gombbal a CadCraft Studióra, és válassza a {{ui:Megnyitás}} parancsot. A CadCraft Studio még nincs alkalmazásboltban, és iPad- vagy iPhone-verzió sincs még.
-- A {{ui:Mértékegységek}} szög- és lejtéslistái mentődnek, de mező még nem olvassa őket.
-- **A tervezési ellenőrzéseket mérnök még nem nézte át.** A tesztjeink nyomtatott táblázati értékekkel és kézzel számolt képletekkel vetik össze őket, tervezési segédlet kidolgozott példáival még nem. Az áttekintésig segédeszköz: a fontos rúdelemeket ellenőrizze kézzel.
-- A tervezési ellenőrzések elsőrendű erőket használnak (másodrendű hatások nélkül), és csak I-szelvényeket ellenőriznek. Nincs elkészítve: csövek, szögacélok, U-szelvények, hegesztett szelvények, hajlított karcsú (AISC) vagy 4. osztályú (Eurocode) elemek, csavarás, nyírási horpadás hajlítással együtt, kapcsolatok, fáradás, tűz, szeizmikus részletképzés és beton. A nyomott karcsú elem kimarad a nyomási ellenőrzésekből, és a rúdelem „megfelel, részben ellenőrizve” jelzést kap.
-- A keretanalízis továbbra is elsőrendű és lineáris, és mérnök még nem próbálta ki valódi munkán.
-- A csavarfuratok, csavarok, hegesztések és alapok nincsenek az USD-exportban.
+- **Nyelvek a Studióban.** A Studio és a csomagolt kiadások futás közben nyelvet válthatnak; korábban csak angolul voltak. Még nem minden platformon tesztelték: jelezze, ha a nyelv nem változik.
+- **Keresztező ablakos kijelölés.** A 0.8.1 telepítők már tartalmazzák a 0.8 webes verzióban helyesen működő ablakos kijelölést; egy régebbi telepítő nem.
+- **Táblagépek álló tájolásban.** A szabad rácsmagasság a vászonra kerül, a lapelrendezés 760 px vagy annál kisebb szélességnél indul.
 
-Minden más a [Mi nincs még elkészítve](topic:not-built-yet) témakörben van.
+## Még nincs ebben a verzióban
+
+- **Az NC-küldés gépre** még nincs kiadva.
+- **Szélterhek** betonhoz még nincsenek elkészítve, a beton- és alapellenőrzéseket pedig mérnöknek kell átnéznie.
+- **Kódaláírás.** A Windows-telepítők és a macOS .dmg fájl nincs aláírva, ezért a Windows figyelmeztethet, a macOS pedig jobb gombbal történő kattintást kér, majd a Megnyitást.
+
+A korábbi változások itt olvashatók: [Újdonságok a 0.7 verzióban](topic:whats-new-0-7).

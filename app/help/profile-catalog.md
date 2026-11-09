@@ -3,16 +3,17 @@ title: Profile catalog
 summary: Every built-in steel size, how profile names are written, where the dimensions come from, and how plates and custom sections are named.
 section: reference
 order: 20
-keywords: profiles, sections, catalog, sizes, w shapes, wide flange, s shapes, channel, angle, hss, tube, pipe, ipe, hea, heb, upn, plate, aisc, en 10365, naming
+keywords: profiles, sections, catalog, sizes, w shapes, wide flange, s shapes, channel, angle, hss, tube, pipe, ipe, hea, heb, upn, uk, british, ub, uc, pfc, ea, uea, unequal angle, shs, rhs, chs, cold formed, hot finished, blue book, plate, aisc, en 10365, naming
 ---
 
-DetailCraft has 1,259 built-in sizes, each copied from a published table and checked by the app's tests: the area worked out from the dimensions must match the published area, and the published weight must match that area times the density of steel. Plates and custom profiles are made from their dimensions.
+DetailCraft has 2,311 built-in sizes, each copied from a published table and checked by the app's tests: the area worked out from the dimensions must match the published area, and the published weight must match that area times the density of steel. Plates and custom profiles are made from their dimensions.
 
 ## Naming
 
 - **US shapes** are written the way the AISC Manual prints them, with a lowercase x: W12x50, C10x15.3, L4x4x1/2, HSS6x6x1/4, HSS6.625x0.280. Typing is not case-sensitive.
 - **Pipe** is written as in the AISC database: Pipe4STD, Pipe4XS, Pipe4XXS (standard, extra strong, double extra strong).
 - **European shapes** are written as in EN 10365: IPE200, HEA240, HEB300, UPN200 (no space).
+- **UK shapes** are written with the family first, then the Blue Book's size: UB305x165x40, UC203x203x46, PFC200x90x30, EA100x100x10.0, UEA150x90x10.0, SHS100x100x5.0, RHS200x100x8.0, CHS88.9x5.0. Cold-formed hollow sections start with CF: CFSHS100x100x5.0. Typing the way drawings often say it also works: 305x165x40 UB, L100x100x10, SHS100x5.
 - **Plates** are `PL<thickness>x<width>` in millimeters: PL20x200 is 20 mm thick and 200 mm wide. Any size from the {{ui:Plate}} tool works.
 - **Custom profiles** have whatever name you give them, as long as it is not a catalog name and does not look like a plate name.
 
@@ -24,6 +25,7 @@ In the {{ui:Profile}} lists, each group's heading names its source, for example 
 |---|---|---|
 | W shapes, S shapes, Channels (C), Angles (L), HSS, Pipe | AISC Shapes Database v16.0 | Dimensions converted from inches to millimeters exactly; mass per meter from the published lb/ft |
 | IPE, HEA, HEB, UPN | EN 10365:2017 | Millimeters and kg/m as published |
+| UB, UC, PFC, EA, UEA, SHS, RHS, CHS, CFSHS, CFRHS, CFCHS | Steel for Life Blue Book (UK), table v18 (BS EN 10365, BS EN 10056-1, BS EN 10210-2, BS EN 10219-2) | Millimeters and kg/m as published |
 | Plates | Parametric | Mass from area × 7850 kg/m³ |
 | Custom | Your dimensions | Mass from area × 7850 kg/m³ |
 
@@ -34,7 +36,9 @@ How shapes are drawn:
 - **Angles:** square corners.
 - **Rectangular HSS:** the design wall thickness (0.93 × nominal, as AISC 360-22 B4.2 allows) with an outer corner radius of twice that.
 - **Round HSS and Pipe:** design wall thickness (0.93 × nominal).
-- **IPE, HEA, HEB:** the published root radius.
+- **IPE, HEA, HEB, UB, UC:** the published root radius.
+- **PFC, EA, UEA:** square corners (the published mass and area still include the radii).
+- **SHS, RHS, CHS:** the nominal wall. Hot finished corners: outer 1.5 t, inner t. Cold formed: outer 2 t, inner t up to 6 mm; 2.5 t and 1.5 t up to 10 mm; 3 t and 2 t above.
 
 ## The sizes
 
@@ -53,8 +57,20 @@ Every size the tables list in these groups, smallest first:
 | HEA (24) | HEA100 to HEA1000 |
 | HEB (24) | HEB100 to HEB1000 |
 | UPN (18) | UPN50 to UPN400 |
+| Angles, unequal legs (76) | L2-1/2x1-1/2x3/16 to L8x6x1 |
+| UB (107) | UB127x76x13 to UB1016x305x584 |
+| UC (46) | UC152x152x23 to UC356x406x1299 |
+| PFC (16) | PFC100x50x10 to PFC430x100x64 |
+| EA (42) | EA20x20x3.0 to EA200x200x24.0 |
+| UEA (39) | UEA30x20x3.0 to UEA200x150x18.0 |
+| SHS, hot finished (123) | SHS40x40x3.2 to SHS400x400x17.5 |
+| RHS, hot finished (161) | RHS50x30x3.2 to RHS500x300x17.5 |
+| CHS, hot finished (103) | CHS42.4x3.2 to CHS508.0x17.5 |
+| CFSHS, cold formed (96) | CFSHS25x25x2.0 to CFSHS400x400x12.5 |
+| CFRHS, cold formed (137) | CFRHS50x25x2.0 to CFRHS500x300x12.5 |
+| CFCHS, cold formed (106) | CFCHS33.7x3.0 to CFCHS508.0x16.0 |
 
-Angles with unequal legs are not in this list yet: DetailCraft draws an angle's two legs the same length. CadCraft can place them (see its {{ui:Library}} panel, {{ui:Standard}}).
+A mirrored unequal angle is the same piece turned end for end, the way a shop makes the opposite hand: its holes, copes and gusset go with it.
 
 Choose a placing tool and pick a size to see its depth, flange width, web and flange thickness, fillet radius, area (cm²), mass (kg/m) and source in the {{ui:Profile}} box of the {{ui:Properties}} panel.
 
@@ -62,11 +78,11 @@ Choose a placing tool and pick a size to see its depth, flange width, web and fl
 
 | Shape | Holes | Copes | End plates and base plates | NC file | Shop drawing |
 |---|---|---|---|---|---|
-| I-shapes (W, S, IPE, HEA, HEB, custom I) | Web, top flange, bottom flange | Yes | End plates: beam and column. Base plates: yes | Yes | Yes |
-| Channels (C, UPN) | Web, top flange, bottom flange | No | Base plates only | Yes | Not yet |
-| Rectangular HSS | Side wall (web), top, bottom | No | Base plates only | Yes | Not yet |
-| Round HSS and Pipe | Not yet | No | Base plates only | Yes | Not yet |
-| Angles | Not yet | No | Base plates only | Yes | Not yet |
+| I-shapes (W, S, IPE, HEA, HEB, UB, UC, custom I) | Web, top flange, bottom flange | Yes | End plates: beam and column. Base plates: yes | Yes | Yes |
+| Channels (C, UPN, PFC) | Web, top flange, bottom flange | No | Base plates only | Yes | Yes |
+| Rectangular HSS, SHS, RHS | Side wall (web), top, bottom | No | Base plates only | Yes | Yes |
+| Round HSS, Pipe, CHS | Not yet | No | Base plates only | Yes | Yes |
+| Angles (L, EA, UEA) | Not yet | No | Base plates only | Yes | Yes |
 | Plates and custom flat bars | Plate face | No | No | Yes | Yes |
 
 For a rectangular tube, a hole on the "web" face goes through both side walls. What each NC file holds is in [NC file fields](topic:nc1-fields).

@@ -7,9 +7,13 @@
  * The layout comes from the sheet (A3: length room 265, depth 60, section at 372, 205): rooms grow with paper.k,
  * text sizes and dimension gaps stay.
  *
- * I-shapes: elevation looking at the web (web holes as circles, flange holes as hidden lines, copes
- * notched), a top-flange plan when there are flange holes, a section, hole and cope dimensions, a title
- * block. Plates: the plate face with its holes, and its edge as the section. Other profiles are refused.
+ * Members (I-shapes, channels, angles, rectangular and round hollow sections): elevation looking at the web or the
+ * side (web holes as circles, flange holes as hidden lines, copes notched), a top-flange plan when there are flange
+ * holes, a section, hole and cope dimensions, a title block. A hollow section's walls and the hidden side of an angle are
+ * hidden lines. Plates: the plate face with its holes, and its edge as the section.
+ *
+ *   shopSet(built, marks, info) → { sheets: [one sheet per part mark, with .mark and .partId], refused: [marks] }
+ * makes the whole set at once, as the GA drawings are made: one sheet per mark, not per piece, in the marks' order.
  * Long parts are drawn with the length at one scale and the depth at a larger one when the depth would
  * otherwise be under 30 mm on paper; the view title then says both scales (dimensions govern).
  */
@@ -26,7 +30,7 @@ const HOLES_IN = { plate: 'shopdwg.holes.plate', web: 'shopdwg.holes.web', top: 
 
 export function shopRefusal(part) {
   if (!part) return t('shopdwg.err.select');
-  if (part.profile.kind === 'I' || part.profile.kind === 'PL') return null;
+  if (['I', 'C', 'L', 'RHS', 'CHS', 'PL'].includes(part.profile.kind)) return null;
   return t('shopdwg.err.kind', { profile: part.profileName });
 }
 
@@ -64,7 +68,8 @@ export function shopDrawing(part, info = {}) {
   P([[10, 10], [SHEET.w - 10, 10], [SHEET.w - 10, SHEET.h - 10], [10, SHEET.h - 10]], { w: 0.5, closed: true });
 
   const p = part.profile, L = part.length, isPlate = p.kind === 'PL';
-  const H = isPlate ? p.b : p.d;                                    // height of the face view
+  const H = isPlate ? p.b : p.depth;                                // height of the face view
+  const wall = p.kind === 'I' || p.kind === 'C' ? p.tf : p.t;       // what a flange hole goes through
   const faceHoles = part.holes.filter((h) => (isPlate ? h.face === 'plate' : h.face === 'web'));
   const flangeHoles = isPlate ? [] : part.holes.filter((h) => h.face === 'top' || h.face === 'bottom');
 
@@ -94,10 +99,12 @@ export function shopDrawing(part, info = {}) {
   if (ts) out.push([ts.length, h2], [ts.length, h2 - ts.depth], [0, h2 - ts.depth]); else out.push([xs0(h2), h2]);
   P(out.map(([x, y]) => [ex(x), ey(y)]), { w: 0.5, closed: true });
   if (!isPlate) {
-    for (const [side, y] of [['top', h2 - p.tf], ['bottom', -h2 + p.tf]]) {
+    const look = p.kind === 'RHS' || p.kind === 'CHS' ? hidden : { w: 0.3 };   // a tube's walls are behind its face
+    for (const [side, y] of [['top', h2 - wall], ['bottom', -h2 + wall]]) {
+      if (p.kind === 'L' && side === 'top') continue;               // an angle's leg along v is the face itself
       const a = cope('start', side), b = cope('end', side);
-      const x0 = a && a.depth > p.tf ? a.length : xs0(y), x1 = b && b.depth > p.tf ? L - b.length : xs1(y);
-      if (x1 > x0) P([[ex(x0), ey(y)], [ex(x1), ey(y)]], { w: 0.3 });
+      const x0 = a && a.depth > wall ? a.length : xs0(y), x1 = b && b.depth > wall ? L - b.length : xs1(y);
+      if (x1 > x0) P([[ex(x0), ey(y)], [ex(x1), ey(y)]], look);
     }
   }
   // holes
@@ -107,7 +114,7 @@ export function shopDrawing(part, info = {}) {
     P([[ex(h.x) - r - 1, ey(h.y)], [ex(h.x) + r + 1, ey(h.y)]], center);
   }
   for (const h of flangeHoles) {
-    const yA = h.face === 'top' ? h2 : -h2, yB = h.face === 'top' ? h2 - p.tf : -h2 + p.tf;
+    const yA = h.face === 'top' ? h2 : -h2, yB = h.face === 'top' ? h2 - wall : -h2 + wall;
     for (const dx of [-h.d / 2, h.d / 2]) P([[ex(h.x + dx), ey(yA)], [ex(h.x + dx), ey(yB)]], hidden);
     P([[ex(h.x), ey(yA) + (h.face === 'top' ? 1.5 : -1.5)], [ex(h.x), ey(yB) + (h.face === 'top' ? -1.5 : 1.5)]], center);
   }
@@ -129,14 +136,14 @@ export function shopDrawing(part, info = {}) {
     T(t('shopdwg.cope', { length: fmtLen(c.length), depth: fmtLen(c.depth) }), x, c.side === 'top' ? ey(h2) + 3 + i * 3 : ey(-h2) - 4 - i * 3, 2.2, { align: 'center' });
   });
 
-  // top flange plan (I-shapes with flange holes)
+  // top flange plan (members with flange holes)
   if (flangeHoles.length) {
-    const bf = p.bf, nf = pickScale(bf, 40 * k), sf = Math.max(sy, 1 / nf);
+    const bf = p.width, nf = pickScale(bf, 40 * k), sf = Math.max(sy, 1 / nf);
     const Y1 = Y0 - 80 * k;
     const fy = (u) => Y1 + (u + bf / 2) * sf;
     T(t('shopdwg.view.top-flange', { scale: ratio(Math.round(1 / sf * 100) / 100) }), X0, fy(bf / 2) + 5, 2.6, { bold: true });
     const a = cope('start', 'top'), b = cope('end', 'top');
-    const x0 = a && a.depth > p.tf ? a.length : 0, x1 = b && b.depth > p.tf ? L - b.length : L;
+    const x0 = a && a.depth > wall ? a.length : 0, x1 = b && b.depth > wall ? L - b.length : L;
     P([[ex(x0), fy(-bf / 2)], [ex(x1), fy(-bf / 2)], [ex(x1), fy(bf / 2)], [ex(x0), fy(bf / 2)]], { w: 0.5, closed: true });
     P([[ex(0) - 3, fy(0)], [ex(L) + 3, fy(0)]], center);
     for (const h of flangeHoles) C([ex(h.x), fy(h.y)], Math.max(0.6, h.d / 2 * sf), h.face === 'top' ? { w: 0.3 } : hidden);
@@ -159,10 +166,14 @@ export function shopDrawing(part, info = {}) {
       T('t = ' + fmtLen(D), CX + W / 2 * ss + 3, CY - 1, 2.2);
     } else {
       for (const loop of p.loops) P(loop.map(([u, v]) => [CX + u * ss, CY + v * ss]), { w: 0.5, closed: true });
-      for (const y of uniq(faceHoles.map((h) => h.y))) P([[CX - p.tw * ss / 2 - 3, CY + y * ss], [CX + p.tw * ss / 2 + 3, CY + y * ss]], center);
-      for (const h of flangeHoles) { const v = h.face === 'top' ? D / 2 : -D / 2; P([[CX + h.y * ss, CY + v * ss + (h.face === 'top' ? 2 : -2)], [CX + h.y * ss, CY + (v - Math.sign(v) * p.tf) * ss + (h.face === 'top' ? -2 : 2)]], center); }
+      // the web's middle and half its thickness (a tube's hole goes through both walls)
+      const wu = p.kind === 'C' ? -p.bf / 2 + p.tw / 2 : p.kind === 'L' ? -p.b / 2 + p.t / 2 : 0;
+      const wh = p.kind === 'I' || p.kind === 'C' ? p.tw / 2 : p.kind === 'L' ? p.t / 2 : W / 2;
+      for (const y of uniq(faceHoles.map((h) => h.y))) P([[CX + (wu - wh) * ss - 3, CY + y * ss], [CX + (wu + wh) * ss + 3, CY + y * ss]], center);
+      for (const h of flangeHoles) { const v = h.face === 'top' ? D / 2 : -D / 2; P([[CX + h.y * ss, CY + v * ss + (h.face === 'top' ? 2 : -2)], [CX + h.y * ss, CY + (v - Math.sign(v) * wall) * ss + (h.face === 'top' ? -2 : 2)]], center); }
       dimH(CX - W / 2 * ss, CX + W / 2 * ss, CY - D / 2 * ss - 8, CY - D / 2 * ss - 1, W);
       dimV(CY - D / 2 * ss, CY + D / 2 * ss, CX - W / 2 * ss - 6, CX - W / 2 * ss - 1, D);
+      if (p.kind === 'L' || p.kind === 'RHS' || p.kind === 'CHS') T('t = ' + Number(p.t.toFixed(1)), CX + W / 2 * ss + 3, CY - 1, 2.2);
     }
   }
 
@@ -204,6 +215,23 @@ export function shopDrawing(part, info = {}) {
   T(t('shopdwg.title', { mark: info.mark || '' }), 30, SHEET.h - 22, 5, { bold: true });
   T(t(info.count > 1 ? 'shopdwg.sub.off' : 'shopdwg.sub', { role: part.role, profile: part.profileName, length: fmtLen(L), count: info.count }), 30, SHEET.h - 29, 3);
 
-  T(SHEET.key.replace('-', ' '), tb[2] - 2, tb[1] + 2.5, 1.9, { align: 'right' });
+  T((info.sheet ? t('shopdwg.sheet-of', { n: info.sheet, of: info.sheets }) + '   ' : '') + SHEET.key.replace('-', ' '), tb[2] - 2, tb[1] + 2.5, 1.9, { align: 'right' });
   return { w: SHEET.w, h: SHEET.h, paper: SHEET.key, items, dims, scale: { length: nx, depth: ny } };
+}
+
+/**
+ * Every part mark's shop drawing, in the marks' order: what would otherwise be made one selection at a time.
+ * info: model, date, paper, weld(part) → the weld line for that part or ''.
+ */
+export function shopSet(built, marks, info = {}) {
+  const byId = new Map(built.parts.map((p) => [p.id, p]));
+  const rows = marks.parts.filter((r) => byId.has(r.ids[0]));
+  const refused = rows.filter((r) => shopRefusal(byId.get(r.ids[0]))).map((r) => r.mark);
+  const good = rows.filter((r) => !refused.includes(r.mark));
+  const sheets = good.map((r, i) => {
+    const part = byId.get(r.ids[0]);
+    const sheet = shopDrawing(part, { mark: r.mark, asmMark: marks.asmMark.get(marks.asmOf.get(part.id)) || '', count: r.count, model: info.model, date: info.date, paper: info.paper, weld: info.weld ? info.weld(part) : '', sheet: i + 1, sheets: good.length });
+    return { ...sheet, mark: r.mark, partId: part.id, ids: r.ids, count: r.count, profileName: part.profileName, length: part.length };
+  });
+  return { sheets, refused };
 }

@@ -34,6 +34,9 @@
  *   pictures: [{ id, name, hash, px, mmPerPx, x, y, z, opacity, size }]   (0.8 D8.15, picture.js) reference pictures (a copied
  *           area of a sheet) lying on a level; optional, an older build drops the key (same file version). The PNG is kept once
  *           in model.pictureSrcs by hash (outside the undo snapshots, as the IDS text) and written into the file as src by toJSON()
+ *   rc: { settings, elements: [{ id 'r<n>', kind beam|column|slab|wall, phase, … }], loose: [{ id 'x<n>', bar, db, pts, rc, mark, host? }] }
+ *           (0.9 RC.1, rc-detail.js over cc-rc in ./rc/) reinforced concrete elements with their bars, and bars read from an IFC file;
+ *           optional, an older build drops the key (same file version)
  *   seq: next id number
  * }
  * Members and footings carry `phase` (a number in phases; 1 when a version 1 file is opened). A connection is in the
@@ -54,6 +57,7 @@ import { cleanSetup as cleanErection } from './erection.js';   // 0.8 EG.72: the
 import { cleanAcceptedDc } from './problems-detailcraft.js';
 import { cleanIdsRecord, cleanIdsRef, idsHash, idsTextStore } from './ids/record.js';   // 0.7.1 71.25 (cc-ids, lib/ids synced)
 import { cleanPicture, readPictures, MAX_PICTURES } from './picture.js';   // 0.8 D8.15: reference pictures (a copied area of a sheet)
+import { cleanRc, cleanOne, mergeInto, cleanSettingsRc, MAX_ELEMENTS } from './rc-detail.js';   // 0.9 RC.1: reinforced concrete detailing
 import { t } from './i18n.js';
 
 export const FORMAT = 'detailcraft';
@@ -79,7 +83,7 @@ export function cleanPhase(v) {
 /** The phase list with every phase a member or footing names (sorted). */
 function withUsedPhases(phases, state) {
   const out = phases.map((p) => ({ ...p }));
-  for (const x of [...state.members, ...state.footings, ...(state.stairs || [])]) if (!out.some((p) => p.n === x.phase)) out.push({ n: x.phase, name: '' });
+  for (const x of [...state.members, ...state.footings, ...(state.stairs || []), ...(state.rc?.elements || [])]) if (!out.some((p) => p.n === x.phase)) out.push({ n: x.phase, name: '' });
   return out.sort((a, b) => a.n - b.n);
 }
 /** Which phase a connection is in: its main member's. */
@@ -286,7 +290,7 @@ class Tx {
     p.name = cleanText(name, 40);
   }
   removePhase(n) {
-    const used = [...this.s.members, ...this.s.footings, ...(this.s.stairs || [])].filter((x) => x.phase === n).length;
+    const used = [...this.s.members, ...this.s.footings, ...(this.s.stairs || []), ...(this.s.rc?.elements || [])].filter((x) => x.phase === n).length;
     if (used) throw new Error(t('phase.err.used', { n: used, phase: n }));
     if (this.s.phases.length <= 1) throw new Error(t('phase.err.last'));
     this.s.phases = this.s.phases.filter((p) => p.n !== n);
@@ -309,6 +313,7 @@ class Tx {
     const ids = new Set(refs.map((r) => r.kind + ':' + r.id));
     for (const m of this.s.members) if (ids.has('member:' + m.id)) m.phase = ph;
     for (const f of this.s.footings) if (ids.has('footing:' + f.id)) f.phase = ph;
+    for (const x of this.s.rc?.elements || []) if (ids.has('rc:' + x.id)) x.phase = ph;
     for (const x of this.s.stairs || []) if (ids.has('stair:' + x.id)) x.phase = ph;
   }
 
@@ -412,6 +417,7 @@ class Tx {
     }
     c.params = next;
   }
+  swapConnectionEnd(id) { const c = this.s.connections.find((x) => x.id === id); if (c) c.end = c.end === 'start' ? 'end' : 'start'; }
   removeConnections(ids) { const set = new Set(ids); this.s.connections = this.s.connections.filter((c) => !set.has(c.id)); }
 
   addFooting(f) {
@@ -435,6 +441,35 @@ class Tx {
     this.s.footings[i] = { id, ...r.footing, phase };
   }
   removeFootings(ids) { const set = new Set(ids); this.s.footings = this.s.footings.filter((f) => !set.has(f.id)); }
+
+  // ---- reinforced concrete (0.9 RC.1, rc-detail.js) ----
+  rcState() { if (!this.s.rc) this.s.rc = { settings: cleanSettingsRc({}), elements: [], loose: [] }; return this.s.rc; }
+  dropRcIfEmpty() { const r = this.s.rc; if (r && !r.elements.length && !r.loose.length && !r.touched) delete this.s.rc; }
+  addRc(e) {
+    const rc = this.rcState();
+    if (rc.elements.length >= MAX_ELEMENTS) throw new Error(t('rc.err.too-many', { n: MAX_ELEMENTS }));
+    const el = cleanOne(e);
+    const phase = cleanPhase(e.phase) || 1;
+    this.ensurePhase(phase);
+    const id = this.nextId('r');
+    rc.elements.push({ id, phase, ...el });
+    return id;
+  }
+  updateRc(id, patch) {
+    const rc = this.rcState(), i = rc.elements.findIndex((x) => x.id === id);
+    if (i < 0) throw new Error(t('rc.err.gone'));
+    const cur = rc.elements[i];
+    const el = cleanOne(mergeInto(cur, patch));
+    const phase = patch.phase !== undefined ? cleanPhase(patch.phase) : cur.phase || 1;
+    if (!phase) throw new Error(t('phase.err.number', { max: MAX_PHASE }));
+    this.ensurePhase(phase);
+    rc.elements[i] = { id, phase, ...el };
+  }
+  removeRc(ids) { if (!this.s.rc || !ids.length) return; const set = new Set(ids); this.s.rc.elements = this.s.rc.elements.filter((x) => !set.has(x.id)); this.dropRcIfEmpty(); }
+  setRcSettings(patch) { const rc = this.rcState(); rc.settings = cleanSettingsRc({ ...rc.settings, ...patch }); rc.touched = true; }
+  /** Bars read from a file (already checked by cleanRc / the importer). */
+  addLoose(list) { const rc = this.rcState(); const ids = []; for (const b of list) { const id = this.nextId('x'); rc.loose.push({ id, ...b }); ids.push(id); } return ids; }
+  removeLoose(ids = null) { if (!this.s.rc) return; const set = ids && new Set(ids); this.s.rc.loose = set ? this.s.rc.loose.filter((b) => !set.has(b.id)) : []; this.dropRcIfEmpty(); }
 
   addStair(x) {
     const id = this.nextId('s');
@@ -634,6 +669,8 @@ export function readModel(text) {
     const r = cleanStair(x);
     if (r.ok) s.stairs.push({ id: uid(x.id, 's'), ...r.stair, phase: cleanPhase(x.phase) || 1 }); else warnings.push(t('model.warn.stair', { name: r.error }));
   }
+  const rc = cleanRc(j.rc, uid);   // 0.9 RC.1: reinforced concrete elements and loose bars (rc-detail.js)
+  if (rc) { warnings.push(...rc.warnings); delete rc.warnings; if (j.rc?.touched) rc.touched = true; s.rc = rc; }
   // phases: the file's list (numbers 1–999, names ≤ 40, no repeats), plus any a member or footing names
   const ph = [];
   for (const p of (Array.isArray(j.phases) ? j.phases : []).slice(0, MAX_PHASE)) {
@@ -658,7 +695,7 @@ export function readModel(text) {
   if (fr) s.framing = fr;
   const sp = readSupply(j.supply);   // 0.8 round 3, EG.51: supplier stock and lead-time rows (lib/supply)
   if (sp) s.supply = sp;
-  for (const k of ['calcs', 'reasons']) {   // 0.8 round 3: the shell's calc sheets and design reasons, kept as saved (the shell's modules clean them on load)
+  for (const k of ['calcs', 'reasons', 'docinfo']) {   // 0.9 DI.1 docinfo; 0.8 round 3: the shell's calc sheets and design reasons, kept as saved (the shell's modules clean them on load)
     const v = j[k];
     if (v && typeof v === 'object' && !Array.isArray(v) && v.format === 'cadcraft-' + k && JSON.stringify(v).length <= 2e6) s[k] = v;
   }

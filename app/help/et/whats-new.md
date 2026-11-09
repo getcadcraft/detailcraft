@@ -1,55 +1,59 @@
 ---
-title: Mis on uut versioonis 0.7
-summary: Terasest I-profiilide projekteerimiskontrollid koormuskombinatsioonidega ASCE 7 või EN 1990 järgi ning elementide kontrollid normidega AISC 360 või EN 1993-1-1 järgi, terasmudeli eksport USD-na, USD-abivahend, Teras-lint suurte ja väikeste nuppudega, paneelid, mis end ära peidavad, ja dialoogid, mida saab liigutada.
-keywords: mis on uut, väljalaske märkmed, muudatuste logi, muudatused, 0.7, versioon, uued funktsioonid, projekteerimiskontrollid, terasprojekteerimine, kasutusaste, koormuskombinatsioonid, ASCE 7, EN 1990, AISC 360, EN 1993-1-1, Eurocode, rahvuslik lisa, katuse muutuv koormus, läbipainde piirang, usd, usda, usdc, usdz, openusd, assistent, mcp, teraslint, lint, jagatud nupp, ühikud, tihe, paneelid, dialoogid, portugali keel
-from: 17d1e0bb
+title: Mis on uut versioonides 0.8 ja 0.8.1
+summary: Montaaživideo kraana koormustabelist, ühenduste autopiloot, armatuuri tihedusekaart, vundamendi kontrollid, puidust ja kergkarkassist paneelid, ehitatavuse ja keevisjuurdepääsu kontrollid, tarnija laoseis, mis puruneb esimesena, reaalajas uuesti arvutamine, täiendavad betoonikontrollid ja versiooni 0.8.1 parandused.
+keywords: mis on uut, mis on uut, väljalaskemärkmed, muutelogi, muudatused, 0.8, 0.8.1, versioon, uued funktsioonid, montaaž, kraana, koormustabel, video, autopiloot, ühendused, armatuur, tihedus, vundament, sete, karkass, puit, kergkarkass, lõikenimekiri, ehitatavus, keevisjuurdepääs, tarnija, laoseis, tarneaeg, mis puruneb esimesena, reaalajas, betoon, seismiline, laepaneel, keeled, assistent
+from: 6e33e052
 ---
 
-Siin on, mis muutus versioonis DetailCraft 0.7 võrreldes versiooniga 0.6. Versiooni 0.6 raamanalüüsil on nüüd teine samm: terasest elementide kontroll projekteerimisnormi järgi.
+See on DetailCrafti 0.8 (1. november 2026) ja 0.8.1 (2. november 2026) muudatuste loend võrreldes versiooniga 0.7. Versioon 0.7 kontrollis terasdetaile; versioon 0.8 planeerib tõstetöid, pakub ühendusi, kontrollib vundamente ja armatuuri ning koostab puit- ja kergkarkassist seinad, põrandad ja katused.
 
 ## Uus
 
-### Nurkliited (0.7.1)
+### Montaaž
 
-- **Kaks I-profiili, mis kohtuvad nurga all**, nagu portaalnurk või harjajoon: vali mõlemad, vali rühmas {{ui:Ühenda}} menüüst {{ui:Veel}} {{ui:Vältliide}}, ja mõlemad otsad lõigatakse tasandil, mis poolitab nurga. Poltidega kokku ühendatud otsaplaadid ja ribijäigendid on uues dialoogis {{ui:Vältliide}} märkeruudud; selle nummerdatud väljad vastavad sinu liite joonisele, mis koostatakse sisestamise ajal. Vältliide järgib elemente, kui need liiguvad, ning kandub joonistele, NC-failidesse (kaldlõiked), IFC-sse ja materjalinimekirja. Vt [Vältliited](topic:mitres).
+- **Montaažiplaan ja video.** Vahekaardil {{ui:Montaaž}} kirjelda kraana (kus see seisab, selle kõrgeim konks, takelaaž, mida koormustabelis ei ole) ja sisesta selle koormustabeli read. DetailCraft tõstab mudelit ühe koosteühiku kaupa, faasijärjekorras ja kihiti, ning kontrollib iga tõstet tabeli järgi selle raadiuse juures ja sinu seatud varuga. {{ui:Salvesta video}} kirjutab ühe HTML-faili, mis mängib võrguta igas brauseris, ka telefonis. Tõstetööd, mis on tabelist väljas, üle selle või liiga kõrged, on loetletud {{ui:Probleemid}}-is. See on plaan sinu arvude põhjal, mitte tõstekava. Vt [Montaažiplaan ja video](topic:erection-movie).
 
-### Projekteerimiskontrollid
+### Ühendused
 
-- **Koormuskombinatsioonid normist.** Vahekaardil {{ui:Analüüs}} on uus plokk {{ui:Projekteerimiskontrollid}}, millel on {{ui:Projekteerimisnorm}}: ASCE 7 + AISC 360 (USA, LRFD) või EN 1990 + EN 1993-1-1 (Eurocode). Anna igale koormusjuhule liik (alaline, muutuv, uus katuse muutuv koormus, lumi, tuul, seismiline), vajuta {{ui:Koosta kombinatsioonid}} ja DetailCraft kirjutab normi tugevus- ja kasutuspiirseisundi kombinatsioonid sinu koormusjuhtude põhjal. Kombinatsioonid, mille ise sisestasid, jäävad alles. Vt [Kombinatsioonide koostamine](topic:design-checks#make-the-combinations).
-- **Rahvusliku lisa väärtused.** Eurocode puhul alustavad tegurid soovitatud väärtustest; {{ui:Rahvusliku lisa väärtused}} lubab sisestada oma riigi väärtused ning need salvestatakse mudelisse. Vt [Kombinatsioonide koostamine](topic:design-checks#make-the-combinations).
-- **Kontrolli elemente.** {{ui:Kontrolli elemendid}} kontrollib iga terasest I-profiili pingele, survele koos väänduvusega, paindele koos külgmise väändega, nihkele, paindele koos normaaljõuga ja läbipainde järgi, võrreldes sinu seatud {{ui:Läbipainde piirang}}ga. Tabel näitab iga elemendi kasutusastet, määravat kontrolli ja selle kombinatsiooni ning elemendid on mudelil värvitud (sinine, roheline, oker, punane, hall kontrollimata). Vt [Elementide kontrollimine](topic:design-checks#check-the-members).
-- **Aruandes.** {{ui:Aruanne (PDF)}} ja {{ui:Aruanne (CSV)}} lisavad normide väljaanded, seaded, kasutusastme elemendi kaupa ja iga kasutatud punkti. Vt [Aruanne](topic:design-checks#the-report).
-- **Abivahend, kuni inseneri ülevaatus.** See kasutab ainult esimese järgu jõude. Torud, nurkprofiilid, kanalid, keevitatud kujud ning karksed või 4. klassi osad on „kontrollimata“ koos põhjusega; vääne, ühendused ja betoon ei ole kontrollitud. Vt [Mida ei kontrollita](topic:design-checks#what-is-not-checked).
+- **Ühenduste autopiloot.** Vahekaart {{ui:Autopiloot}} vaatab iga liidet, millel ühendust ei ole, ja pakub ühenduse kujude järgi: aluseplaadid, lõikeplaadid, talade otsaplaadid talade puhul, mille märkisid momenttaladeks, skarvid ja sõlmeplaadid. Anna ühtlane koormus või ühe otsa nihkejõud ning poltide arv järgib polti projekteerimistugevust. {{ui:Lisa kõik}} lisab ettepanekud ühe tagasivõtmise sammuna. Need on lähtepunktid, mida üle vaadata, mitte ühenduse projekt.
+- **Ehitatavuse kontrollid.** {{ui:Probleemid}} näitab polti, kuhu mutrivõti ei ulatu, poltid, mis on liiga lähedal mutripesale, nurkkeevised väljaspool oma suuruspiire ja õõnsad profiilid, mis hoiavad vett. Keevisjuurdepääs on uus: täisümber nurkkeevis, kuhu keevitaja leek ei ulatu, on loetletud koos detailiga, mis tee ees on, ja keevise osaga, mida see mõjutab. Vt [Ehitatavuse kontrollid](topic:constructability).
 
-### USD
+### Vundamendid ja armatuur
 
-- **Terasmudeli eksport USD-na.** {{ui:USD}} rühmas {{ui:Väljund}} kirjutab mudeli vormingutena {{ui:Tekst (.usda)}}, {{ui:Binaarne (.usdc)}} või {{ui:Pakett (.usdz)}} renderdusprogrammidele ja stseenide kokkupanekuks: iga koost hoiab oma detaile, iga detail on profiil, mis kulgeb piki oma pikkust koos väljalõigetega, ning igal on oma detailimärgis, profiil, teraseklass, pikkus ja kaal. Poldiaugud, poldid, keevised ja vundamendid ei ole USD-võrkudes. Vt [Terasmudeli eksport USD-na](topic:usd).
+- **Vundamendi kontrollid.** Vahekaart {{ui:Vundament}} kontrollib padjandeid, kombineeritud vundamente ja põhivõrke sinu kirjeldatud pinnases: kandevõime, libisemine ja ümberminek kasutuskoormustest; paindumine, nihe, läbilöök, kinnitus ja miinimumarmatuur koormustest koormatuna (ACI 318-19). Posti, mis asub servas või nurgas, kontrollitakse lõikega, mis jääb vundamendi serva taha. Sete tuleneb pinnase moodulist, paindlik võrk arvutatakse alusmoodulist lähtuvatel vedrudel ning vaiarühmadel ja tugiseintel on omad paneelid. Posti koormusi võib sisestada või võtta vahekaardilt {{ui:Analüüs}}. Vt [Vundamendi kontrollid](topic:foundation-checks).
+- **Armatuuri tihedusekaart.** Vahekaart {{ui:Tihedus}} joonistab iga vundamendi soojuskaardi ülalt vaadatuna: kohad, kus vardad jätavad betoonile liiga vähe ruumi allaminekuks, võrreldes selge vahe reegliga ja, kui sa need annad, suurima täiteaine ning vibraatori peaga. Vt [Armatuuri tihedusekaart](topic:rebar-congestion).
 
-### Tehisintellekti assistendid
+### Karkass ja varud
 
-- **USD assistentidele.** Sinu enda assistent, mis on ühendatud CadCraft Studio kaudu, saab mudelit USD-na eksportida (`usd_export`) ning Studios kirjutada selle kausta, mille lubasid. Vt [Mida assistent võib paluda](topic:use-with-ai-assistants#what-an-assistant-can-ask-for).
+- **Puidust ja kergkarkassist karkass.** Vahekaart {{ui:Karkass}} koostab sein-, põrand- ja katusepaneelid kõigi tükkidega, lõikenimekirja, ostetava materjali ja mõõtkavas tööjoonise. {{ui:Paiguta elementidena}} paneb tükid mudelisse ja {{ui:PDF-lehed}} salvestab ühe lehe iga paneeli kohta. Mõõdud, vahed ja päised on sinu; DetailCraft ei kontrolli, et need kannaksid koormust. Vt [Puidust ja kergkarkassist paneelid](topic:framing-panels).
+- **Tarnija laoseis ja tarneajad.** Vahekaart {{ui:Tarnija}} loeb tarnija laonimekirja (CSV) ja näitab iga lõikenimekirja ostetava lõigu kohta, kas laos on piisavalt ja kui kaua tuleb oodata. Puudujäägid ja hilinevad lõigud on {{ui:Probleemid}}-is. Midagi ei tellita. Vt [Tarnija laoseis ja tarneajad](topic:supplier-stock).
 
-## Muudetud
+### Analüüs ja projekteerimine
 
-- **Teras-lint** on suurte ja väikeste nuppudega: suur {{ui:Tala}} koos väikeste {{ui:Post}}, {{ui:Diagonaal}} ja {{ui:Plaat}} rühmas {{ui:Modelleerimine}} › {{ui:Elemendid}}; suur {{ui:Otsaplaadid}} rühmas {{ui:Detailimine}} › {{ui:Ühendused}}, kusjuures {{ui:Skarv}} ja {{ui:Sõlmeplaat}} jagavad ühte jagatud nuppu; suur {{ui:Kleebi}} rühmas {{ui:Muuda}} › {{ui:Lõikelaud}}, kusjuures {{ui:Kleebi samasse kohta}} ja {{ui:Dubleeri}} on grupi noole taga. {{ui:Valmistus}} › {{ui:Vahetus}} sisaldab {{ui:Ekspordi USD}} IFC kõrval. Teised menüüstiilid näevad välja nagu varem. Vt [Menüüd, klahvid ja hiir](topic:menus-keys-and-mouse#the-three-styles).
-- [Analüüsi raami](topic:frame-analysis) jaotis suunab nüüd projekteerimiskontrollidele ja selle kombinatsioonid saab koostada normi järgi.
+- **Mis puruneb esimesena?** Vahekaardil {{ui:Analüüs}} leiab nupp valitseva tugevuskombinatsiooni, nõrgima elemendi, kui palju koormused võivad kasvada enne, kui esimene element jõuab oma piirini, ning nõrgima otsaplaadi või lõikeplaadi, kus on teada tema poltide nihketugevus. Esmalt on vaja kombinatsioone ja projekteerimisnormi. Tugi, ploki nihe, keevised ja tõmbejõu võimendus ei ole kontrollitud. Sinu ühendatud assistent saab sama küsida.
+- **Reaalajas.** Märgi {{ui:Reaalajas: lahenda pärast iga muudatust uuesti}} ja raam arvutatakse pärast iga muudatust uuesti.
+- **Betoon ja rohkem.** Mittesöötlevas raamis projekteeritakse sale post oma suurendatud momendi järgi (ACI 318-19 6.6.4.5). Seismilise perioodi võib võtta analüüsist Rayleighi meetodiga. Plaatidest tehtud laepaneel saab igale kihile vajaliku terase oma momentidest ja ühesuunalisest nihkest. Vt [Betoonelementide kontroll ja seismilised koormused](topic:concrete-and-seismic).
+- **Insenerile kontrollimiseks.** Vundamendi, betooni ja „Mis puruneb esimesena?“ tulemused on abivahendid. Tuulekoormusi ei ole veel loodud.
 
-## Kõigis rakendustes
+### Igas rakenduses
 
-- **Ühikud.** {{ui:Sätted}} › {{ui:Üldine}} › {{ui:Ühikud}} sisaldab iga pikkuse, pindala, mahu, nurga ja kalde jaoks ühte loendit, täpsete suurustega, mille ühikute definitsioonid annavad (USA mõõdistusjalg on oma ühik). Lülita välja ühikud, mida ei kasuta, ja need kaovad ühikute loenditest; märgi üks tärniga ja uus töö algab sellest. Fail hoiab alati oma ühikut. DetailCraft-i enda väljad ei järgi veel loendeid: selle pikkused sisestatakse endiselt mm-des. Vt [Ühikud, sisestatud väärtused ja ühikute loendid](common:unit-lists).
-- **Tihedam paigutus ja paneelid, mis end ära peidavad.** {{ui:Sätted}} › {{ui:Üldine}} › {{ui:Paigutuse tihedus}} › {{ui:Tihe}} mahutab ekraanile rohkem (puuteekraanid ja telefonid säilitavad oma suured nupud). Igal külgpaneelil on kitsas pealkirjariba: lohista see, et paneel dokkida või ujuvaks teha; lase see teise paneeli ribale, et jagada üks raam vahekaartidena; kinnita see, et see libiseks servale ära; või peida see ja too servast tagasi. Vt [Paneelide paigutamine](common:arrange-panels#make-the-layout-denser).
-- **Dialoogid liiguvad.** Lohista dialoogi selle pealkirjaribast joonise eest eemale; see tuleb tagasi sinna, kust lahkusid. Topeltklõps pealkirjaribal tsentreerib selle uuesti. Vt [Dialoogi liigutamine](common:arrange-panels#move-a-dialog).
-- **Retseptid tehisintellekti assistentidele.** Kümme läbitöötatud päringut sinu enda assistendile (korrasta joonis, joonista komplekt, kontrolli jooniseid, küsi mudelilt küsimusi, summeeri koguste arvestus, proovi detaili varianti…), igaüks koos tööriistadega, mida ta kutsub, ja õigustega, mida ta vajab; iga üks on meie testidega uuesti läbi mängitud. Rakendused ei sisalda tehisintellekti. Vt [Retseptid tehisintellekti assistentidele](common:assistants-recipes).
-- **Keeled.** **Português (Portugal)** on uus valik {{ui:Sätted}} › {{ui:Üldine}} › {{ui:Keel}} all. See, **Português (Brasil)**, **Español (México)** ja **Bahasa Indonesia** on nüüd kõigi rakenduste sõnadega, mustanditena, mida emakeelne kasutaja pole veel üle vaadanud. Abi teemad on inglise keeles.
-- **CadCraft Studio** ütleb, miks värskenduse kontroll ebaõnnestus (failid sinu süsteemi jaoks pole veel valmis, võrk puudub, allkiri on vale), mitte lihtsalt „Valmis“, ning ei too enam tagasi kaarti Mis on uut, mille suleti, kuni on uuem versioon.
+- **Keeled.** Abi on 54 keeles. Need, mis on peale inglise keele, on masintõlked, kuni emakeelne lugeja need üle vaatab; kümme on uued (leedu, läti, bosnia, marathi, telugu, albaania, afrikaans, filipiini, suahiili ja usbeki).
+- **Tööriistariba read.** {{ui:Sätted}} › {{ui:Üldine}} › {{ui:Tööriistariba read}} valib mähkimise, 2 rea või 1 rea. Riba, mis juba mahub, jääb samaks; ülejäänud kerivad külgsuunas.
+- **Omaduste ruudustik.** Vundamendi väljad kasutavad ühist ruudustikku: kokkuklapitavad kategooriad ja tihe paigutus. Sisestatud arvutused nagu 2*450 töötavad endiselt.
+- **Sisendseadmed.** Puuteplaat, pliiats, 3D-hiir, kontroller ja MIDI saavad rakendusi juhtida. Vt [Liikumine 3D-s](topic:navigate-3d).
+- **Probleemide paneel.** Ülalolevate uute kontrollide hoiatused ilmuvad samasse paneeli {{ui:Probleemid}} nagu varem.
+- **Ühenda oma tehisintellekt.** Sinu enda assistent, ühendatud CadCrafti Studio kaudu, töötab kõigi kaheksa rakendusega ja näeb ainult seda, mida lubad. Ühe klõpsuga ühendus, hostitud ühendusteenus ja oma API-võti Studios on veel tulemas. Vt [DetailCrafti kasutamine tehisintellekti assistendiga](topic:use-with-ai-assistants).
 
-## Pole selles versioonis veel
+## Parandatud versioonis 0.8.1
 
-- **0.7 ei ole koodiga allkirjastatud.** Allkirjastamine ja Microsoft Store'i pakk liikusid versioonile 0.8, sest sertifikaadi kinnitus ei ole veel tulnud. Kontrolli iga faili kõrval olevat SHA-256 lehel getcadcraft.com/download. Windowsis, kui SmartScreen peatab paigaldaja, vali {{ui:Rohkem infot}}, siis {{ui:Käivita siiski}}. Macis vali esimesel korral CadCraft Studio paremklõpsuga ja {{ui:Ava}}. CadCraft Studio ei ole veel rakenduste poes ning iPadi ega iPhone'i versiooni ei ole veel.
-- Nurga ja kalde loendid vahekaardil {{ui:Ühikud}} salvestatakse, aga ükski väli neid veel ei loe.
-- **Projekteerimiskontrollid ei ole veel insener üle vaadanud.** Meie testid võrdlevad neid trükitud tabeliväärtuste ja käsitsi arvutatud valemitega, mitte veel projekteerimisjuhendi töötatud näidetega. Kuni ülevaatuseni on need abivahendid: kontrolli käsitsi olulisi elemente.
-- Projekteerimiskontrollid kasutavad esimese järgu jõude (ilma teise järgu mõjudeta) ning kontrollivad ainult I-profiile. Ei ole tehtud: torud, nurkprofiilid, kanalid, keevitatud kujud, karksed (AISC) või 4. klassi (Eurocode) osad paindel, väändel, nihkel koos paindega, ühendused, väsimus, tulekindlus, seismiline detailimine ja betoon. Karge osa survel jätab survekontrollid välja ja element näidatakse „läbib, osaliselt kontrollitud“.
-- Raamanalüüs on endiselt esimese järgu ja lineaarne ning insener pole seda veel päris töös proovinud.
-- Poldiaugud, poldid, keevised ja vundamendid ei ole USD-ekspordis.
+- **Keeled Studios.** Studio ja pakendatud väljaanded saavad keelt vahetada töö ajal; varem olid need ainult inglise keeles. Seda ei ole veel kõigil platvormidel testitud: anna teada, kui keel ei muutu.
+- **Ristakna valik.** Versiooni 0.8.1 installerid kannavad aknaga valimise käitumist, mis oli juba õige versiooni 0.8 veebiversioonis; vanem installer seda ei teinud.
+- **Tahvelarvutid portreerežiimis.** Ruudustiku vaba kõrgus läheb joonistusalale ja lehe paigutus algab 760 pikslist või vähem.
 
-Kõik muu on jaotises [Mida veel ei ole](topic:not-built-yet).
+## Pole veel selles versioonis
+
+- **Saatmine NC masinale** ei ole välja antud.
+- **Tuulekoormused** betoonile ei ole veel loodud ning betooni- ja vundamendikontrolle peab insener üle vaatama.
+- **Koodi allkirjastamine.** Windowsi installerid ja macOS .dmg ei ole allkirjastatud, nii et Windows võib hoiatada ja macOS küsib paremklõpsu ning seejärel valikut Ava.
+
+Varasemad muudatused: [Mis on uut versioonis 0.7](topic:whats-new-0-7).

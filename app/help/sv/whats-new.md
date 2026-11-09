@@ -1,55 +1,59 @@
 ---
-title: Nyheter i 0.7
-summary: Dimensioneringskontroller av I-profiler i stål med lastkombinationer enligt ASCE 7 eller EN 1990 och stångkontroller enligt AISC 360 eller EN 1993-1-1, USD-export av stålmodellen, ett assistentverktyg för USD, ett Stål-band med stora och små knappar, paneler som fälls undan och dialogrutor som går att flytta.
-keywords: nyheter, vad är nytt, versionsanteckningar, ändringslogg, ändringar, 0.7, version, nya funktioner, dimensioneringskontroller, ståldimensionering, utnyttjandegrad, lastkombinationer, ASCE 7, EN 1990, AISC 360, EN 1993-1-1, Eurokod, nationell bilaga, nyttig last på tak, nedböjningsgräns, usd, usda, usdc, usdz, openusd, assistent, mcp, stålband, menyflik, delad knapp, enheter, kompakt, paneler, dialogrutor, portugisiska
-from: 17d1e0bb
+title: Nyheter i 0.8 och 0.8.1
+summary: En monteringsfilm från ett kranlastdiagram, en förbindelseautopilot, en karta över armeringstrångsel, grundläggningskontroller, paneler för trä- och lättregelstomme, konstruktionsbarhets- och svetsåtkomstkontroller, leverantörslager, vad som brister först, en live-omlösning, fler betongkontroller och rättelserna i 0.8.1.
+keywords: nyheter, vad är nytt, versionsnoteringar, ändringslogg, ändringar, 0.8, 0.8.1, version, nya funktioner, montage, kran, lastdiagram, film, autopilot, förbindelser, armering, trångsel, grund, plint, matta, sättning, stomme, trä, lättregel, kapplista, konstruktionsbarhet, svetsåtkomst, leverantör, lager, ledtid, vad som brister först, live, betong, seismisk, platta, språk, assistent
+from: 6e33e052
 ---
 
-Det här är vad som ändrats i DetailCraft 0.7 jämfört med 0.6. Stomanalysen från 0.6 har nu ett andra steg: att kontrollera stålstängerna mot en dimensioneringsnorm.
+Det här är vad som ändrades i DetailCraft 0.8 (1 november 2026) och 0.8.1 (2 november 2026), jämfört med 0.7. 0.7 kontrollerade stålelement; 0.8 planerar lyften, föreslår förbindelserna, kontrollerar grunderna och armeringen, och ritar upp stomme för trä- och lättregelväggar, golv och tak.
 
 ## Nytt
 
-### Geringsförband (0.7.1)
+### Montage
 
-- **Två I-profiler som möts i en vinkel**, till exempel ett ramhörn eller en nock: markera båda, välj {{ui:Gering}} i menyn {{ui:Mer}} i gruppen {{ui:Förbind}}, så kapas båda ändarna i planet som delar vinkeln mitt itu. Ihopskruvade ändplattor och livavstyvningar är kryssrutor i den nya dialogrutan Gering, vars numrerade fält motsvarar en ritning av ditt förband som uppdateras medan du skriver. Geringen följer stängerna när de flyttas och förs vidare till ritningar, NC-filer (sneda snitt), IFC och stycklistan. Se [Geringsförband](topic:mitres).
+- **Monteringsplan och film.** På fliken {{ui:Montage}} beskriver du en kran (var den står, dess högsta krok och riggningen som inte finns med i lastdiagrammet) och skriver in raderna i kranens lastdiagram. DetailCraft lyfter modellen en sammanställning i taget, i etappordning och lager för lager, och kontrollerar varje lyft mot lastdiagrammet vid dess radie och mot den marginal du angett. {{ui:Spara film}} skriver en HTML-fil som spelas upp offline i vilken webbläsare som helst, även i en telefon. Lyft som ligger över, utanför eller för högt för diagrammet visas i {{ui:Problem}}. Det är en plan utifrån dina värden, inte en lyftplan. Se [Monteringsplan och film](topic:erection-movie).
 
-### Dimensioneringskontroller
+### Förbindelser
 
-- **Lastkombinationer från normen.** På fliken {{ui:Analys}} har det nya blocket {{ui:Dimensioneringskontroller}} en {{ui:Dimensioneringsnorm}}: ASCE 7 + AISC 360 (USA, LRFD) eller EN 1990 + EN 1993-1-1 (Eurokod). Ange varje lastfalls slag (egentyngd, nyttig last, den nya nyttiga lasten på tak, snö, vind, seismisk), tryck på {{ui:Skapa kombinationer}}, så skriver DetailCraft normens brottgräns- och bruksgränskombinationer av dina lastfall. De kombinationer du skrivit själv finns kvar. Se [Skapa kombinationerna](topic:design-checks#make-the-combinations).
-- **Värden i nationell bilaga.** För Eurokod börjar faktorerna på de rekommenderade värdena; med {{ui:Värden i nationell bilaga}} anger du ditt lands värden, och de sparas i modellen. Se [Skapa kombinationerna](topic:design-checks#make-the-combinations).
-- **Kontrollera stänger.** {{ui:Kontrollera stänger}} kontrollerar varje I-profil i stål för drag, tryck med knäckning, böjning med vippning, tvärkraft, böjning med normalkraft och nedböjning mot den {{ui:Nedböjningsgräns}} du anger. Tabellen visar varje stångs utnyttjandegrad, den kontroll som styr och dess kombination, och stängerna färgas i modellen (blå, grön, ockra, röd, grå för ej kontrollerad). Se [Kontrollera stängerna](topic:design-checks#check-the-members).
-- **I rapporten.** {{ui:Rapport (PDF)}} och {{ui:Rapport (CSV)}} lägger till normutgåvorna, inställningarna, utnyttjandegrad per stång och varje paragraf som använts. Se [Rapporten](topic:design-checks#the-report).
-- **Ett hjälpmedel tills en ingenjör har granskat det.** Det använder bara förstaordningens krafter. Rör, vinkelstål, U-profiler, svetsade profiler och slanka delar eller delar i klass 4 visas som "not checked", med orsak; vridning, förbindelser och betong kontrolleras inte. Se [Vad som inte kontrolleras](topic:design-checks#what-is-not-checked).
+- **Förbindelseautopilot.** Fliken {{ui:Autopilot}} tittar på varje skarv som saknar förbindelse och föreslår en utifrån formerna: fotplåtar, skjuvlaskar, ändplattor för de balkar du markerar som momentbalkar, skarvar och knutplåtar. Anger du en jämnt fördelad last eller en ändskjuvkraft, följer antalet bultar bultens dimensionerande hållfasthet. {{ui:Lägg till alla}} lägger till förslagen som ett enda ångra-steg. De är startvärden att granska, inte en förbindelsekonstruktion.
+- **Konstruktionsbarhetskontroller.** {{ui:Problem}} för en bult som en nyckel inte når, bultar som står för nära för hylsan, kälsvetsar utanför sina storleksgränser och ihåliga profiler som kan samla vatten. Svetsåtkomst är ny: en runtomgående kälsvets som en svetsares brännare inte når visas med delen som är i vägen och andelen av svetsen som påverkas. Se [Konstruktionsbarhetskontroller](topic:constructability).
 
-### USD
+### Grunder och armering
 
-- **Exportera stålmodellen som USD.** {{ui:USD}} i gruppen {{ui:Utdata}} skriver modellen som {{ui:Text (.usda)}}, {{ui:Binär (.usdc)}} eller {{ui:Paket (.usdz)}} för renderingsprogram och scenmontering: varje sammanställning innehåller sina delar, varje del är sitt tvärsnitt dragit längs sin längd med urtag utskurna, och var och en bär sitt delmärke, sin profil, sin kvalitet, sin längd och sin vikt. Bulthål, bultar, svetsar och plintar finns inte i USD-näten. Se [Exportera stålmodellen som USD](topic:usd).
+- **Grundläggningskontroller.** Fliken {{ui:Grundläggning}} kontrollerar plintar, kombinerade plintar och mattor på den jord du beskriver: bärighet, glidning och vält från bruksbelastningar; böjning, skjuvning, genomstansning, förankring och minimiarmering från dimensionerande laster (ACI 318-19). En pelare nära en kant eller ett hörn kontrolleras med det snitt som skärs av plintens kant. Sättning beräknas från jordens modul, en flexibel matta löses på fjädrar utifrån en undergrundsmodul, och pålgrupper och stödmurar har egna paneler. Pelarlaster kan skrivas in eller hämtas från {{ui:Analys}}. Se [Grundläggningskontroller](topic:foundation-checks).
+- **Karta över armeringstrångsel.** Fliken {{ui:Trängsel}} ritar en värmekarta för varje plint sett uppifrån: var armeringen lämnar för lite utrymme för betongen att komma ner, mot regeln för fritt avstånd och, om du anger dem, största ballast och vibratorhuvudet. Se [Karta över armeringstrångsel](topic:rebar-congestion).
 
-### AI-assistenter
+### Stomme och leverans
 
-- **USD för assistenter.** Din egen assistent, ansluten via CadCraft Studio, kan exportera modellen som USD (`usd_export`) och i Studio skriva den till en mapp som du har tillåtit. Se [Vad en assistent kan be om](topic:use-with-ai-assistants#what-an-assistant-can-ask-for).
+- **Trä- och lättregelstomme.** Fliken {{ui:Stomme}} ritar upp stomme för vägg-, golv- och takpaneler med varje del, en kapplista, virket att köpa och en verkstadsritning i skala. {{ui:Placera som element}} lägger delarna i modellen, och {{ui:PDF-blad}} sparar ett blad för varje panel. Dimensionerna, avstånden och överliggarna är dina: DetailCraft kontrollerar inte att de bär lasten. Se [Paneler för trä- och lättregelstomme](topic:framing-panels).
+- **Leverantörslager och ledtider.** Fliken {{ui:Leverans}} läser en leverantörs lagerlista (CSV) och visar för varje profil som kapplistan köper om det finns tillräckligt i lager och hur lång väntan är. Korta och sena profiler finns i {{ui:Problem}}. Inget beställs. Se [Leverantörslager och ledtider](topic:supplier-stock).
 
-## Ändrat
+### Analys och dimensionering
 
-- **Stål-bandet** har stora och små knappar: en stor {{ui:Balk}} bredvid små {{ui:Pelare}}, {{ui:Stag}} och {{ui:Plåt}} under {{ui:Modellering}} › {{ui:Stänger}}; en stor {{ui:Ändplattor}} under {{ui:Detaljering}} › {{ui:Förbindelser}}, där {{ui:Skarv}} och {{ui:Knutplåt}} delar en delad knapp; en stor {{ui:Klistra in}} under {{ui:Redigera}} › {{ui:Urklipp}}, med {{ui:Klistra in på plats}} och {{ui:Duplicera}} bakom gruppens pil. {{ui:Tillverkning}} › {{ui:Utbyte}} har {{ui:Exportera USD}} bredvid IFC. De andra menystilarna ser ut som förut. Se [Menyer, tangenter och mus](topic:menus-keys-and-mouse#the-three-styles).
-- [Analysera stommen](topic:frame-analysis) pekar nu till dimensioneringskontrollerna, och dess kombinationer kan skapas av normen.
+- **Vad brister först?** I fliken {{ui:Analys}} hittar knappen den styrande lastkombinationen, den svagaste delen, hur långt lasterna kan öka innan första delen når sin gräns, och den svagaste ändplattan eller skjuvlasken där bultarnas skjuvhållfasthet är känd. Det kräver först kombinationerna och en dimensioneringskod. Bärighet, blockskjuvning, svetsar och hävverkan (prying) kontrolleras inte. Din anslutna assistent kan ställa samma fråga.
+- **Live.** Bocka för {{ui:Live: lös om efter varje ändring}} så löses ramen om efter varje ändring.
+- **Betong och mer.** En slank pelare i en icke svajande ram dimensioneras för sitt förstorade moment (ACI 318-19 6.6.4.5). Den seismiska perioden kan tas från analysen med Rayleighs metod. En platta av plåtar får den stålarmering varje lager behöver utifrån sina moment, samt envägs skjuvning. Se [Kontrollera betongelement och skapa seismiska laster](topic:concrete-and-seismic).
+- **För en konstruktör att granska.** Resultaten från grund-, betong- och Vad brister först? är hjälpmedel. Vindlaster finns inte ännu.
 
-## I alla appar
+### I alla appar
 
-- **Enheter.** {{ui:Inställningar}} › {{ui:Allmänt}} › {{ui:Enheter}} har en lista vardera för längd, area, volym, vinkel och lutning, med de exakta storlekar som enheternas definitioner ger (den amerikanska survey-foten är en egen enhet). Stäng av de enheter du aldrig använder så försvinner de ur enhetslistorna; markera en med stjärna så börjar nytt arbete i den. En fil behåller alltid sin egen enhet. DetailCrafts egna fält följer inte listorna ännu: längder skrivs fortfarande i millimeter. Se [Enheter, inskrivna värden och enhetslistorna](common:unit-lists).
-- **En tätare layout och paneler som fälls undan.** {{ui:Inställningar}} › {{ui:Allmänt}} › {{ui:Layouttäthet}} › {{ui:Kompakt}} ryms mer på skärmen (pekskärmar och telefoner behåller sina stora knappar). Varje sidopanel har ett smalt titelfält: dra det för att docka eller frigöra panelen, släpp det på en annan panels fält för att dela en ram som flikar, fäst det så att det glider undan mot kanten, eller dölj det och hämta tillbaka det från kanten. Se [Ordna panelerna](common:arrange-panels#make-the-layout-denser).
-- **Dialogrutor som går att flytta.** Dra en dialogruta i titelfältet ur vägen för ritningen; den kommer tillbaka där du lämnade den. Dubbelklicka på titelfältet för att centrera den igen. Se [Flytta en dialogruta](common:arrange-panels#move-a-dialog).
-- **Recept för AI-assistenter.** Tio genomarbetade förfrågningar till din egen assistent (städa en ritning, plotta en sats, kontrollera ritningar, ställa frågor till en modell, summera en mängdavtagning, prova en delvariant …), var och en med de verktyg den anropar och de behörigheter den behöver, och var och en återspelad av våra tester. Apparna innehåller ingen AI. Se [Recept för AI-assistenter](common:assistants-recipes).
-- **Språk.** **Português (Portugal)** är nytt under {{ui:Inställningar}} › {{ui:Allmänt}} › {{ui:Språk}}. Det, **Português (Brasil)**, **Español (México)** och **Bahasa Indonesia** har nu varje ord i apparna, som utkast som ännu inte granskats av en modersmålstalare. Hjälpämnena är på engelska.
-- **CadCraft Studio** berättar varför en uppdateringskontroll misslyckades (ingen fil för ditt system ännu, inget nätverk, en felaktig signatur) i stället för bara "Done", och slutar ta tillbaka ett Nyheter-kort som du stängt tills det finns en nyare version.
+- **Språk.** Hjälpen finns på 54 språk. De som inte är engelska är maskinella utkast tills en modersmålstalare har läst dem; tio är nya (litauiska, lettiska, bosniska, marathi, telugu, albanska, afrikaans, filippinska, swahili och uzbekiska).
+- **Verktygsfältsrader.** {{ui:Inställningar}} › {{ui:Allmänt}} › {{ui:Verktygsfältsrader}} väljer radbrytning, 2 rader eller 1 rad. Ett fält som redan ryms förblir som det är; resten rullas i sidled.
+- **Egenskapsrutnät.** Plintens fält använder det gemensamma rutnätet: hopfällbara kategorier och en kompakt täthet. Inskriven aritmetik som 2*450 fungerar fortfarande.
+- **Inmatningsenheter.** Pekplatta, penna, 3D-mus, handkontroll och MIDI kan styra apparna. Se [Navigera i 3D](topic:navigate-3d).
+- **Problempanelen.** Varningarna från de nya kontrollerna ovan visas i samma panel {{ui:Problem}} som tidigare.
+- **Anslut din AI.** Din egen assistent, ansluten via CadCraft Studio, fungerar med alla åtta apparna och ser bara det du tillåter. Anslutning med ett klick, den hostade kopplingen och din egen API-nyckel i Studio kommer senare. Se [Använd DetailCraft med en AI-assistent](topic:use-with-ai-assistants).
 
-## Finns inte i den här versionen ännu
+## Rättat i 0.8.1
 
-- **0.7 är inte kodsignerad.** Signering och Microsoft Store-paketet flyttades till 0.8 eftersom certifikatvalideringen inte har kommit ännu. Kontrollera SHA-256 bredvid varje fil på getcadcraft.com/download. I Windows, om SmartScreen stoppar installationsprogrammet, välj {{ui:Mer information}} och sedan {{ui:Kör ändå}}. På en Mac högerklickar du första gången på CadCraft Studio och väljer {{ui:Öppna}}. CadCraft Studio finns inte i någon appbutik ännu, och det finns ingen version för iPad eller iPhone ännu.
-- Listorna för vinkel och lutning under {{ui:Enheter}} sparas, men inget fält läser dem ännu.
-- **Dimensioneringskontrollerna har inte granskats av en ingenjör ännu.** Våra tester jämför dem med tryckta tabellvärden och formler som räknats för hand, ännu inte med en dimensioneringsguides genomräknade exempel. Fram till en granskning är de ett hjälpmedel: kontrollera viktiga stänger för hand.
-- Dimensioneringskontrollerna använder förstaordningens krafter (inga andra ordningens effekter) och kontrollerar bara I-profiler. Inte byggt: rör, vinkelstål, U-profiler, svetsade profiler, slanka (AISC) eller klass 4-delar (Eurokod) i böjning, vridning, skjuvbuckling tillsammans med böjning, förbindelser, utmattning, brand, seismisk detaljering och betong. En slank del i tryck utelämnar tryckkontrollerna, och stången visas som "passes, partly checked".
-- Stomanalysen är fortfarande förstaordningens och linjär, och den har ännu inte prövats av en ingenjör på ett riktigt jobb.
-- Bulthål, bultar, svetsar och plintar finns inte i USD-exporten.
+- **Språk i Studio.** Studio och de paketerade versionerna kan byta språk under körning; tidigare fanns bara engelska. Det är ännu inte testat på alla plattformar: säg till om språket inte ändras.
+- **Korsande fönster.** Installerarna för 0.8.1 har det markeringssätt med fönster som redan var rätt i 0.8-webbversionen; en äldre installerare hade inte det.
+- **Surfplattor i porträttläge.** Ledigt utrymme i rutnätet går till ritytan, och bladlayouten börjar vid 760 px eller mindre.
 
-Allt annat finns i [Det som inte finns ännu](topic:not-built-yet).
+## Inte i den här versionen ännu
+
+- **Skicka NC till en maskin** har inte släppts.
+- **Vindlaster** för betong finns inte ännu, och betong- och grundläggningskontrollerna är till för en konstruktör att granska.
+- **Kodsignering.** Windows-installerarna och macOS .dmg-filerna är inte signerade, så Windows kan varna, och macOS kräver ett högerklick och sedan Öppna.
+
+Tidigare ändringar finns i [Nyheter i 0.7](topic:whats-new-0-7).

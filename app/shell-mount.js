@@ -6,7 +6,7 @@
  *
  *   mountDetailShell(dc) — dc = { model(), built(), schedule(), selected(), setSelection(refs), describe(ref), control, onSelection(fn) → off,
  *                                 name(), path() }
- * Calc sheets and reasons are saved in the model file under `calcs` and `reasons` (model.js readModel keeps them; null removes the key).
+ * Calc sheets, reasons and the drawing details are saved in the model file under `calcs`, `reasons` and `docinfo` (the details are stamped by beforeSave) (model.js readModel keeps them; null removes the key).
  */
 import { assistantPrefs, ASSIST_KEY, getHost } from './host.js';
 import { t as tr } from './i18n.js';
@@ -38,6 +38,11 @@ export function mountShellModules(host) {
     for (const [name, fn] of Object.entries(host.probes || {})) ccLessons.probe(name, fn);
     ccLessons.registerTools(host.control);
     host.emit = (event, data) => ccLessons.emit(event, data);           // the app calls host.emit('tool', { name: 'line' }) where it runs a command
+  });
+  // DI.1 drawing details — what the app counts, and where the written details are kept in its file
+  when('ccDocInfo', 'docinfo', () => {
+    ccDocInfo.attach({ read: host.docinfo?.read, persist: (json) => host.file.set('docinfo', json), step: host.step, onChange: host.docinfo?.onChange });   // read() → { units, extents, counts, extra, bytes, path }
+    ccDocInfo.registerTools(host.control);
   });
   // AC.12 Suggest, AC.13 activity log, AC.8 Ask box — they ride on host.control, so the app hands over very little
   when('ccSuggest', 'suggest', () => {
@@ -108,6 +113,14 @@ export function detailHost(dc) {
       { id: 'detail.steel', measure: 'weight', label: tr('totals.steel'), read: () => (dc.built() ? sum(dc.built().parts, (p) => p.weight) : null) },
       { id: 'detail.rebar', measure: 'weight', label: tr('totals.rebar'), read: () => (dc.schedule() ? sum(dc.schedule().rows, (r) => r.totalWeight) : null) },
     ],
+    // DI.1: real counts of what the model holds; no size or triangle count (no model-wide extents are kept, the 3D parts are built on demand)
+    docinfo: {
+      read: () => {
+        const st = model().state, n = (a) => (Array.isArray(a) ? a.length : 0);
+        return { path: dc.path() || dc.name(), counts: { elements: n(st.members) + n(st.connections) + n(st.footings) + n(st.stairs) + n(st.bolts), levels: n(st.levels) } };
+      },
+      onChange: (fn) => model().on(() => fn()),
+    },
     ...lessonsOf(dc),
     rev: () => model().version,
     document: () => ({ docId: dc.name(), path: dc.path() || '', name: dc.name() }),
@@ -130,6 +143,7 @@ export function mountDetailShell(dc) {
     const s = dc.model().state;
     if (window.ccCalc) ccCalc.load(s.calcs || null);
     if (window.ccReasons) ccReasons.load(s.reasons || null);
+    if (window.ccDocInfo) ccDocInfo.load(s.docinfo || null);
     if (window.ccLessons) ccLessons.emit('model', {});
   };
   let watched = null;
@@ -147,11 +161,12 @@ export function mountDetailShell(dc) {
   watch();
   document.addEventListener('cc-calc-ready', reload, { once: true });
   document.addEventListener('cc-reasons-ready', reload, { once: true });
+  document.addEventListener('cc-docinfo-ready', reload, { once: true });
   return {
     host,
     /** The page calls this after setModel (a new or opened file). */
     modelChanged() { watch(); if (host.fileOpened) host.fileOpened(tr('lesson.file.opened')); },
     /** The page calls this before the model is written: the sheets and reasons go into the file. */
-    beforeSave() { const s = dc.model().state; for (const [k, api] of [['calcs', window.ccCalc], ['reasons', window.ccReasons]]) { const j = api ? api.save() : null; if (j) s[k] = j; else delete s[k]; } },
+    beforeSave() { const s = dc.model().state; for (const [k, api] of [['calcs', window.ccCalc], ['reasons', window.ccReasons], ['docinfo', window.ccDocInfo]]) { const j = api ? api.save() : null; if (j) s[k] = j; else delete s[k]; } },
   };
 }

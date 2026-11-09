@@ -1,55 +1,59 @@
 ---
-title: Kas jauns versijā 0.7
-summary: Tērauda I-profilu projektēšanas pārbaudes ar slodžu kombinācijām pēc ASCE 7 vai EN 1990 un elementu pārbaudes pēc AISC 360 vai EN 1993-1-1, tērauda modeļa eksports kā USD, USD palīgrīks, Tērauda lente ar lielām un mazām pogām, paneļi, kas paslēpjas, un dialogi, ko var pārvietot.
-keywords: kas jauns, versijas piezīmes, izmaiņu žurnāls, izmaiņas, 0.7, versija, jaunas funkcijas, projektēšanas pārbaudes, tērauda projektēšana, noslodze, slodžu kombinācijas, ASCE 7, EN 1990, AISC 360, EN 1993-1-1, Eirokods, valsts pielikums, jumta lietderīgā slodze, novirzes robeža, usd, usda, usdc, usdz, openusd, asistents, mcp, tērauda lente, lente, dalītā poga, vienības, kompakts, paneļi, dialogi, portugāļu valoda
-from: 17d1e0bb
+title: Jaunumi 0.8 un 0.8.1 versijā
+summary: Montāžas filma no celtņa slodžu diagrammas, savienojumu autopilots, armatūras blīvuma karte, pamatu pārbaudes, koka un vieglā tērauda karkasa paneļi, izbūvējamības un metinājumu piekļuves pārbaudes, piegādātāju krājumi, kas pirmais pārtrūks, tiešraides atkārtota atrisināšana, papildu betona pārbaudes un 0.8.1 labojumi.
+keywords: jaunumi, kas ir jauns, izlaiduma piezīmes, izmaiņu žurnāls, izmaiņas, 0.8, 0.8.1, versija, jaunas funkcijas, montāža, celtnis, slodžu diagramma, filma, autopilots, savienojumi, armatūra, blīvums, pamats, nosēšanās, karkass, koks, tērauds, griezuma saraksts, izbūvējamība, metinājuma piekļuve, piegādātājs, krājums, piegādes laiks, kas pirmais pārtrūks, tiešraide, betons, seismika, pārsegums, valodas, asistents
+from: 6e33e052
 ---
 
-Šīs ir izmaiņas DetailCraft 0.7 versijā salīdzinājumā ar 0.6. 0.6 versijas rāmja aprēķinam tagad ir otrs solis: tērauda elementu pārbaude pēc projektēšanas normas.
+Šīs ir izmaiņas DetailCraft 0.8 (2026. gada 1. novembris) un 0.8.1 (2026. gada 2. novembris) versijā salīdzinājumā ar 0.7. 0.7 pārbaudīja tērauda elementus; 0.8 plāno celšanu, piedāvā savienojumus, pārbauda pamatus un armatūru un veido koka un vieglā tērauda sienu, grīdu un jumtu karkasus.
 
-## Jaunumi
+## Jauns
 
-### Šķautņu savienojumi (0.7.1)
+### Montāža
 
-- **Divi I-profili, kas saskaras leņķī**, piemēram, portāla celis vai kore: atlasiet abus, izvēlieties {{ui:Šķautņu savienojums}} grupas {{ui:Savienot}} izvēlnē {{ui:Vairāk}}, un abi gali tiek nogriezti plaknē, kas dala leņķi uz pusēm. Kopā skrūvētas galaplāksnes un sieniņu stingrinātāji ir atzīmējamas rūtiņas jaunajā dialogā {{ui:Šķautņu savienojums}}; tā numurētie lauki atbilst jūsu savienojuma zīmējumam, kas tiek veidots, kamēr rakstāt. Šķautne seko elementiem, kad tie tiek pārvietoti, un tiek pārnesta uz rasējumiem, NC failiem (slīpi griezumi), IFC un materiālu sarakstu. Skatiet [Šķautņu savienojumi](topic:mitres).
+- **Montāžas plāns un filma.** Cilnē {{ui:Montāža}} aprakstiet celtni (kur tas stāv, tā augstāko āķi, takelāžu, kas nav iekļauta diagrammā) un ierakstiet tā slodžu diagrammas rindas. DetailCraft paceļ modeli pa vienam mezglam, fāzes secībā un kārtu pa kārtai, un pārbauda katru celšanu pret diagrammu tās attālumā un pret jūsu iestatīto rezervi. {{ui:Saglabāt filmu}} ieraksta vienu HTML failu, kas atskaņojas bezsaistē jebkurā pārlūkā, pat tālrunī. Celšanas, kas pārsniedz diagrammu, iziet ārpus tās vai ir pārāk augstas, ir uzskaitītas {{ui:Problēmas}}. Tas ir plāns no jūsu skaitļiem, nevis celšanas plāns. Skatiet [Montāžas plāns un filma](topic:erection-movie).
 
-### Projektēšanas pārbaudes
+### Savienojumi
 
-- **Slodžu kombinācijas pēc normas.** Cilnē {{ui:Aprēķins}} jaunajam blokam {{ui:Projektēšanas pārbaudes}} ir {{ui:Projektēšanas norma}}: ASCE 7 + AISC 360 (ASV, LRFD) vai EN 1990 + EN 1993-1-1 (Eirokods). Katrai slodzes gadījumam norādiet tā veidu (pastāvīgā, lietderīgā, jaunā jumta lietderīgā, sniega, vēja, seismiskā), nospiediet {{ui:Izveidot kombinācijas}}, un DetailCraft ieraksta normas stiprības un ekspluatācijas kombinācijas jūsu gadījumiem. Kombinācijas, ko esat ievadījis pats, paliek. Skatiet [Kombināciju izveide](topic:design-checks#make-the-combinations).
-- **Valsts pielikuma vērtības.** Eirokodam koeficienti sākas ar ieteiktajām vērtībām; {{ui:Nacionālā pielikuma vērtības}} ļauj ievadīt jūsu valsts vērtības, un tās tiek saglabātas modelī. Skatiet [Kombināciju izveide](topic:design-checks#make-the-combinations).
-- **Elementu pārbaude.** {{ui:Pārbaudīt elementus}} pārbauda katru tērauda I-profilu attiecībā uz stiepi, spiedi ar izliekšanos, liekšanu ar sānu-vērpes izliekšanos, bīdi, liekšanu ar aksiālo spēku un novirzi, salīdzinot ar jūsu iestatīto {{ui:Novirzes robeža}}. Tabulā redzama katra elementa noslodze, noteicošā pārbaude un tās kombinācija, un elementi modelī ir iekrāsoti (zili, zaļi, ohra, sarkani, pelēki — nav pārbaudīti). Skatiet [Elementu pārbaude](topic:design-checks#check-the-members).
-- **Atskaitē.** {{ui:Atskaite (PDF)}} un {{ui:Atskaite (CSV)}} pievieno normu izdevumus, iestatījumus, noslodzi pa elementiem un katru izmantoto punktu. Skatiet [Atskaite](topic:design-checks#the-report).
-- **Palīgs, līdz to pārskatījis inženieris.** Tas izmanto tikai pirmās kārtas spēkus. Caurules, leņķi, kanāli, metinātas formas un tievas vai 4. klases daļas tiek atzīmētas kā „nav pārbaudīts” ar iemeslu; vērpe, savienojumi un betons nav pārbaudīti. Skatiet [Kas netiek pārbaudīts](topic:design-checks#what-is-not-checked).
+- **Savienojumu autopilots.** Cilne {{ui:Autopilots}} apskata katru mezglu bez savienojuma un piedāvā savienojumu pēc formām: balstplāksnes, šķērsplāksnes, galaplāksnes sijām, kuras atzīmējat kā momentsijas, lāpījumus un fasonplāksnes. Norādiet vienmērīgu slodzi vai vienu gala šķērsspēku, un skrūvju skaits seko skrūves projektētajai izturībai. {{ui:Pievienot visus}} pievieno piedāvājumus kā vienu atsaukšanas soli. Tās ir sākuma vērtības, ko pārskatīt, nevis savienojuma projektēšana.
+- **Izbūvējamības pārbaudes.** {{ui:Problēmas}} atrod skrūvi, ko nevar sasniegt ar uzgriežņatslēgu, skrūves, kas ir pārāk tuvu uzgriežņgalvai, stūra metinājumus ārpus to izmēra robežām un dobus profilus, kuros uzkrājas ūdens. Metinājumu piekļuve ir jauna: visapkārtējs stūra metinājums, kuram metinātāja degļa uzgalis nevar piekļūt, ir uzskaitīts kopā ar traucējošo detaļu un skartās metinājuma daļas īpatsvaru. Skatiet [Izbūvējamības pārbaudes](topic:constructability).
 
-### USD
+### Pamati un armatūra
 
-- **Tērauda modeļa eksportēšana kā USD.** Grupā {{ui:Izvade}} {{ui:USD}} raksta modeli kā {{ui:Teksts (.usda)}}, {{ui:Binārs (.usdc)}} vai {{ui:Pakotne (.usdz)}} renderēšanas programmām un ainas salikšanai: katrs mezgls satur savas detaļas, katra detaļa ir savs šķērsgriezums gar garumu ar izgriezumiem, un katrai ir sava detaļas marķējums, profils, tērauda kvalitāte, garums un svars. Skrūvju caurumi, skrūves, metinājumi un pamati USD tīklos nav iekļauti. Skatiet [Tērauda modeļa eksportēšana kā USD](topic:usd).
+- **Pamatu pārbaudes.** Cilne {{ui:Pamats}} pārbauda pamatus, kombinētos pamatus un plāksnes uz augsnes, ko jūs aprakstāt: nesspēju, slīdēšanu un apgāšanos no ekspluatācijas slodzēm; lieci, šķērsspēku, caurduršanu, enkurošanu un minimālo tēraudu no faktorētām slodzēm (ACI 318-19). Kolonna pie malas vai stūra tiek pārbaudīta ar griezumu, kas nogriezts pēc pamata malas. Nosēšanās tiek aprēķināta no augsnes moduļa, elastīga plāksne tiek atrisināta uz atsperēm no pamatnes moduļa, un pāļu grupām un atbalstsienām ir savi paneļi. Kolonnu slodzes var ievadīt vai ņemt no {{ui:Aprēķins}}. Skatiet [Pamatu pārbaudes](topic:foundation-checks).
+- **Armatūras blīvuma karte.** Cilne {{ui:Blīvums}} zīmē katra pamata karsto karti tā, kā tas redzams no augšas: kur stieņi atstāj pārāk maz vietas betonam, lai tas nokļūtu lejā, salīdzinot ar brīvā attāluma noteikumu un, ja jūs to norādāt, ar lielāko agregātu un vibratora galviņu. Skatiet [Armatūras blīvuma karte](topic:rebar-congestion).
 
-### MI asistenti
+### Karkass un piegāde
 
-- **USD asistentiem.** Jūsu pašu asistents, kas savienots ar CadCraft Studio, var eksportēt modeli kā USD (`usd_export`), un Studio to var ierakstīt mapē, kuru esat atļāvis. Skatiet [Ko asistents var pieprasīt](topic:use-with-ai-assistants#what-an-assistant-can-ask-for).
+- **Koka un vieglā tērauda karkasa paneļi.** Cilne {{ui:Karkass}} karkasē sienu, grīdu un jumta paneļus ar katru gabalu, griezuma sarakstu, materiālu, kas jāpērk, un mērogotu darbnīcas rasējumu. {{ui:Novietot kā elementus}} ievieto gabalus modelī, un {{ui:PDF lapas}} saglabā vienu lapu katram panelim. Izmēri, atstatumi un pārsedzes ir jūsu: DetailCraft nepārbauda, vai tās nes slodzi. Skatiet [Koka un vieglā tērauda karkasa paneļi](topic:framing-panels).
+- **Piegādātāju krājumi un piegādes laiki.** Cilne {{ui:Piegāde}} nolasa piegādātāja krājumu sarakstu (CSV) un katram griezuma saraksta profilam parāda, vai krājumā ir pietiekami daudz un cik ilgi jāgaida. Trūkumi un novēlotie profili ir {{ui:Problēmas}}. Nekas netiek pasūtīts. Skatiet [Piegādātāju krājumi un piegādes laiki](topic:supplier-stock).
 
-## Mainīts
+### Analīze un projektēšana
 
-- **Tērauda lentei** ir lielas un mazas pogas: liela {{ui:Sija}} blakus mazajām {{ui:Kolonna}}, {{ui:Saite}} un {{ui:Plāksne}} cilnē {{ui:Modelēšana}} › {{ui:Elementi}}; liela {{ui:Galaplāksnes}} cilnē {{ui:Detalizēšana}} › {{ui:Savienojumi}}, ar {{ui:Savienojums}} un {{ui:Fasonplāksne}} kopīgu dalīto pogu; liela {{ui:Ielīmēt}} cilnē {{ui:Rediģēt}} › {{ui:Starpliktuve}}, ar {{ui:Ielīmēt vietā}} un {{ui:Dublēt}} aiz grupas bultiņas. {{ui:Ražošana}} › {{ui:Apmaiņa}} ir {{ui:Eksportēt USD}} blakus IFC. Pārējie izvēlņu stili izskatās kā agrāk. Skatiet [Izvēlnes, taustiņi un pele](topic:menus-keys-and-mouse#the-three-styles).
-- [Rāmja aprēķins](topic:frame-analysis) tagad norāda uz projektēšanas pārbaudēm, un tā kombinācijas var izveidot pēc normas.
+- **Kas pirmais pārtrūks?** Cilnē {{ui:Aprēķins}} poga atrod noteicošo izturības kombināciju, vājāko elementu, to, cik tālu slodzes var pieaugt, pirms pirmais elements sasniedz savu robežu, un vājāko galaplāksni vai šķērsplāksni, ja ir zināma tās skrūvju šķērsizturība. Vispirms nepieciešamas kombinācijas un projektēšanas kods. Balstspiediens, bloka bīde, metinājumi un prying efekts netiek pārbaudīti. Jūsu pievienotais asistents var to pašu pajautāt.
+- **Tiešraide.** Atzīmējiet {{ui:Tiešraide: atrisināt no jauna pēc katra labojuma}}, un rāmis tiek atkal atrisināts pēc katra labojuma.
+- **Betons un vairāk.** Tieva kolonna nebīdāmā rāmī tiek projektēta pēc tās palielinātā momenta (ACI 318-19 6.6.4.5). Seismisko periodu var ņemt no analīzes ar Reilija metodi. Pārsegums, kas veidots no plāksnēm, katram slānim saņem nepieciešamo tēraudu no tā momentiem un vienvirziena šķērsspēka. Skatiet [Betona elementu pārbaude un seismiskās slodzes](topic:concrete-and-seismic).
+- **Inženierim pārbaudei.** Pamatu, betona un „Kas pirmais pārtrūks?” rezultāti ir palīglīdzekļi. Vēja slodzes nav ieviestas.
 
-## Visās lietotnēs
+### Visās lietotnēs
 
-- **Vienības.** {{ui:Iestatījumi}} › {{ui:Vispārīgi}} › {{ui:Vienības}} katram garumam, laukumam, tilpumam, leņķim un slīpumam ir savs saraksts ar precīziem izmēriem, kādus dod vienību definīcijas (ASV topogrāfiskā pēda ir atsevišķa vienība). Izslēdziet vienības, ko nekad neizmantojat, un tās izies no vienību sarakstiem; atzīmējiet vienu ar zvaigznīti, un jauns darbs sākas tajā. Fails vienmēr saglabā savu vienību. DetailCraft savām ievades lodziņām vēl neseko sarakstiem: tā garumi joprojām tiek ievadīti milimetros. Skatiet [Vienības, ievadītās vērtības un vienību saraksti](common:unit-lists).
-- **Blīvāks izkārtojums un paneļi, kas paslēpjas.** {{ui:Iestatījumi}} › {{ui:Vispārīgi}} › {{ui:Izkārtojuma blīvums}} › {{ui:Kompakts}} ietilpina ekrānā vairāk (skārienekrāni un tālruņi saglabā savas lielās pogas). Katram sānu panelim ir šaura virsrakstjosla: velciet to, lai piestiprinātu vai atbrīvotu paneli, nometiet uz cita paneļa joslas, lai dalītu vienu rāmi kā cilnes, piespraudiet, lai tas paslēptos līdz malai, vai paslēpiet to un atgrieziet no malas. Skatiet [Paneļu izkārtošana](common:arrange-panels#make-the-layout-denser).
-- **Dialogus var pārvietot.** Velciet dialogu aiz tā virsrakstjoslas prom no rasējuma; tas atgriežas tur, kur to atstājāt. Divreiz noklikšķiniet uz virsrakstjoslas, lai to atkal centrētu. Skatiet [Dialoga pārvietošana](common:arrange-panels#move-a-dialog).
-- **Receptes MI asistentiem.** Desmit izstrādāti pieprasījumi jūsu pašu asistentam (sakārtot rasējumu, izdrukāt komplektu, pārbaudīt rasējumus, uzdot jautājumus par modeli, aprēķināt apjomu kopsummu, izmēģināt detaļas variantu…), katrs ar rīkiem, ko tas izsauc, un atļaujām, kas tam vajadzīgas; katrs tiek atkārtots mūsu testos. Lietotnēs nav MI. Skatiet [Receptes MI asistentiem](common:assistants-recipes).
-- **Valodas.** **Português (Portugal)** ir jauns {{ui:Iestatījumi}} › {{ui:Vispārīgi}} › {{ui:Valoda}} sarakstā. Tā, **Português (Brasil)**, **Español (México)** un **Bahasa Indonesia** tagad ir visi lietotņu vārdi kā melnraksti, ko dzimtā valodā runātājs vēl nav pārskatījis. Palīdzības temati ir angļu valodā.
-- **CadCraft Studio** norāda, kāpēc atjauninājumu pārbaude neizdevās (jūsu sistēmai vēl nav faila, nav tīkla, paraksts nav derīgs), nevis tikai „Gatavs”, un neatgriež kartīti „Kas jauns”, ko aizvērāt, līdz ir jaunāka versija.
+- **Valodas.** Palīdzība ir 54 valodās. Visas, izņemot angļu valodu, ir mašīntulkojuma melnraksti, līdz tos izlasa dzimtā valoda runājošs cilvēks; desmit ir jaunas (lietuviešu, latviešu, bosniešu, maratu, telugu, albāņu, afrikāņu, filipīniešu, svahili, uzbeku).
+- **Rīkjoslas rindas.** {{ui:Iestatījumi}} › {{ui:Vispārīgi}} › {{ui:Rīkjoslas rindas}} izvēlas ietīt, 2 rindas vai 1 rindu. Josla, kas jau ietilpst, paliek kāda ir; pārējās ritina sāniski.
+- **Rekvizītu režģis.** Pamata lauki izmanto kopīgo režģi: sakļaujamas kategorijas un kompakts blīvums. Ievadītā aritmētika, piemēram, 2*450, joprojām darbojas.
+- **Ievades ierīces.** Skārienpaliktnis, pildspalva, 3D pele, vadības ierīce un MIDI var vadīt lietotnes. Skatiet [Pārvietošanās 3D](topic:navigate-3d).
+- **Problēmu panelis.** Iepriekš minēto jauno pārbaužu brīdinājumi parādās tajā pašā {{ui:Problēmas}} panelī kā agrāk.
+- **Savienojiet savu MI.** Jūsu pašu asistents, savienots caur CadCraft Studio, darbojas ar visām astoņām lietotnēm un redz tikai to, ko atļaujat. Savienošana ar vienu klikšķi, mitinātais savienotājs un jūsu pašu API atslēgas iestatīšana Studio vēl ir plānota. Skatiet [Lietot DetailCraft ar AI asistentu](topic:use-with-ai-assistants).
 
-## Šajā versijā vēl nav
+## Labots 0.8.1 versijā
 
-- **0.7 nav parakstīta ar kodu.** Parakstīšana un Microsoft Store pakotne pārcelta uz 0.8, jo sertifikāta validācija vēl nav saņemta. Pārbaudiet SHA-256 blakus katram failam vietnē getcadcraft.com/download. Operētājsistēmā Windows, ja SmartScreen aptur instalētāju, izvēlieties {{ui:Papildinformācija}}, pēc tam {{ui:Palaist tik un tā}}. Mac datorā pirmajā reizē noklikšķiniet ar peles labo pogu uz CadCraft Studio un izvēlieties {{ui:Atvērt}}. CadCraft Studio vēl nav lietotņu veikalā, un iPad vai iPhone versijas vēl nav.
-- Leņķu un slīpumu saraksti {{ui:Vienības}} tiek saglabāti, bet neviens ievades lodziņš tos vēl nenolasa.
-- **Projektēšanas pārbaudes vēl nav pārskatījis inženieris.** Mūsu testi tās salīdzina ar drukātām tabulu vērtībām un ar roku aprēķinātām formulām, bet vēl ne ar projektēšanas ceļvežu piemēriem. Līdz pārskatīšanai tās ir palīgs: svarīgus elementus pārbaudiet ar roku.
-- Projektēšanas pārbaudēs izmantoti pirmās kārtas spēki (bez otrās kārtas efektiem), un pārbauda tikai I-profilus. Nav izveidots: caurules, leņķi, kanāli, metinātas formas, tievas (AISC) vai 4. klases (Eirokods) daļas liekšanā, vērpe, bīdes izliekšanās kopā ar liekšanu, savienojumi, nogurums, ugunsdrošība, seismiskā detalizēšana un betons. Tievas daļas spiedē spiedes pārbaudes netiek iekļautas, un elements tiek atzīmēts kā „izturē, daļēji pārbaudīts”.
-- Rāmja aprēķins joprojām ir pirmās kārtas un lineārs, un inženieris to vēl nav izmēģinājis reālā darbā.
-- Skrūvju caurumi, skrūves, metinājumi un pamati USD eksportā nav iekļauti.
+- **Valodas Studio.** Studio un iepakotie izdevumi var mainīt valodu darbības laikā; iepriekš bija tikai angļu valoda. Tas vēl nav pārbaudīts uz visām platformām: paziņojiet, ja valoda nemainās.
+- **Atlase ar šķērsojošu logu.** 0.8.1 instalētājos ir jau 0.8 tīmekļa versijā pareizi iestatītā atlase ar logu; vecākais instalētājs to nedarīja.
+- **Planšetes portreta režīmā.** Brīvais režģa augstums tiek atdots zīmēšanas laukumam, un lapas izkārtojums sākas pie 760 px vai mazāk.
 
-Pārējais ir aprakstīts [Kas vēl nav izveidots](topic:not-built-yet).
+## Vēl nav šajā versijā
+
+- **Nosūtīt NC uz mašīnu** vēl nav izlaists.
+- **Vēja slodzes** betonam vēl nav ieviestas, un betona un pamatu pārbaudes ir paredzētas inženierim pārskatīšanai.
+- **Koda parakstīšana.** Windows instalētāji un macOS .dmg nav parakstīti, tāpēc Windows var parādīt brīdinājumu, bet macOS prasa noklikšķināt ar peles labo pogu un izvēlēties Atvērt.
+
+Iepriekšējās izmaiņas ir aprakstītas [Jaunumi 0.7 versijā](topic:whats-new-0-7).

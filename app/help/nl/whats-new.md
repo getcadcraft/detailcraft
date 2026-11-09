@@ -1,55 +1,59 @@
 ---
-title: Wat is er nieuw in 0.7
-summary: Ontwerpcontroles van stalen I-profielen met belastingcombinaties uit ASCE 7 of EN 1990 en staafcontroles volgens AISC 360 of EN 1993-1-1, USD-export van het staalmodel, een assistentgereedschap voor USD, een lint Staal met grote en kleine knoppen, panelen die netjes opzij gaan en dialoogvensters die verplaatsen.
-keywords: wat is er nieuw, release-opmerkingen, wijzigingslogboek, wijzigingen, 0.7, versie, nieuwe functies, ontwerpcontroles, staalontwerp, benuttingsgraad, belastingcombinaties, ASCE 7, EN 1990, AISC 360, EN 1993-1-1, Eurocode, Nationale Bijlage, dakbelasting, doorbuigingsgrens, usd, usda, usdc, usdz, openusd, assistent, mcp, lint staal, lint, splitknop, eenheden, compact, panelen, dialoogvensters, portugees
-from: 17d1e0bb
+title: Wat is er nieuw in 0.8 en 0.8.1
+summary: Een montagefilm op basis van de belastingstabel van een kraan, een verbindingsautopilot, een wapeningsdrukkaart, funderingscontroles, paneelen voor houten en lichtgewicht skeletbouw, controles op bouwbaarheid en lasbereikbaarheid, leverancierssvoorraad, wat het eerst breekt, een live herberekening, meer betoncontroles en de oplossingen in 0.8.1.
+keywords: wat is er nieuw, release-opmerkingen, wijzigingenlijst, wijzigingen, 0.8, 0.8.1, versie, nieuwe functies, montage, kraan, belastingstabel, film, autopilot, verbindingen, wapening, drukte, fundering, funderingsplaat, skeletbouw, houtbouw, lichtgewicht, snijlijst, bouwbaarheid, lastoegang, leverancier, voorraad, levertijd, wat breekt het eerst, live, beton, seismisch, vloer, talen, assistent
+from: 6e33e052
 ---
 
-Dit is wat er in DetailCraft 0.7 is veranderd ten opzichte van 0.6. De raamwerkanalyse van 0.6 heeft nu een tweede stap: de stalen staven toetsen aan een ontwerpnorm.
+Dit is wat er is veranderd in DetailCraft 0.8 (1 november 2026) en 0.8.1 (2 november 2026), vergeleken met 0.7. In 0.7 werden staalelementen gecontroleerd; in 0.8 worden hijsoperaties gepland, worden verbindingen voorgesteld, worden funderingen en wapening gecontroleerd, en worden houten en lichtgewicht wanden, vloeren en daken geframed.
 
 ## Nieuw
 
-### Verstekverbindingen (0.7.1)
+### Montage
 
-- **Twee I-profielen die onder een hoek samenkomen**, zoals een portaalhoek of een nok: selecteer beide, kies {{ui:Verstek}} in het menu {{ui:Meer}} van de groep {{ui:Verbinden}}, en beide uiteinden worden gezaagd in het vlak dat de hoek middendoor deelt. Aan elkaar gebouwde kopplaten en lijfstijvers zijn aanvinkvakjes in het nieuwe dialoogvenster Verstek, waarvan de genummerde velden passen bij een tekening van uw verbinding die tijdens het typen wordt gemaakt. Het verstek volgt de staven als ze verplaatsen en gaat door naar tekeningen, NC-bestanden (schuine zaagsneden), IFC en de stuklijst. Zie [Verstekverbindingen](topic:mitres).
+- **Montageplan en film.** Beschrijf in het tabblad {{ui:Montage}} een kraan (waar die staat, zijn hoogste haak, het hijsgerei dat niet in de tabel staat) en typ de rijen van zijn belastingstabel. DetailCraft tilt het model per assemblage, in fasevolgorde en laag voor laag, en controleert elke hijsoperatie tegen de tabel op zijn radius en tegen de marge die u instelt. {{ui:Film opslaan}} schrijft één HTML-bestand dat offline speelt in elke browser, ook op een telefoon. Hijsoperaties die boven de tabel, er voorbij of te hoog zijn, staan in {{ui:Problemen}}. Het is een plan op basis van uw getallen, geen hijsplan. Zie [Montageplan en film](topic:erection-movie).
 
-### Ontwerpcontroles
+### Verbindingen
 
-- **Belastingcombinaties uit de norm.** In het tabblad {{ui:Analyse}} heeft het nieuwe blok {{ui:Ontwerpcontroles}} een {{ui:Ontwerpnorm}}: ASCE 7 + AISC 360 (VS, LRFD) of EN 1990 + EN 1993-1-1 (Eurocode). Geef elk belastinggeval zijn soort (permanent, veranderlijk, de nieuwe dakbelasting, sneeuw, wind, seismisch), druk op {{ui:Combinaties maken}}, en DetailCraft schrijft de sterkte- en bruikbaarheidscombinaties van de norm voor uw gevallen. De combinaties die u zelf typte, blijven. Zie [De combinaties maken](topic:design-checks#make-the-combinations).
-- **Waarden van de Nationale Bijlage.** Voor de Eurocode beginnen de factoren bij de aanbevolen waarden; met {{ui:Waarden van de Nationale Bijlage}} typt u die van uw land, en ze worden in het model opgeslagen. Zie [De combinaties maken](topic:design-checks#make-the-combinations).
-- **Staven controleren.** {{ui:Staven controleren}} toetst elk stalen I-profiel op trek, druk met knik, buiging met kip, dwarskracht, buiging met normaalkracht en doorbuiging aan de {{ui:Doorbuigingsgrens}} die u instelt. De tabel toont de benuttingsgraad van elke staaf, de maatgevende controle en de combinatie ervan, en de staven zijn op het model gekleurd (blauw, groen, oker, rood, grijs voor niet gecontroleerd). Zie [De staven controleren](topic:design-checks#check-the-members).
-- **In het rapport.** {{ui:Rapport (PDF)}} en {{ui:Rapport (CSV)}} voegen de uitgaven van de norm, de instellingen, de benuttingsgraad per staaf en elk gebruikt artikel toe. Zie [Het rapport](topic:design-checks#the-report).
-- **Een hulpmiddel totdat een ingenieur het heeft beoordeeld.** Het gebruikt alleen eerste-orde krachten. Buizen, hoekprofielen, kanaalprofielen, gelaste profielen en slanke of klasse 4-onderdelen tonen "niet gecontroleerd", met de reden; torsie, verbindingen en beton worden niet gecontroleerd. Zie [Wat niet wordt gecontroleerd](topic:design-checks#what-is-not-checked).
+- **Verbindingsautopilot.** Het tabblad {{ui:Autopilot}} kijkt naar elke verbinding zonder verbinding en stelt er een voor op basis van de vormen: voetplaten, schuiforen, kopplaten voor de liggers die u als momentliggers aanmerkt, lassen en knoopplaten. Geef een gelijkmatige belasting of één dwarskracht aan het uiteinde, en het aantal bouten volgt de ontwerpsterkte van de bout. {{ui:Alles toevoegen}} voegt de voorstellen toe als één stap ongedaan maken. Het zijn startwaarden om na te kijken, geen verbindingsontwerp.
+- **Controles op bouwbaarheid.** {{ui:Problemen}} voor een bout die een sleutel niet kan bereiken, bouten te dicht op elkaar voor de dop, hoekverbindingen buiten hun maatgrenzen en holle profielen die water vasthouden. Lastoegang is nieuw: een rondlopende hoeklas die de toorts van een lasser niet kan bereiken, wordt vermeld met het onderdeel dat in de weg zit en het deel van de las dat erdoor wordt getroffen. Zie [Controles op bouwbaarheid](topic:constructability).
 
-### USD
+### Funderingen en wapening
 
-- **Het staalmodel als USD exporteren.** {{ui:USD}} in de groep {{ui:Uitvoer}} schrijft het model als {{ui:Tekst (.usda)}}, {{ui:Binair (.usdc)}} of {{ui:Pakket (.usdz)}} voor renderprogramma's en scene-opbouw: elke samenstelling bevat zijn onderdelen, elk onderdeel is zijn doorsnede over zijn lengte met coperingen uitgesneden, en elk draagt zijn onderdeelmerk, profiel, kwaliteit, lengte en gewicht. Boutgaten, bouten, lassen en funderingen zitten niet in de USD-meshes. Zie [Het staalmodel als USD exporteren](topic:usd).
+- **Funderingscontroles.** Het tabblad {{ui:Fundering}} controleert funderingen, gecombineerde funderingen en platen op de grond die u beschrijft: draagkracht, glijden en kantelen onder gebruiksbelastingen; buiging, dwarskracht, ponsing, verankering en minimale wapening onder gefactoreerde belastingen (ACI 318-19). Een kolom bij een rand of hoek wordt gecontroleerd met de doorsnede die wordt afgesneden door de rand van de fundering. Zetting komt uit de stijfheidsmodulus van de grond, een flexibele plaat wordt opgelost op veren uit een ondergrondmodulus, en paalgroepen en keerwanden hebben eigen panelen. Kolombelastingen kunnen worden getypt of uit de {{ui:Analyse}} worden overgenomen. Zie [Funderingscontroles](topic:foundation-checks).
+- **Wapeningsdrukkaart.** Het tabblad {{ui:Congestie}} tekent een warmtekaart van elke fundering vanuit bovenaanzicht: waar de staven te weinig ruimte laten voor beton om naar beneden te komen, afgezet tegen de regel voor vrije hart-op-hart-afstand en, als u ze opgeeft, het grootste toeslagmateriaal en de trilnaald. Zie [Wapeningsdrukkaart](topic:rebar-congestion).
 
-### AI-assistenten
+### Skeletbouw en levering
 
-- **USD voor assistenten.** Uw eigen assistent, verbonden via CadCraft Studio, kan het model als USD exporteren (`usd_export`), en in Studio naar een map schrijven die u hebt toegestaan. Zie [Waar een assistent om kan vragen](topic:use-with-ai-assistants#what-an-assistant-can-ask-for).
+- **Houten en lichtgewicht skeletbouw.** Het tabblad {{ui:Skeletbouw}} frame wand-, vloer- en dakpanelen met elk stuk, een snijlijst, de voorraad om te kopen en een werkplaatstekening op schaal. {{ui:Als staven plaatsen}} zet de stukken in het model, en {{ui:PDF-bladen}} slaat één blad per paneel op. De maten, hartafstanden en kopbalken zijn van u: DetailCraft controleert niet of ze de belasting dragen. Zie [Houten en lichtgewicht skeletbouwpanelen](topic:framing-panels).
+- **Leverancierssvoorraad en levertijden.** Het tabblad {{ui:Levering}} leest de voorraadlijst van een leverancier (CSV) en toont, voor elke profielsoort die de snijlijst koopt, of er genoeg op voorraad is en hoe lang de wachttijd is. Tekorten en late profielen staan in {{ui:Problemen}}. Er wordt niets besteld. Zie [Leverancierssvoorraad en levertijden](topic:supplier-stock).
 
-## Gewijzigd
+### Analyse en ontwerp
 
-- **Het lint Staal** heeft grote en kleine knoppen: een grote {{ui:Ligger}} naast kleine {{ui:Kolom}}, {{ui:Verband}} en {{ui:Plaat}} op {{ui:Modelleren}} › {{ui:Staven}}; een grote {{ui:Kopplaten}} op {{ui:Detaillering}} › {{ui:Verbindingen}}, met {{ui:Lasverbinding}} en {{ui:Knoopplaat}} die één splitknop delen; een grote {{ui:Plakken}} op {{ui:Bewerken}} › {{ui:Klembord}}, met {{ui:Op dezelfde plaats plakken}} en {{ui:Dupliceren}} achter het pijltje van de groep. {{ui:Fabricage}} › {{ui:Uitwisseling}} heeft {{ui:USD exporteren}} naast IFC. De andere menustijlen zien eruit als voorheen. Zie [Menu's, toetsen en muis](topic:menus-keys-and-mouse#the-three-styles).
-- [Het raamwerk analyseren](topic:frame-analysis) wijst nu naar de ontwerpcontroles, en de combinaties kunnen door de norm worden gemaakt.
+- **Wat breekt het eerst?** In het tabblad {{ui:Analyse}} vindt de knop de belastingcombinatie die bepalend is, het zwakste element, hoe ver de belastingen kunnen groeien voordat het eerste element zijn grens bereikt, en de zwakste kopplaat of dwarskrachtplaat waar de afschuifsterkte van de bouten bekend is. Daarvoor zijn eerst de combinaties en een ontwerpnorm nodig. Oplegging, blokafschuiving, lassen en hefboomwerking worden niet gecontroleerd. Uw verbonden assistent kan hetzelfde vragen.
+- **Live.** Vink {{ui:Live: na elke bewerking opnieuw oplossen}} aan en het raamwerk wordt na elke bewerking opnieuw berekend.
+- **Beton, meer.** Een slanke kolom in een niet-verplaatsbaar raamwerk wordt ontworpen voor zijn vergrote moment (ACI 318-19 6.6.4.5). De seismische periode kan uit de analyse worden genomen met de methode van Rayleigh. Een vloer van platen krijgt het staal dat elke laag nodig heeft uit zijn momenten, en de eenzijdige dwarskracht. Zie [Betonelementen controleren en seismische belastingen maken](topic:concrete-and-seismic).
+- **Voor een ingenieur om te controleren.** De resultaten van funderingen, beton en Wat breekt het eerst zijn hulpmiddelen. Windbelastingen zijn nog niet beschikbaar.
 
-## In elke app
+### In elke app
 
-- **Eenheden.** {{ui:Instellingen}} › {{ui:Algemeen}} › {{ui:Eenheden}} heeft een lijst voor lengte, oppervlakte, volume, hoek en helling, met de exacte maten die de definities van de eenheden geven (de US survey foot is een eigen eenheid). Zet de eenheden uit die u nooit gebruikt en ze verdwijnen uit de eenhedenlijsten; geef er één een ster en nieuw werk begint daarin. Een bestand behoudt altijd zijn eigen eenheid. De eigen vakken van DetailCraft volgen de lijsten nog niet: de lengtes worden nog in millimeters getypt. Zie [Eenheden, getypte waarden en de eenhedenlijsten](common:unit-lists).
-- **Een dichtere indeling en panelen die netjes opzij gaan.** {{ui:Instellingen}} › {{ui:Algemeen}} › {{ui:Opmaakdichtheid}} › {{ui:Compact}} past meer op het scherm (aanraakschermen en telefoons houden hun grote knoppen). Elk zijpaneel heeft een smalle titelbalk: sleep hem om het paneel vast te zetten of zwevend te maken, zet hem neer op de balk van een ander paneel om één kader als tabbladen te delen, speld hem vast zodat hij naar de rand schuift, of verberg hem en haal hem terug vanaf de rand. Zie [De panelen indelen](common:arrange-panels#make-the-layout-denser).
-- **Dialoogvensters verplaatsen.** Sleep een dialoogvenster aan zijn titelbalk uit de weg van de tekening; het komt terug waar u het liet. Dubbelklik op de titelbalk om het weer te centreren. Zie [Een dialoogvenster verplaatsen](common:arrange-panels#move-a-dialog).
-- **Recepten voor AI-assistenten.** Tien uitgewerkte verzoeken voor uw eigen assistent (een tekening opruimen, een set plotten, tekeningen controleren, een model vragen stellen, een opmeting optellen, een onderdeelvariant proberen…), elk met de gereedschappen die het aanroept en de rechten die het nodig heeft, en elk opnieuw afgespeeld door onze tests. De apps bevatten geen AI. Zie [Recepten voor AI-assistenten](common:assistants-recipes).
-- **Talen.** **Português (Portugal)** is nieuw in {{ui:Instellingen}} › {{ui:Algemeen}} › {{ui:Taal}}. Die, **Português (Brasil)**, **Español (México)** en **Bahasa Indonesia** hebben nu elk woord van de apps, als concepten die nog niet door een moedertaalspreker zijn beoordeeld. De helponderwerpen zijn in het Engels.
-- **CadCraft Studio** zegt waarom een updatecontrole mislukte (nog geen bestand voor uw systeem, geen netwerk, een ongeldige handtekening) in plaats van alleen "Gereed", en brengt een gesloten kaart Wat is er nieuw niet meer terug totdat er een nieuwere uitgave is.
+- **Talen.** De help is in 54 talen. Die naast Engels zijn machinale concepten totdat een moedertaalspreker ze heeft gelezen; tien zijn nieuw (Litouws, Lets, Bosnisch, Marathi, Telugu, Albanees, Afrikaans, Filipijns, Swahili, Oezbeeks).
+- **Werkbalkrijen.** {{ui:Instellingen}} › {{ui:Algemeen}} › {{ui:Werkbalkrijen}} kiest omslaan, 2 rijen of 1 rij. Een balk die al past, blijft zoals hij is; de rest scrolt zijwaarts.
+- **Eigenschappenraster.** De velden van de fundering gebruiken het gedeelde raster: inklapbare categorieën en een compacte dichtheid. Getypte rekenkunde zoals 2*450 werkt nog steeds.
+- **Invoerapparaten.** Trackpad, pen, 3D-muis, controller en MIDI kunnen de apps bedienen. Zie [Navigeren in 3D](topic:navigate-3d).
+- **Paneel Problemen.** De waarschuwingen van de nieuwe controles hierboven verschijnen in hetzelfde paneel {{ui:Problemen}} als voorheen.
+- **Koppel uw AI.** Uw eigen assistent, verbonden via CadCraft Studio, werkt met alle acht de apps en ziet alleen wat u toestaat. Verbinden met één klik, de gehoste connector en uw eigen API-sleutel in Studio komen nog. Zie [DetailCraft gebruiken met een AI-assistent](topic:use-with-ai-assistants).
+
+## Opgelost in 0.8.1
+
+- **Talen in Studio.** Studio en de verpakte edities kunnen tijdens het draaien van taal wisselen; voorheen was het alleen Engels. Het is nog niet op elk platform getest: laat ons weten als de taal niet verandert.
+- **Venster-selectie.** De 0.8.1-installatiebestanden hebben het selecteren met een kruisvenster al correct uit de 0.8-webversie; een oudere installatie deed dat niet.
+- **Tablets in staand formaat.** Overgebleven rasterhoogte gaat naar het canvas, en de bladindeling begint bij 760 px of minder.
 
 ## Nog niet in deze versie
 
-- **0.7 is niet code-ondertekend.** Ondertekenen en het Microsoft Store-pakket zijn verplaatst naar 0.8 omdat de validatie van het certificaat nog niet is gelukt. Controleer de SHA-256 naast elk bestand op getcadcraft.com/download. Als SmartScreen op Windows het installatieprogramma tegenhoudt, kiest u {{ui:Meer info}} en daarna {{ui:Toch uitvoeren}}. Klik op een Mac de eerste keer met de rechtermuisknop op CadCraft Studio en kies {{ui:Openen}}. CadCraft Studio staat nog niet in een appwinkel en er is nog geen build voor iPad of iPhone.
-- De lijsten voor hoek en helling in {{ui:Eenheden}} worden opgeslagen, maar geen enkel veld leest ze nog.
-- **De ontwerpcontroles zijn nog niet door een ingenieur beoordeeld.** Onze tests vergelijken ze met gedrukte tabelwaarden en met de hand uitgewerkte formules, nog niet met de uitgewerkte voorbeelden van een ontwerphandleiding. Tot een beoordeling zijn ze een hulpmiddel: controleer staven die ertoe doen met de hand.
-- De ontwerpcontroles gebruiken eerste-orde krachten (geen tweede-orde effecten) en controleren alleen I-profielen. Niet gebouwd: buizen, hoekprofielen, kanaalprofielen, gelaste profielen, slanke (AISC) of klasse 4 (Eurocode) onderdelen op buiging, torsie, schuifknik samen met buiging, verbindingen, vermoeiing, brand, seismische detaillering en beton. Een slank onderdeel op druk laat de drukcontroles weg, en de staaf toont "voldoet, gedeeltelijk gecontroleerd".
-- De raamwerkanalyse is nog steeds eerste-orde en lineair, en is nog niet door een ingenieur op een echte klus geprobeerd.
-- Boutgaten, bouten, lassen en funderingen zitten niet in de USD-export.
+- **NC naar een machine sturen** is nog niet uitgebracht.
+- **Windbelastingen** voor beton zijn nog niet beschikbaar, en de beton- en funderingscontroles zijn voor een ingenieur om na te kijken.
+- **Code-ondertekening.** De Windows-installatiebestanden en de macOS .dmg zijn niet ondertekend, dus Windows kan waarschuwen en macOS vraagt om met de rechtermuisknop te klikken, en dan Openen.
 
-Al het andere staat in [Wat nog niet is gebouwd](topic:not-built-yet).
+Eerdere wijzigingen staan in [Wat is er nieuw in 0.7](topic:whats-new-0-7).
