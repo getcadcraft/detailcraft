@@ -15,7 +15,7 @@
  */
 import { UsdBuilder, V } from './usd/index.js';
 import { earcut } from './usd/earcut.js';
-import { toWorld, clipLoopV } from './geom.js';
+import { toWorld, clipLoopV, endX } from './geom.js';
 
 const M = (p) => [p[0] / 1000, p[1] / 1000, p[2] / 1000];
 
@@ -62,7 +62,9 @@ function partMesh(p) {
   const copes = (p.cuts || []).filter((c) => c.type === undefined || c.type === 'cope' || c.length);
   const xs = [...new Set([0, L, ...copes.map((c) => (c.end === 'start' ? Math.min(c.length, L) : Math.max(L - c.length, 0)))])].sort((a, c) => a - c);
   const P = [], C = [], I = [];
-  const vert = (x, u, v) => { P.push(...M(toWorld(f, x, u, v, voff))); return P.length / 3 - 1; };
+  // a mitre's end (0.7.1 71.20): the end ring sits on its cut face
+  const cutX = (x, u, v) => (p.endCuts?.start && x === 0 ? endX(p, 'start', u, v) : p.endCuts?.end && x === L ? endX(p, 'end', u, v) : x);
+  const vert = (x, u, v) => { P.push(...M(toWorld(f, cutX(x, u, v), u, v, voff))); return P.length / 3 - 1; };
   for (let s = 1; s < xs.length; s++) {
     const a = xs[s - 1], z = xs[s];
     if (z - a < 0.01) continue;

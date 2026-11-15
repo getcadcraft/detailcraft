@@ -15,7 +15,7 @@
  * carry the phase: "2-b1", "2-B1", footings "2-F1". Identical pieces in different phases then have different marks
  * (they are made and shipped at different times). One phase in use, or perPhase off: marks as before, no prefix.
  */
-import { toLocal } from './geom.js';
+import { toLocal, endX } from './geom.js';
 import { t } from './i18n.js';
 
 const PART_PREFIX = { beam: 'b', column: 'c', brace: 'br', stringer: 'st', plate: 'p' };
@@ -58,12 +58,29 @@ function turnPoint(p, v, L) {
 
 const r = (v, tol) => { const n = Math.round(v / tol) * tol; return Number((n === 0 ? 0 : n).toFixed(3)); };
 
+/**
+ * Plane-cut ends (mitres, 0.7.1 71.20) seen after turning by variant v: for each end, how far its face sits in from that end
+ * at the four corners of the section box, in a fixed corner order. Square ends add nothing (older marks unchanged).
+ */
+function endTrims(p, v, tol) {
+  if (!p.endCuts) return null;
+  const flips = { rv: [true, true, false], ru: [true, false, true], rx: [false, true, true] }[v] || [false, false, false];
+  const [rev, fu, fv] = flips, L = p.length, w = p.profile.width / 2, h = p.profile.depth / 2;
+  return ['start', 'end'].map((end) => {
+    const src = rev ? (end === 'start' ? 'end' : 'start') : end;
+    return [[-w, -h], [w, -h], [w, h], [-w, h]].map(([u, vv]) => {
+      const x = endX(p, src, fu ? -u : u, fv ? -vv : vv);
+      return r(src === 'start' ? x : L - x, tol);
+    });
+  });
+}
 /** The part's own signature in variant v. */
 function partSig(p, v, tol) {
   const L = p.length;
   const holes = p.holes.map((h) => turnHole(h, v, L)).map((h) => [h.face, r(h.x, tol), r(h.y, tol), r(h.d, 0.1)]).sort(cmpArr);
   const cuts = p.cuts.map((c) => turnCut(c, v)).map((c) => [c.kind, c.end, c.side, r(c.length, tol), r(c.depth, tol)]).sort(cmpArr);
-  return JSON.stringify([p.type === 'plate' ? 'plate' : p.type, p.profileName.toUpperCase(), p.material.toUpperCase(), r(L, tol), holes, cuts]);
+  const ends = endTrims(p, v, tol);
+  return JSON.stringify([p.type === 'plate' ? 'plate' : p.type, p.profileName.toUpperCase(), p.material.toUpperCase(), r(L, tol), holes, cuts, ...(ends ? [ends] : [])]);
 }
 function cmpArr(a, b) { for (let i = 0; i < Math.max(a.length, b.length); i++) { if (a[i] < b[i]) return -1; if (a[i] > b[i]) return 1; } return 0; }
 

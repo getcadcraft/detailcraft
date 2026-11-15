@@ -32,7 +32,7 @@ const dot = (a, b) => a[0] * b[0] + a[1] * b[1] + a[2] * b[2];
 const cross = (a, b) => [a[1] * b[2] - a[2] * b[1], a[2] * b[0] - a[0] * b[2], a[0] * b[1] - a[1] * b[0]];
 
 /** A solid to check: { ref, id, kind, phase, frame {o, x, u, v}, L, loops (section, centered), voff, cuts, box (obb) }. */
-function solids(state, built, phases) {
+export function solids(state, built, phases) {
   const keep = (ph) => !phases || phases.has(ph || 1);
   const out = [];
   for (const p of built.parts) {
@@ -98,7 +98,7 @@ function loopsAt(S, x) {
   return loops;
 }
 /** How far a world point is inside solid S (≤ 0: outside). */
-function depthIn(S, w) {
+export function depthIn(S, w) {
   const l = toLocal(S.frame, w, S.voff);
   if (l.x <= 0 || l.x >= S.L) return 0;
   const loops = loopsAt(S, l.x);

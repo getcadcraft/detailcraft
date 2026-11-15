@@ -11,7 +11,7 @@ import { t } from './i18n.js';
  * beams / columns / braces / plates when their body is ONE IfcExtrudedAreaSolid (also through an
  * IfcMappedItem, or as the first operand of an IfcBooleanClippingResult — the clipping is then left
  * out and said in the report) of a profile DetailCraft can draw:
- *   IfcIShapeProfileDef → an I-shape; IfcUShapeProfileDef → a channel; IfcLShapeProfileDef (equal legs)
+ *   IfcIShapeProfileDef → an I-shape; IfcUShapeProfileDef → a channel; IfcLShapeProfileDef (equal legs, or unequal when the catalog has the size)
  *   → an angle; IfcRectangleHollowProfileDef → rectangular HSS; IfcCircleHollowProfileDef → round HSS;
  *   IfcRectangleProfileDef → a plate PL<t>x<w> (IfcPlate, or anything thin) or a flat bar;
  *   IfcArbitraryClosedProfileDef that is a rectangle → as IfcRectangleProfileDef.
@@ -42,6 +42,10 @@ import { t } from './i18n.js';
 import { CATALOG, getProfile, cleanCustom, plateName } from './profiles.js';
 import { emptyState, Model, cleanText } from './model.js';
 import { frame, cross, dot, norm, sub, add, mul, len, toLocal, voffFor } from './geom.js';
+import { readRebar } from './rc/loose.js';   // 0.9 RC.1: IfcReinforcingBar back to its bars
+import { BARS } from './rebar.js';
+import { barFor } from './rc/loose.js';
+import { centerLength } from './rc/bars.js';
 
 const MAX_MEMBERS = 20000;
 const TOL = 0.5;            // mm, catalog match
@@ -175,7 +179,11 @@ function convert(W, api, mid, fallbackName) {
       case 'IfcUShapeProfileDef': return { kind: 'C', pname, pos, dims: { d: n(pd.Depth), bf: n(pd.FlangeWidth), tw: n(pd.WebThickness), tf: n(pd.FlangeThickness) } };
       case 'IfcLShapeProfileDef': {
         const d = n(pd.Depth), w = pd.Width ? n(pd.Width) : d;
-        if (Math.abs(d - w) > TOL) return { why: t('ifcimp.why.unequal-angle', { w: r1(w), d: r1(d) }) };
+        if (Math.abs(d - w) > TOL) {
+          const dims = { b: w, h: d, t: n(pd.Thickness) };
+          if (!catalogMatch('L', dims, pname)) return { why: t('ifcimp.why.unequal-angle', { w: r1(w), d: r1(d) }) };
+          return { kind: 'L', pname, pos, dims };
+        }
         return { kind: 'L', pname, pos, dims: { b: d, t: n(pd.Thickness) } };
       }
       case 'IfcRectangleHollowProfileDef': return { kind: 'RHS', pname, pos, dims: { h: n(pd.YDim), b: n(pd.XDim), t: n(pd.WallThickness) } };
@@ -214,13 +222,13 @@ function convert(W, api, mid, fallbackName) {
       switch (kind) {
         case 'I': return p.kind === 'I' && close(p.d, d.d) && close(p.bf, d.bf) && close(p.tw, d.tw) && close(p.tf, d.tf);
         case 'C': return p.kind === 'C' && close(p.d, d.d) && close(p.bf, d.bf) && close(p.tw, d.tw) && close(p.tf, d.tf);
-        case 'L': return p.kind === 'L' && close(p.b, d.b) && close(p.t, d.t);
+        case 'L': return p.kind === 'L' && close(p.b, d.b) && close(p.h ?? p.b, d.h ?? d.b) && close(p.t, d.t);
         case 'RHS': return p.kind === 'RHS' && close(p.t, d.t) && ((close(p.h, d.h) && close(p.b, d.b)) || (close(p.h, d.b) && close(p.b, d.h)));
         case 'CHS': return p.kind === 'CHS' && close(p.D, d.D) && close(p.t, d.t);
         default: return false;
       }
     };
-    const byName = pname && CATALOG.get(pname.toUpperCase().replace(/\s+/g, ''));
+    const byName = pname && (CATALOG.get(pname.toUpperCase().replace(/\s+/g, '')) || getProfile(pname));
     if (byName && fit(byName)) return byName.name;
     for (const p of CATALOG.values()) if (fit(p)) return p.name;
     return null;
@@ -284,12 +292,37 @@ function convert(W, api, mid, fallbackName) {
   ];
   const materialOf = materialMap(W, api, mid, ids, line, ref, val, clsName);
   const steelIds = new Set();
+  // ---- reinforced concrete (0.9 RC.1) ----
+  // DetailCraft's own concrete elements carry their definition (property "Definition") in the "DetailCraft" property set: they come back as themselves, and the
+  // bars aggregated to them are made again from it (not doubled as loose bars). Any other IfcReinforcingBar comes in as a loose bar
+  // (its swept disk back to legs and bends, lib/rc/loose.js). A beam, column, slab or wall that hosts bars, or whose material is
+  // concrete, is not steel: it is reported, not drawn as a flat bar or a plate.
+  const rcDefs = new Map();
+  for (const rid of ids(W.IFCRELDEFINESBYPROPERTIES)) {
+    const r = line(rid), ps = line(ref(r?.RelatingPropertyDefinition));
+    if (!ps || !/^DetailCraft( RC)?$/.test(String(val(ps.Name) || ''))) continue;
+    const prop = (ps.HasProperties || []).map((x) => line(ref(x))).find((x) => x && val(x.Name) === 'Definition');
+    let def = null;
+    try { def = JSON.parse(String(val(prop?.NominalValue) || '')); } catch { def = null; }
+    if (!def || def.format !== 'detailcraft-rc' || !def.element) continue;
+    for (const o of r.RelatedObjects || []) rcDefs.set(ref(o), def.element);
+  }
+  const hostIds = new Set();
+  for (const rid of [...ids(W.IFCRELAGGREGATES), ...ids(W.IFCRELNESTS)]) {
+    const r = line(rid);
+    if ((r.RelatedObjects || []).some((o) => clsName(line(ref(o))) === 'IfcReinforcingBar')) hostIds.add(ref(r.RelatingObject));
+  }
+  const CONCRETE = /concrete|hormig|b[ée]ton|bet[ãa]o|calcestruzzo|^C\d{2}\/\d{2}|^HA-?\d/i;
+  const isConcrete = (id) => hostIds.has(id) || CONCRETE.test(materialOf.get(id) || '');
+  const handledRc = new Set(rcDefs.keys());
   const members = [], customs = new Map();
   for (const [T, type] of STEEL) {
     for (const id of ids(W[T])) {
       steelIds.add(id);
       const el = line(id);
       const cls = clsName(el);
+      if (rcDefs.has(id)) continue;   // DetailCraft's own concrete element: below
+      if (isConcrete(id)) { skip(cls, t('ifcimp.why.concrete')); continue; }
       if (members.length >= MAX_MEMBERS) { skip(cls, t('ifcimp.why.too-many', { max: MAX_MEMBERS })); continue; }
       const b = bodySolid(el);
       if (b.why) { skip(cls, b.why); continue; }
@@ -365,7 +398,9 @@ function convert(W, api, mid, fallbackName) {
   }
   const openingIds = [...ids(W.IFCOPENINGELEMENT), ...ids(W.IFCOPENINGSTANDARDCASE)];
   const fastenerIds = [...ids(W.IFCMECHANICALFASTENER), ...ids(W.IFCFASTENER)];
-  for (const x of [...openingIds, ...fastenerIds]) handled.add(x);
+  for (const x of [...openingIds, ...fastenerIds, ...handledRc, ...ids(W.IFCREINFORCINGBAR)]) handled.add(x);
+  // openings voiding a concrete element of ours are part of its definition (made again from it)
+  const rcOpenings = new Set([...voidsOf].filter(([, el]) => rcDefs.has(el)).map(([op]) => op));
   /** An opening's or fastener's extrusion in world mm: { O (base of the profile's center), ext, depth, prof } or { why }. */
   const extrusionOf = (el) => {
     const b = bodySolid(el);
@@ -388,6 +423,18 @@ function convert(W, api, mid, fallbackName) {
     IfcFooting: 'ifcimp.why.footings',
     IfcReinforcingBar: 'ifcimp.why.rebar',
   };
+  // loose bars: every IfcReinforcingBar not aggregated to one of our own concrete elements
+  const rebar = readRebar({
+    ids: (k) => ids(k), line, ref, val, clsName, toMm, apply,
+    placementOf: (el) => (el.ObjectPlacement ? placement(ref(el.ObjectPlacement)) : I4()),
+    axisOf: (id, M) => compose(M, axis3(id)),
+    mapped: (M, src, it) => compose(compose(M, cartOp(ref(it.MappingTarget))), src ? axis3(ref(src.MappingOrigin)) : I4()),
+    T: { REINFORCINGBAR: W.IFCREINFORCINGBAR, RELAGGREGATES: W.IFCRELAGGREGATES, RELNESTS: W.IFCRELNESTS },
+  });
+  const ownGuids = new Set([...rcDefs.keys()].map((id) => String(val(line(id)?.GlobalId) || '')));
+  const looseIn = rebar.bars.filter((b) => !(b.host && ownGuids.has(b.host.guid)));
+  const regenerated = rebar.bars.length - looseIn.length;
+  for (const sk of rebar.skipped) for (let i = 0; i < sk.n; i++) skip('IfcReinforcingBar', t('ifcimp.why.bar-' + sk.code));
   for (const ty of api.GetAllTypesOfModel(mid) || []) {
     if (!api.IsIfcElement(ty.typeID) || /^IFC(SITE|BUILDING|BUILDINGSTOREY|GRID|PROJECT)$/i.test(String(ty.typeName))) continue;
     const list = ids(ty.typeID).filter((x) => !steelIds.has(x) && !handled.has(x));
@@ -398,8 +445,32 @@ function convert(W, api, mid, fallbackName) {
   }
 
   let clippedN = 0;
+  const rcReport = { elements: 0, openings: 0, regenerated, loose: 0, sizes: {}, unknownSize: 0, lengthDiff: 0, hosts: new Map() };
   model.change(t('ifcimp.undo'), (tx) => {
     if (levels.length) tx.setLevels(levels);
+    for (const [id, def] of rcDefs) {
+      const el = line(id), cls = clsName(el);
+      try { tx.addRc(def); converted[cls] = (converted[cls] || 0) + 1; rcReport.elements++; } catch (e) { skip(cls, e.message); }
+    }
+    if (looseIn.length) {
+      const list = [];
+      for (const b of looseIn) {
+        const size = barFor(b.db, BARS);
+        const bar = size ? size.name : 'Ø' + Math.round(b.db * 10) / 10;
+        if (!size) rcReport.unknownSize++;
+        rcReport.sizes[bar] = (rcReport.sizes[bar] || 0) + 1;
+        const hk = b.host ? (b.host.name || b.host.cls) : '';
+        if (hk) rcReport.hosts.set(hk, (rcReport.hosts.get(hk) || 0) + 1);
+        const item = { bar, db: b.db, pts: b.pts, rc: b.rc, mark: cleanText(b.mark, 20) };
+        if (b.host) item.host = { guid: cleanText(b.host.guid, 22), cls: cleanText(b.host.cls, 40), name: cleanText(b.host.name, 60) };
+        if (b.fileLength) { item.fileLength = b.fileLength; if (Math.abs(centerLength(b.pts, b.rc) - b.fileLength) > 1) rcReport.lengthDiff++; }
+        list.push(item);
+      }
+      tx.addLoose(list);
+      rcReport.loose = list.length;
+      converted.IfcReinforcingBar = (converted.IfcReinforcingBar || 0) + list.length;
+    }
+    if (regenerated) converted.IfcReinforcingBar = (converted.IfcReinforcingBar || 0) + regenerated;
     tx.setGrids({ x: tidy(gx), y: tidy(gy) });
     for (const c of customs.values()) tx.addProfile(c.profile);
     const memberOf = new Map();
@@ -411,6 +482,7 @@ function convert(W, api, mid, fallbackName) {
     // holes and copes
     for (const oid of openingIds) {
       const op = line(oid), cls = clsName(op);
+      if (rcOpenings.has(oid)) { got(cls); rcReport.openings++; continue; }
       const host = voidsOf.get(oid), mid2 = host !== undefined ? memberOf.get(host) : undefined;
       if (mid2 === undefined) { skip(cls, t(host === undefined ? 'ifcimp.why.opening-alone' : 'ifcimp.why.opening-host')); continue; }
       const e = extrusionOf(op);
@@ -469,7 +541,7 @@ function convert(W, api, mid, fallbackName) {
   const notList = [...notConverted].map(([k, nn]) => { const [cls, why] = k.split('|'); return { cls, n: nn, why }; }).sort((a, b) => b.n - a.n || a.cls.localeCompare(b.cls));
   return {
     state: model.state,
-    report: { schema, unit: unitName, toMm, converted, notConverted: notList, grids: model.state.grids.x.length + model.state.grids.y.length, levels: levels.length, customProfiles: [...customs.values()].map((c) => c.profile.name), warnings: [...new Set(warnings)] },
+    report: { schema, unit: unitName, toMm, converted, notConverted: notList, rc: { ...rcReport, hosts: [...rcReport.hosts].map(([name, n]) => ({ name, n })) }, grids: model.state.grids.x.length + model.state.grids.y.length, levels: levels.length, customProfiles: [...customs.values()].map((c) => c.profile.name), warnings: [...new Set(warnings)] },
   };
 }
 
@@ -524,7 +596,14 @@ export function reportLines(report) {
   lines.push(t('ifcimp.rep.schema', { schema: report.schema, unit: report.unit, factor: Number(report.toMm.toPrecision(6)) }));
   lines.push(t('ifcimp.rep.brought', { what: conv.length ? conv.map(([k, nn]) => nn + ' ' + k).join(', ') : t('ifcimp.rep.no-steel'), levels: report.levels, grids: report.grids }));
   if (report.customProfiles.length) lines.push(t('ifcimp.rep.custom', { list: report.customProfiles.join(', ') }));
-  const holes = (report.converted.IfcOpeningElement || 0) + (report.converted.IfcOpeningStandardCase || 0), bolts = (report.converted.IfcMechanicalFastener || 0) + (report.converted.IfcFastener || 0);
+  const holes = (report.converted.IfcOpeningElement || 0) + (report.converted.IfcOpeningStandardCase || 0) - (report.rc?.openings || 0), bolts = (report.converted.IfcMechanicalFastener || 0) + (report.converted.IfcFastener || 0);
   if (holes || bolts) lines.push(t('ifcimp.rep.holes', { holes, bolts }));
+  const rc = report.rc;   // 0.9 RC.1: what was read of the reinforcement
+  if (rc && (rc.elements || rc.loose || rc.regenerated)) {
+    if (rc.elements) lines.push(t('ifcimp.rep.rc-elements', { n: rc.elements, bars: rc.regenerated }));
+    if (rc.loose) lines.push(t('ifcimp.rep.rc-loose', { n: rc.loose, sizes: Object.entries(rc.sizes).map(([k, v]) => v + ' × ' + k).join(', '), hosts: rc.hosts.length }));   // i18n-ignore: counts
+    if (rc.unknownSize) lines.push(t('ifcimp.rep.rc-unknown', { n: rc.unknownSize }));
+    if (rc.lengthDiff) lines.push(t('ifcimp.rep.rc-length', { n: rc.lengthDiff }));
+  }
   return lines;
 }

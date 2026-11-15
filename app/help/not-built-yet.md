@@ -32,13 +32,14 @@ DetailCraft is an early build. This page lists what it does not do yet, so you c
 
 ## Connections
 
-DetailCraft builds five connections: a brace gusset (see [Brace gussets](topic:brace-gussets)); a bolted splice between two pieces of one I-shape (see [Splices](topic:splices)); a flush or extended bolted end plate from a level, upright I-shape beam to an I-shape column flange or web; a shear tab from a beam (square, skewed or sloped) to a column flange or web; and a column base plate with four anchor rods.
+DetailCraft builds six connections: a brace gusset (see [Brace gussets](topic:brace-gussets)); a bolted splice between two pieces of one I-shape (see [Splices](topic:splices)); a mitre between two I-shapes meeting at an angle, cut only or with bolted end plates (see [Mitre joints](topic:mitres)); a flush or extended bolted end plate from a level, upright I-shape beam to an I-shape column flange or web; a shear tab from a beam (square, skewed or sloped) to a column flange or web; and a column base plate with four anchor rods.
 
 | Not yet | Instead, today |
 |---|---|
 | Skewed or sloped end plates | Use [shear tabs](topic:shear-tabs), which take skewed and sloped beams |
 | Clip angles; splice fill plates and splices between different sizes; corner gussets welded to beam and column, chamfered gussets | Detail them in other software, or add plates and holes by hand as loose parts; see [Splices](topic:splices), [Brace gussets](topic:brace-gussets) |
 | Chamfered or tapered base stiffeners; grout holes; the footing pocket for a shear lug | Rectangular stiffeners; see [Base plates](topic:base-plates) |
+| Haunches; welded mitres with a butt weld; stiffeners in line with the other member's flanges | A [mitre](topic:mitres) with end plates and web stiffeners, or a plain mitre cut; add other plates by hand as loose parts |
 | Connection design checks (strength) | Check connections with your engineer's calculations; DetailCraft only warns about edge distance and spacing |
 | Slotted holes | Round holes only |
 
@@ -46,8 +47,8 @@ DetailCraft builds five connections: a brace gusset (see [Brace gussets](topic:b
 
 | Not yet | Instead, today |
 |---|---|
-| Design checks beyond steel I-shapes: tubes, angles, channels, welded shapes, slender or class 4 parts, torsion, connections, concrete | The {{ui:Analysis}} tab checks steel I-shapes to AISC 360 or EN 1993-1-1 ([Check steel members to a design code](topic:design-checks)); the rest it leaves marked "not checked"; an engineer reviews it all |
-| Second-order (P-Δ) analysis, buckling, vibration, earthquake | First-order linear analysis only |
+| Design checks beyond steel I-shapes: tubes, angles, channels, welded shapes, slender or class 4 parts, torsion, connections; concrete: sway slenderness, torsion, seismic detailing, slabs and walls | The {{ui:Analysis}} tab checks steel I-shapes to AISC 360 or EN 1993-1-1 ([Check steel members to a design code](topic:design-checks)); the rest it leaves marked "not checked"; an engineer reviews it all |
+| Buckling analysis, vibration | Second order is P-Delta only (elastic); no buckling analysis (modal, response spectrum, time history and pushover are in the Analysis tab) |
 | Design checks that an engineer has reviewed | They are an aid until then: check two or three members by hand or in your engineer's own software before you rely on them |
 | Floor, wind and snow loads made for you from areas | Put loads on members by hand, in kN/m or kN |
 | Member offsets, eccentric joints, tension-only braces, plates and footings in the frame | Members are analysed on their work lines; braces carry tension and compression |
@@ -56,8 +57,10 @@ DetailCraft builds five connections: a brace gusset (see [Brace gussets](topic:b
 
 | Not yet | Instead, today |
 |---|---|
-| Rebar in anything but rectangular pad footings | None today |
-| Laps, development lengths | Check them yourself |
+| Round columns, spirals, sloped or curved beams, slabs other than rectangles, walls that are not straight | Rectangular beams, columns, slabs and walls ([Detail reinforced concrete](topic:reinforced-concrete)) |
+| Bars cranked into a lap, staggered laps, laps placed where you choose | Laps at equal steps, every bar lapped at one section (ACI Class B, EN α6 = 1.5) |
+| Corner bars at openings, punching shear reinforcement, seismic detailing (ACI 318-19 chapter 18) | Trimmers each side of an opening; check the rest yourself |
+| Reading a structural design program's own files | Export IFC from it: its IfcReinforcingBar come in as bars ([Bars from an IFC file](topic:reinforced-concrete#bars-from-an-ifc-file)) |
 | Shape codes beyond straight, one bend and a U; ACI 315 types for straight and one-hook bars | The three shapes print as BS 8666 00, 11, 21 or ACI Type 2; see [Rebar reference](topic:rebar-reference) |
 | Metric bars other than BS 4449 H8–H40 (e.g. CSA 10M–35M) | ASTM soft-metric names #10–#36, or BS bars |
 
@@ -66,14 +69,13 @@ DetailCraft builds five connections: a brace gusset (see [Brace gussets](topic:b
 | Not yet | Instead, today |
 |---|---|
 | Portrait sheets, A0, and sheets of your own size; general-arrangement views on skewed grids | Landscape A4 to A1 and ANSI B to D ([General-arrangement and assembly drawings](topic:drawings)); scale the PDF to print on another size |
-| Shop drawings of channels, angles and tubes | I-shapes and plates only |
 | Weld symbols on single-part shop drawings; symbols other than fillets | Assembly drawings carry fillet weld symbols; the shop drawing gives the weld as text |
 | Editing a drawing in the app | Change the model and make the drawing again; mark up the PDF in a PDF app such as MarkupCraft |
 | Drawings as DWG with dimension objects, or the model at full scale in model space with the sheets as layouts | Each sheet is a full-size DWG or DXF of the paper, dimensions as lines and figures ([General-arrangement and assembly drawings](topic:drawings#download)) |
 | NC holes in round tubes, copes on angles and round tubes in NC files | Not written; see [NC file fields](topic:nc1-fields) |
 | Bevels, markings and inner contours in NC files | None today |
 | Bolt holes, bolts, welds and footings in the USD export | They are in the IFC, NC and BOM outputs; see [Export the steel model as USD](topic:usd) |
-| Bringing connections, footings, rebar, slotted or rectangular holes and holes in round tubes in from an IFC file | {{ui:Import IFC}} brings in beams, columns, members, plates, grids, levels, round holes, copes and bolts, and its report lists what it left out |
+| Bringing connections, footings, slotted or rectangular holes and holes in round tubes in from an IFC file | {{ui:Import IFC}} brings in beams, columns, members, plates, grids, levels, round holes, copes, bolts and reinforcing bars, and its report lists what it left out |
 | Custom report layouts | The three CSV files |
 
 ## Panels
@@ -87,8 +89,8 @@ DetailCraft builds five connections: a brace gusset (see [Brace gussets](topic:b
 | Not yet | Instead, today |
 |---|---|
 | Cloud saving and sync between computers | Save `.detailcraft.json` files and share them like any file. Cloud saving is not available yet |
-| Other people's cursors and "is editing" labels in a live session; grids, levels and phases merged item by item | Edits still merge (grids, levels and phases go whole, the later change wins); see [Detail one structure together, live](topic:work-live) |
-| Invite links to a live session over the internet | Join with a short code on the same network |
+| Other people's cursors and "is editing" labels in a Live TeamWork session; grids, levels and phases merged item by item | Edits still merge (grids, levels and phases go whole, the later change wins); see [Detail one structure together, live](topic:work-live) |
+| Invite links to a Live TeamWork session over the internet | Join with a short code on the same network |
 
 ## Platforms
 

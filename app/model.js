@@ -14,7 +14,9 @@
  *   connections: [{ id, type: 'endplate', beam, end: start|end, column, params }
  *                 { id, type: 'baseplate', column, params }
  *                 { id, type: 'splice', a, aEnd: start|end, b, params }   (0.4 D21)
- *                 { id, type: 'gusset', brace, end: start|end, support, params }]   (0.4 D22)
+ *                 { id, type: 'gusset', brace, end: start|end, support, params }   (0.4 D22)
+ *                 { id, type: 'mitre', a, aEnd: start|end, b, bEnd: start|end, params }]   (0.7.1 71.20; same file version: an
+ *                 older build drops it as an unknown connection type, with a warning)
  *   footings: [{ id, x, y, top, L, B, H, rotation, concrete, mat:{…}, starters:{…}, phase }]
  *   bolts: [{ id, d, length, grade, kind: BOLT|ANCHORBOLT, head, axis, phase }]   loose bolts, from an IFC import (0.4 D11):
  *           they stay where they are (connections make their own bolts)
@@ -24,6 +26,17 @@
  *   phases: [{ n, name }]            (0.4 D13, format version 2) phase numbers 1–999; name '' = "Phase n"
  *   issues: [{ sheet, number, rev, date, note, hash, parts? }]   drawing issue log (0.4 D17, issues.js; parts 0.4 D19)
  *   numbering: { perPhase }          marks counted per phase ("2-b1") when more than one phase is used
+ *   problems: { accepted: [{ id, by, reason, date, fp }] }   (0.7.1 → 0.8, docs/0.8-PROBLEMS-SPEC.md) the problems accepted as intended;
+ *           optional (absent = none; an older build drops the key, same file version)
+ *   ids: { name, hash }              (0.7.1 71.25) the client's IDS this model's IFC export is checked against (ids-ui.js); optional,
+ *           an older build drops the key. The text is kept once in model.idsTexts (outside the undo snapshots; lead 2026-10-26) and
+ *           written into the file as ids.text by toJSON()
+ *   pictures: [{ id, name, hash, px, mmPerPx, x, y, z, opacity, size }]   (0.8 D8.15, picture.js) reference pictures (a copied
+ *           area of a sheet) lying on a level; optional, an older build drops the key (same file version). The PNG is kept once
+ *           in model.pictureSrcs by hash (outside the undo snapshots, as the IDS text) and written into the file as src by toJSON()
+ *   rc: { settings, elements: [{ id 'r<n>', kind beam|column|slab|wall, phase, … }], loose: [{ id 'x<n>', bar, db, pts, rc, mark, host? }] }
+ *           (0.9 RC.1, rc-detail.js over cc-rc in ./rc/) reinforced concrete elements with their bars, and bars read from an IFC file;
+ *           optional, an older build drops the key (same file version)
  *   seq: next id number
  * }
  * Members and footings carry `phase` (a number in phases; 1 when a version 1 file is opened). A connection is in the
@@ -37,6 +50,14 @@ import { BASEPLATE_DEFAULTS, isBeamEnd, DEFAULTS_OF, membersOf, mainOf } from '.
 import { FOOTING_DEFAULTS, cleanFooting } from './rebar.js';
 import { STAIR_DEFAULTS, cleanStair } from './stair.js';
 import { cleanAnalysis } from './analysis.js';
+import { readSupply } from './lib-supply/supply.js';   // 0.8 round 3 (EG.51): the supplier stock rows kept in the file
+import { cleanFraming } from './framing.js';   // 0.8 EG.6: timber and light-gauge framing panels
+import { cleanFoundation } from './foundation.js';   // 0.8 EG.5: soil settings and column loads of the footing checks
+import { cleanSetup as cleanErection } from './erection.js';   // 0.8 EG.72: the crane setup of the erection movie
+import { cleanAcceptedDc } from './problems-detailcraft.js';
+import { cleanIdsRecord, cleanIdsRef, idsHash, idsTextStore } from './ids/record.js';   // 0.7.1 71.25 (cc-ids, lib/ids synced)
+import { cleanPicture, readPictures, MAX_PICTURES } from './picture.js';   // 0.8 D8.15: reference pictures (a copied area of a sheet)
+import { cleanRc, cleanOne, mergeInto, cleanSettingsRc, MAX_ELEMENTS } from './rc-detail.js';   // 0.9 RC.1: reinforced concrete detailing
 import { t } from './i18n.js';
 
 export const FORMAT = 'detailcraft';
@@ -62,7 +83,7 @@ export function cleanPhase(v) {
 /** The phase list with every phase a member or footing names (sorted). */
 function withUsedPhases(phases, state) {
   const out = phases.map((p) => ({ ...p }));
-  for (const x of [...state.members, ...state.footings, ...(state.stairs || [])]) if (!out.some((p) => p.n === x.phase)) out.push({ n: x.phase, name: '' });
+  for (const x of [...state.members, ...state.footings, ...(state.stairs || []), ...(state.rc?.elements || [])]) if (!out.some((p) => p.n === x.phase)) out.push({ n: x.phase, name: '' });
   return out.sort((a, b) => a.n - b.n);
 }
 /** Which phase a connection is in: its main member's. */
@@ -135,6 +156,8 @@ export class Model {
     this.version = 0;
     this.savedVersion = 0;
     this.listeners = new Set();
+    this.idsTexts = idsTextStore();   // 0.7.1 71.25: IDS texts by hash, once, outside the undo snapshots (state.ids is { name, hash })
+    this.pictureSrcs = idsTextStore();   // 0.8 D8.15: the pictures' PNGs (data URLs) by hash, the same way (state.pictures[].hash)
   }
   get dirty() { return this.version !== this.savedVersion; }
   markSaved() { this.savedVersion = this.version; }
@@ -153,6 +176,8 @@ export class Model {
     this.undoStack.push({ label, before });
     if (this.undoStack.length > UNDO_DEPTH) this.undoStack.shift();
     this.redoStack = [];
+    if (this.idsTexts.size > 1) this.pruneIds();
+    if (this.pictureSrcs.size > (this.state.pictures?.length || 0) + 4) this.prunePictures();   // a few deleted ones kept for undo without searching the snapshots each edit
     this.version++;
     this.emit('change');
     return result;
@@ -178,12 +203,36 @@ export class Model {
     return s.label;
   }
 
-  toJSON() { return JSON.stringify(this.state, null, 1); }
+  /** IDS texts no state and no undo / redo snapshot refers to any more are let go (0.7.1 71.25). */
+  pruneIds() {
+    const refs = [JSON.stringify(this.state.ids || null), ...this.undoStack.map((x) => x.before), ...this.redoStack.map((x) => x.after)];
+    this.idsTexts.prune((h) => refs.some((r) => r.includes(h)));
+  }
+  /** PNGs no state and no snapshot refers to any more are let go (0.8 D8.15); one a redo could bring back stays. */
+  prunePictures() {
+    const refs = [JSON.stringify(this.state.pictures || null), ...this.undoStack.map((x) => x.before), ...this.redoStack.map((x) => x.after)];
+    this.pictureSrcs.prune((h) => refs.some((r) => r.includes(h)));
+  }
+  /** The text of the IDS the model refers to now, or null. */
+  idsText() { return this.state.ids ? this.idsTexts.get(this.state.ids.hash) : null; }
+
+  toJSON() {
+    const text = this.idsText();   // the file carries the IDS text itself; the snapshots only its { name, hash }
+    const out = text ? { ...this.state, ids: { ...this.state.ids, text } } : { ...this.state };
+    // the pictures carry their PNG in the file (0.8 D8.15); one whose PNG went missing is left out rather than saved blank
+    if (this.state.pictures) out.pictures = this.state.pictures.filter((p) => this.pictureSrcs.has(p.hash)).map((p) => ({ ...p, src: this.pictureSrcs.get(p.hash) }));
+    return JSON.stringify(out, null, 1);
+  }
+  picture(id) { return (this.state.pictures || []).find((p) => p.id === id) || null; }
 
   /** Replaces the model with a file's contents (untrusted). Returns { warnings }. Throws a plain message. */
   load(text) {
-    const { state, warnings } = readModel(text);
+    const { state, warnings, idsText, pictureSrcs } = readModel(text);
     this.state = state;
+    this.idsTexts = idsTextStore();
+    if (idsText) this.idsTexts.put(idsText);
+    this.pictureSrcs = idsTextStore();
+    for (const src of pictureSrcs || []) this.pictureSrcs.put(src);
     this.undoStack = []; this.redoStack = [];
     this.version++; this.savedVersion = this.version;
     this.emit('load');
@@ -241,12 +290,16 @@ class Tx {
     p.name = cleanText(name, 40);
   }
   removePhase(n) {
-    const used = [...this.s.members, ...this.s.footings, ...(this.s.stairs || [])].filter((x) => x.phase === n).length;
+    const used = [...this.s.members, ...this.s.footings, ...(this.s.stairs || []), ...(this.s.rc?.elements || [])].filter((x) => x.phase === n).length;
     if (used) throw new Error(t('phase.err.used', { n: used, phase: n }));
     if (this.s.phases.length <= 1) throw new Error(t('phase.err.last'));
     this.s.phases = this.s.phases.filter((p) => p.n !== n);
   }
   setNumbering(o) { this.s.numbering = { perPhase: !!o.perPhase }; }
+  /** The problems accepted as intended (the shell's Problems panel; one undo step like any edit). [] removes the key. */
+  setAcceptedProblems(list) { const a = cleanAcceptedDc(list); if (a.length) this.s.problems = { accepted: a }; else delete this.s.problems; }
+  /** The IDS the IFC export is checked against (0.7.1 71.25): its { name, hash } (put the text in Model.idsTexts first); null forgets it. */
+  setIds(ref) { const r = cleanIdsRef(ref); if (r) this.s.ids = { name: r.name, hash: r.hash }; else delete this.s.ids; }   // the text: Model.idsTexts
   /** Adds drawing issues (issues.js planIssue records). */
   addIssues(list) {
     if (!Array.isArray(this.s.issues)) this.s.issues = [];
@@ -260,6 +313,7 @@ class Tx {
     const ids = new Set(refs.map((r) => r.kind + ':' + r.id));
     for (const m of this.s.members) if (ids.has('member:' + m.id)) m.phase = ph;
     for (const f of this.s.footings) if (ids.has('footing:' + f.id)) f.phase = ph;
+    for (const x of this.s.rc?.elements || []) if (ids.has('rc:' + x.id)) x.phase = ph;
     for (const x of this.s.stairs || []) if (ids.has('stair:' + x.id)) x.phase = ph;
   }
 
@@ -273,6 +327,7 @@ class Tx {
       rotation: Number(m.rotation ?? d.rotation) || 0, position: m.position || d.position,
       name: cleanText(m.name ?? '', 40), cuts: [], holes: [], phase: cleanPhase(m.phase) || 1,
     };
+    if (m.panel) mem.panel = cleanText(m.panel, 40);   // 0.8 round 3 (EG.6): a piece of a placed framing panel
     checkMember(mem, this.s.profiles);
     this.ensurePhase(mem.phase);
     this.s.members.push(mem);
@@ -342,6 +397,12 @@ class Tx {
       const end = c.end === 'start' ? 'start' : 'end';
       if (this.s.connections.some((x) => x.type === 'gusset' && x.brace === c.brace && x.end === end)) throw new Error(t('model.err.end-taken'));
       this.s.connections.push({ id, type: 'gusset', brace: c.brace, end, support: c.support, params: { ...DEFAULTS_OF.gusset, ...(c.params || {}) } });
+    } else if (c.type === 'mitre') {
+      if (!this.s.members.some((m) => m.id === c.a) || !this.s.members.some((m) => m.id === c.b) || c.a === c.b) throw new Error(t('model.err.conn-gone'));
+      const aEnd = c.aEnd === 'start' ? 'start' : 'end', bEnd = c.bEnd === 'start' ? 'start' : 'end';
+      const ends = new Set(this.s.connections.filter((x) => x.type === 'mitre').flatMap((x) => [x.a + ':' + x.aEnd, x.b + ':' + x.bEnd]));
+      if (ends.has(c.a + ':' + aEnd) || ends.has(c.b + ':' + bEnd)) throw new Error(t('model.err.end-taken'));
+      this.s.connections.push({ id, type: 'mitre', a: c.a, aEnd, b: c.b, bEnd, params: { ...DEFAULTS_OF.mitre, ...(c.params || {}) } });
     } else throw new Error(t('model.err.conn-unknown'));
     return id;
   }
@@ -356,6 +417,7 @@ class Tx {
     }
     c.params = next;
   }
+  swapConnectionEnd(id) { const c = this.s.connections.find((x) => x.id === id); if (c) c.end = c.end === 'start' ? 'end' : 'start'; }
   removeConnections(ids) { const set = new Set(ids); this.s.connections = this.s.connections.filter((c) => !set.has(c.id)); }
 
   addFooting(f) {
@@ -379,6 +441,35 @@ class Tx {
     this.s.footings[i] = { id, ...r.footing, phase };
   }
   removeFootings(ids) { const set = new Set(ids); this.s.footings = this.s.footings.filter((f) => !set.has(f.id)); }
+
+  // ---- reinforced concrete (0.9 RC.1, rc-detail.js) ----
+  rcState() { if (!this.s.rc) this.s.rc = { settings: cleanSettingsRc({}), elements: [], loose: [] }; return this.s.rc; }
+  dropRcIfEmpty() { const r = this.s.rc; if (r && !r.elements.length && !r.loose.length && !r.touched) delete this.s.rc; }
+  addRc(e) {
+    const rc = this.rcState();
+    if (rc.elements.length >= MAX_ELEMENTS) throw new Error(t('rc.err.too-many', { n: MAX_ELEMENTS }));
+    const el = cleanOne(e);
+    const phase = cleanPhase(e.phase) || 1;
+    this.ensurePhase(phase);
+    const id = this.nextId('r');
+    rc.elements.push({ id, phase, ...el });
+    return id;
+  }
+  updateRc(id, patch) {
+    const rc = this.rcState(), i = rc.elements.findIndex((x) => x.id === id);
+    if (i < 0) throw new Error(t('rc.err.gone'));
+    const cur = rc.elements[i];
+    const el = cleanOne(mergeInto(cur, patch));
+    const phase = patch.phase !== undefined ? cleanPhase(patch.phase) : cur.phase || 1;
+    if (!phase) throw new Error(t('phase.err.number', { max: MAX_PHASE }));
+    this.ensurePhase(phase);
+    rc.elements[i] = { id, phase, ...el };
+  }
+  removeRc(ids) { if (!this.s.rc || !ids.length) return; const set = new Set(ids); this.s.rc.elements = this.s.rc.elements.filter((x) => !set.has(x.id)); this.dropRcIfEmpty(); }
+  setRcSettings(patch) { const rc = this.rcState(); rc.settings = cleanSettingsRc({ ...rc.settings, ...patch }); rc.touched = true; }
+  /** Bars read from a file (already checked by cleanRc / the importer). */
+  addLoose(list) { const rc = this.rcState(); const ids = []; for (const b of list) { const id = this.nextId('x'); rc.loose.push({ id, ...b }); ids.push(id); } return ids; }
+  removeLoose(ids = null) { if (!this.s.rc) return; const set = ids && new Set(ids); this.s.rc.loose = set ? this.s.rc.loose.filter((b) => !set.has(b.id)) : []; this.dropRcIfEmpty(); }
 
   addStair(x) {
     const id = this.nextId('s');
@@ -412,6 +503,37 @@ class Tx {
   /** Removes loose bolts (ids), or all of them (null). */
   removeBolts(ids = null) { const set = ids && new Set(ids); this.s.bolts = set ? (this.s.bolts || []).filter((b) => !set.has(b.id)) : []; }
   removeStairs(ids) { const set = new Set(ids); this.s.stairs = (this.s.stairs || []).filter((x) => !set.has(x.id)); }
+
+  // ---- reference pictures (0.8 D8.15, picture.js): put the PNG in Model.pictureSrcs first, then add it by its hash ----
+  addPicture(p) {
+    const c = cleanPicture(p);
+    if (!c || !c.hash) throw new Error(t('pic.err.bad'));
+    if (!Array.isArray(this.s.pictures)) this.s.pictures = [];
+    if (this.s.pictures.length >= MAX_PICTURES) throw new Error(t('pic.err.max', { max: MAX_PICTURES }));
+    const id = this.nextId('g');
+    this.s.pictures.push({ id, ...c });
+    return id;
+  }
+  /** Changes x, y, z, opacity or mmPerPx (checked as a whole picture; the PNG stays). */
+  updatePicture(id, patch) {
+    const i = (this.s.pictures || []).findIndex((p) => p.id === id);
+    if (i < 0) throw new Error(t('pic.err.gone'));
+    const keep = this.s.pictures[i], next = { ...keep };
+    for (const k of ['x', 'y', 'z', 'opacity', 'mmPerPx']) if (patch[k] !== undefined) next[k] = Number(patch[k]);
+    const c = cleanPicture(next);
+    if (!c) throw new Error(t('pic.err.value'));
+    this.s.pictures[i] = { id, ...c, hash: keep.hash };
+  }
+  movePictures(ids, d) {
+    const set = new Set(ids);
+    for (const p of this.s.pictures || []) if (set.has(p.id)) this.updatePicture(p.id, { x: p.x + d[0], y: p.y + d[1], z: p.z + d[2] });
+  }
+  removePictures(ids) {
+    const set = new Set(ids);
+    if (!this.s.pictures) return;
+    this.s.pictures = this.s.pictures.filter((p) => !set.has(p.id));
+    if (!this.s.pictures.length) delete this.s.pictures;
+  }
 
   addProfile(p) {
     const r = cleanCustom(p);
@@ -510,6 +632,7 @@ export function readModel(text) {
         holes: (Array.isArray(m.holes) ? m.holes : []).slice(0, 2000).map((h) => { const k = cleanHole(h); if (k) k.id = uid(h.id, 'h'); return k; }).filter(Boolean),
         phase: cleanPhase(m.phase) || 1,
       };
+      if (m.panel) mem.panel = cleanText(m.panel, 40);
       checkMember(mem, s.profiles);
       s.members.push(mem);
     } catch { dropped++; }
@@ -519,7 +642,7 @@ export function readModel(text) {
   let droppedC = 0;
   for (const c of (Array.isArray(j.connections) ? j.connections : []).slice(0, 20000)) {
     const base = DEFAULTS_OF[c?.type] || null;
-    if (!base || !membersOf(c).every((id) => memberIds.has(id)) || (c.type === 'splice' && c.a === c.b) || (c.type === 'gusset' && c.brace === c.support)) { droppedC++; continue; }
+    if (!base || !membersOf(c).every((id) => memberIds.has(id)) || ((c.type === 'splice' || c.type === 'mitre') && c.a === c.b) || (c.type === 'gusset' && c.brace === c.support)) { droppedC++; continue; }
     const params = { ...base };
     for (const k of Object.keys(base)) {
       const v = c.params?.[k];
@@ -529,6 +652,7 @@ export function readModel(text) {
     }
     const conn = c.type === 'splice' ? { id: uid(c.id, 'j'), type: 'splice', a: c.a, aEnd: c.aEnd === 'start' ? 'start' : 'end', b: c.b, params }
       : c.type === 'gusset' ? { id: uid(c.id, 'j'), type: 'gusset', brace: c.brace, end: c.end === 'start' ? 'start' : 'end', support: c.support, params }
+        : c.type === 'mitre' ? { id: uid(c.id, 'j'), type: 'mitre', a: c.a, aEnd: c.aEnd === 'start' ? 'start' : 'end', b: c.b, bEnd: c.bEnd === 'start' ? 'start' : 'end', params }
         : { id: uid(c.id, 'j'), type: c.type, column: c.column, params };
     if (isBeamEnd(c)) { conn.beam = c.beam; conn.end = c.end === 'start' ? 'start' : 'end'; }
     s.connections.push(conn);
@@ -545,6 +669,8 @@ export function readModel(text) {
     const r = cleanStair(x);
     if (r.ok) s.stairs.push({ id: uid(x.id, 's'), ...r.stair, phase: cleanPhase(x.phase) || 1 }); else warnings.push(t('model.warn.stair', { name: r.error }));
   }
+  const rc = cleanRc(j.rc, uid);   // 0.9 RC.1: reinforced concrete elements and loose bars (rc-detail.js)
+  if (rc) { warnings.push(...rc.warnings); delete rc.warnings; if (j.rc?.touched) rc.touched = true; s.rc = rc; }
   // phases: the file's list (numbers 1–999, names ≤ 40, no repeats), plus any a member or footing names
   const ph = [];
   for (const p of (Array.isArray(j.phases) ? j.phases : []).slice(0, MAX_PHASE)) {
@@ -554,10 +680,30 @@ export function readModel(text) {
   s.phases = withUsedPhases(ph.length ? ph : [{ n: 1, name: '' }], s);
   s.numbering = { perPhase: j.numbering?.perPhase !== false };
   s.issues = (Array.isArray(j.issues) ? j.issues : []).slice(0, 20000).map(cleanIssue).filter(Boolean);
+  if (typeof j.regs === 'string' && j.regs.length < 2e5) s.regs = j.regs;   // 0.8 REG.1 step 4: the model's own regulation ticks (JSON text, add-on regs)
+  const pa = cleanAcceptedDc(j.problems?.accepted);   // 0.7.1 → 0.8: accepted problems (docs/0.8-PROBLEMS-SPEC.md § File)
+  if (pa.length) s.problems = { accepted: pa };
+  const idsRec = cleanIdsRecord(j.ids);   // 0.7.1 71.25: the IDS the IFC export is checked against; its text goes to Model.idsTexts
+  if (idsRec) s.ids = { name: idsRec.name, hash: idsHash(idsRec.text) };
   const an = cleanAnalysis(j.analysis);   // 0.6 LC.4: frame analysis settings and loads (optional; analysis.js)
   if (an) s.analysis = an;
+  const er = cleanErection(j.erection);   // 0.8 EG.72: cranes and their load charts, as the person entered them (erection.js)
+  if (er.cranes.length) s.erection = er;
+  const fd = cleanFoundation(j.foundation);   // 0.8 EG.5: soil and column loads for the footing checks (foundation.js)
+  if (fd) s.foundation = fd;
+  const fr = cleanFraming(j.framing);   // 0.8 EG.6: framing panels (framing.js)
+  if (fr) s.framing = fr;
+  const sp = readSupply(j.supply);   // 0.8 round 3, EG.51: supplier stock and lead-time rows (lib/supply)
+  if (sp) s.supply = sp;
+  for (const k of ['calcs', 'reasons', 'docinfo']) {   // 0.9 DI.1 docinfo; 0.8 round 3: the shell's calc sheets and design reasons, kept as saved (the shell's modules clean them on load)
+    const v = j[k];
+    if (v && typeof v === 'object' && !Array.isArray(v) && v.format === 'cadcraft-' + k && JSON.stringify(v).length <= 2e6) s[k] = v;
+  }
+  const pics = readPictures(j.pictures);   // 0.8 D8.15: reference pictures, each with its PNG (kept by the Model, outside the state)
+  if (pics.pictures.length) s.pictures = pics.pictures.map((p) => ({ ...p, id: uid(p.id, 'g') }));
+  if (pics.dropped) warnings.push(t('pic.warn.dropped', { n: pics.dropped }));
   let maxSeq = 0;
   for (const id of ids) maxSeq = Math.max(maxSeq, Number(id.slice(1)) || 0);
   s.seq = Math.max(Number(j.seq) || 1, maxSeq + 1);
-  return { state: s, warnings };
+  return { state: s, warnings, idsText: idsRec ? idsRec.text : null, pictureSrcs: pics.srcs };
 }

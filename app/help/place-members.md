@@ -12,7 +12,7 @@ Members are placed on grid intersections: a column on one, a beam or a brace bet
 
 1. Choose {{ui:Column}} ({{key:C}}), {{ui:Beam}} ({{key:B}}) or {{ui:Brace}} ({{key:R}}) in the {{ui:Place}} group.
 2. The {{ui:Properties}} panel on the right becomes "Place a column" (or beam, or brace) and shows the options for the next member:
-   - {{ui:Profile}}: pick from the list. Sizes are grouped by catalog (W shapes, Channels, Angles, HSS, IPE, HEA, HEB, and your Custom profiles). See [Profile catalog](topic:profile-catalog).
+   - {{ui:Profile}}: pick from the list. Sizes are grouped by catalog (W shapes, Channels, Angles, HSS, IPE, HEA, HEB, UB, UC, PFC, EA, UEA, SHS, RHS, CHS, and your Custom profiles). See [Profile catalog](topic:profile-catalog).
    - {{ui:Material}}: A992, A36, A572 Gr 50, A500 Gr C, S235, S275 or S355.
    - {{ui:Position}}: where the section sits on the line between the two points: {{ui:Top of steel on the line}}, {{ui:Centered on the line}} or {{ui:Bottom on the line}}.
    - {{ui:Rotation (°)}}: turns the section about the member's own axis.

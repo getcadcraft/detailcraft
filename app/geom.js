@@ -54,6 +54,16 @@ export function toLocal(f, p, voff = 0) {
   return { x: dot(d, f.x), u: dot(d, f.u), v: dot(d, f.v) - voff };
 }
 
+/**
+ * Where a part's end face is, along the part (x from its cut start), at section point (u, v) (v from the section's center):
+ * a square end is at 0 / length; a plane cut (a mitre, 0.7.1 71.20) is `part.endCuts[end]` = { x0, ku, kv }, x = x0 + ku·u + kv·v.
+ */
+export function endX(part, end, u = 0, v = 0) {
+  const c = part.endCuts && part.endCuts[end];
+  if (!c) return end === 'start' ? 0 : part.length;
+  return c.x0 + c.ku * u + c.kv * v;
+}
+
 /** Rounds to a tolerance grid (for signatures). */
 export const q = (v, tol = 1) => Math.round(v / tol) * tol + 0;
 

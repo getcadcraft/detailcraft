@@ -72,12 +72,12 @@ function rotationFor(start, end, want) {
  * One member through xf: { start, end, rotation, position, holes, cuts, shift? }.
  * For a mirror the section is re-placed by its own symmetry (see the header); `kind` is the profile kind.
  */
-export function transformMember(m, xf, kind) {
+export function transformMember(m, xf, kind, unequal = false) {
   const f = frame(m.start, m.end, m.rotation);
   let start = applyPt(xf, m.start), end = applyPt(xf, m.end);
   const U = applyDir(xf, f.u), V = applyDir(xf, f.v);
   let wantV = V, position = m.position, holes = m.holes.map((h) => ({ ...h })), cuts = m.cuts.map((c) => ({ ...c }));
-  let note = null;
+  let note = null, turned = false;
   if (xf.det < 0) {
     if (kind === 'C') {
       // channel: the image is the channel turned over about u — v' = −V, top and bottom swap
@@ -89,6 +89,14 @@ export function transformMember(m, xf, kind) {
         else if (h.face === 'bottom') h.face = 'top';
       }
       for (const c of cuts) c.side = c.side === 'top' ? 'bottom' : 'top';
+    } else if (kind === 'L' && unequal) {
+      // unequal angle: its legs must stay on U and V, and U, V and the mirrored axis are left-handed, so the piece runs the other way
+      // (the same piece of steel turned end for end, which is how a shop makes the opposite hand): holes and copes follow it
+      const L = Math.hypot(...sub(m.end, m.start));
+      [start, end] = [end, start];
+      for (const h of holes) h.x = clean(L - h.x);
+      for (const c of cuts) c.end = c.end === 'start' ? 'end' : 'start';
+      turned = true;
     } else if (kind === 'L') {
       // equal angle: symmetric about its diagonal — u' = V, v' = U; the line keeps the section where it was
       wantV = U;
@@ -101,7 +109,7 @@ export function transformMember(m, xf, kind) {
   start = cleanPt(start); end = cleanPt(end);
   const rotation = rotationFor(start, end, wantV);
   for (const h of holes) h.y = clean(h.y);
-  return { start, end, rotation, position, holes, cuts, note };
+  return { start, end, rotation, position, holes, cuts, note, turned };
 }
 
 /** An angle mirrored with a top/bottom position: its line moves so the steel lands where the image is. */
@@ -129,9 +137,10 @@ export function transformRefs(tx, state, refs, xf) {
   for (const m of state.members) {
     if (!memberIds.has(m.id)) continue;
     const prof = getProfile(m.profile, state.profiles);
-    const out = transformMember(m, xf, prof?.kind);
+    const out = transformMember(m, xf, prof?.kind, prof?.kind === 'L' && prof.h !== undefined && prof.h !== prof.b);
     if (out.note === 'angle-offset' && prof) angleShift(m, prof, out, xf);
     tx.updateMember(m.id, { start: out.start, end: out.end, rotation: out.rotation, position: out.position, holes: out.holes, cuts: out.cuts });
+    if (out.turned) for (const c of state.connections) if (c.type === 'gusset' && c.brace === m.id) tx.swapConnectionEnd(c.id);   // its gusset stays on the same physical end
     n++;
   }
   for (const f of state.footings) {

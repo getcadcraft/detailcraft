@@ -56,7 +56,7 @@ export function showResults(view, frame, sol, setKey, { mode = 'deflected', scal
   }
   if (labels && geo.labels.length <= 300 && typeof view.label === 'function') {
     for (const l of geo.labels) {
-      const sp = view.label(l.unit === 'kN' ? KN(l.value) : KNM(l.value), l.p, 'center', 300);
+      const sp = view.label(l.text ?? (l.unit === 'kN' ? KN(l.value) : KNM(l.value)), l.p, 'center', 300);
       if (sp?.material) { sp.material.depthTest = false; sp.renderOrder = 12; }
       if (sp) g.add(sp);
     }

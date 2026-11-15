@@ -65,7 +65,7 @@ All exports use the model name. Choose them in the {{ui:Output}} group.
 | {{ui:NC files}} | `<name> NC.zip` | One DSTV `.nc1` file per part mark. See [Send NC files to the shop](topic:nc-export). |
 | {{ui:BOM}} | `<name> BOM.csv` | Three tables in one file: parts, assemblies, and bolts and anchor rods. See [Marks and the bill of materials](topic:marks-and-bom). |
 | {{ui:Bending}} | `<name> bending schedule.csv` | Every bar mark in the footings. See [Footings and rebar](topic:footings-and-rebar). |
-| {{ui:Shop drawing}} | `<name> <mark>.pdf` | One sheet (A3 unless you chose another size) for the selected part (I-shapes and plates). See [Make a shop drawing](topic:shop-drawings). |
+| {{ui:Shop drawing}} | `<name> <mark>.pdf` | `<name> Shop drawings.pdf` holds a sheet per part mark; {{ui:Download this sheet}} gives the one shown (A3 unless you chose another size). See [Make shop drawings](topic:shop-drawings). |
 | {{ui:Drawings}} | `<name> drawings.pdf`, `<name> <sheet>.pdf`; `<name> <sheet>.dwg` or `.dxf`, several in `<name> drawings DWG.zip` (or `DXF.zip`) | The plans, elevations and assembly drawings on the sheet size you chose; DWG and DXF at full size, 1 unit = 1 mm on the paper. See [General-arrangement and assembly drawings](topic:drawings). |
 
 ### Notes on the CSV files

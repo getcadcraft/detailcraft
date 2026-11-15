@@ -23,7 +23,7 @@ Plates you place are parts of their own (mark p, assembly P). End plates and bas
 
 ## Add a custom profile
 
-When the section you need is not in the catalog, make it from its dimensions. A custom profile belongs to the model and is saved with it.
+When the section you need is not in the catalog, make it from its dimensions. A custom profile belongs to the model and is saved with it. To use it in every new model, keep it in My profiles, described under "Keep a profile for new models" below.
 
 1. In the {{ui:Model}} panel on the left, open {{ui:Custom profile}}.
 2. Type a {{ui:Name}}, for example `W8x18-custom` or `RHS 120x80x5`. It cannot be a catalog name or look like a plate name.
@@ -39,7 +39,8 @@ When the section you need is not in the catalog, make it from its dimensions. A 
 | Round tube | Diameter D, Thickness t |
 | Flat bar | Width b, Thickness t |
 
-5. Choose {{ui:Add profile}}.
+5. Leave {{ui:Keep in My profiles}} ticked to have it in every new model (see below), or untick it to keep it in this model only.
+6. Choose {{ui:Add profile}}.
 
 The status bar says "Profile "…" added; it is in every profile list under Custom." It appears in the list under the form and at the end of every {{ui:Profile}} list.
 
@@ -52,4 +53,16 @@ DetailCraft checks that the shape can exist. You will see messages such as "The 
 - Custom flat bars behave as plates.
 - Custom channels and tubes take holes; angles and round tubes do not yet.
 
-You cannot edit or remove a custom profile once it is added (use {{key:Mod+Z}} straight away if you made a mistake). Give a corrected one a new name.
+You cannot edit or remove a custom profile from a model once it is added (use {{key:Mod+Z}} straight away if you made a mistake). Give a corrected one a new name.
+
+## Keep a profile for new models
+
+{{ui:My profiles}}, under the form, is your own list of custom profiles. It is kept in this browser, on this computer, not in a model file and not in your account.
+
+- A profile added with {{ui:Keep in My profiles}} ticked goes into the list. Every new model, including the one DetailCraft opens when you start it, begins with all of them in its profile lists.
+- A profile already in a model but not in the list has a {{ui:Keep}} button beside it.
+- In a model that does not have one of your profiles (an older file, say), choose {{ui:Use here}} to add it.
+- {{ui:Remove}} takes a profile out of the list. Models that already use it keep their own copy.
+- A model you open keeps the profiles saved in its file. Opening a file never changes your list.
+- A name that is already in the list with different dimensions is refused: give the new one another name.
+- Clearing the browser's site data, or using another browser or computer, starts with an empty list. A private window cannot keep it; the app says so.

@@ -22,7 +22,7 @@ If your hands know the ribbon of Tekla Structures, pick the {{ui:Steel ribbon}} 
 | The column, beam and plate commands | {{ui:Column}} ({{key:C}}), {{ui:Beam}} ({{key:B}}), {{ui:Brace}} ({{key:R}}), {{ui:Plate}} ({{key:P}}), {{ui:Footing}} ({{key:F}}) |
 | Part properties dialog (double-click a part) | Click once: the {{ui:Properties}} panel on the right is always live; there is no dialog and no Modify or Apply button |
 | Position on plane, rotation and depth settings | {{ui:Position}} (top of steel, centered or bottom on the line) and {{ui:Rotation (°)}}. No separate horizontal offsets |
-| The profile catalog | A fixed list of 1,259 published sizes (AISC W, S, C, L, HSS, Pipe; European IPE, HEA, HEB, UPN), plus parametric plates and your own {{ui:Custom profile}} sections |
+| The profile catalog | A fixed list of 2,311 published sizes (AISC W, S, C, L, HSS, Pipe; European IPE, HEA, HEB, UPN; UK UB, UC, PFC, EA, UEA, SHS, RHS, CHS and cold-formed hollow sections), plus parametric plates and your own {{ui:Custom profile}} sections |
 | Material catalog | Seven grades in a list: A992, A36, A572 Gr 50, A500 Gr C, S235, S275, S355 |
 | Applying a connection component and its dialog | Select the beam, choose {{ui:End plates}}. The settings appear in the {{ui:Properties}} panel. Only two connections exist (end plate to column flange, base plate) |
 | Auto-connection, or copying a joint to similar joints | Select a connection, choose {{ui:Apply to similar (n)}} |
@@ -30,7 +30,7 @@ If your hands know the ribbon of Tekla Structures, pick the {{ui:Steel ribbon}} 
 | Bolt and hole dialogs | Holes are typed in by face and position. Bolts come only from connections |
 | Cut, fit and polygon cut tools | Copes (top or bottom, at either end) on I-shapes only. Connection cut-backs are automatic |
 | Reports and templates | Three fixed reports in tabs at the bottom, and CSV downloads |
-| Drawing creation and the drawing list | One shop drawing at a time, for the selected I-shape or plate, previewed then downloaded as PDF. Nothing is kept or edited |
+| Drawing creation and the drawing list | One shop drawing per part mark, all made at once, previewed then downloaded as one PDF or sheet by sheet. Nothing is kept or edited |
 | NC file export | {{ui:NC files}}: one DSTV file per part mark, I-shapes and plates only, zipped |
 | IFC export | {{ui:IFC}}: IFC4 of the whole model, with rebar |
 | Rebar in any concrete part | Rebar only in rectangular pad footings, US bar sizes, with a bottom mat and starter bars |

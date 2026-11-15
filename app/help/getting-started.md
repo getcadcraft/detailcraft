@@ -13,7 +13,7 @@ This is an early build. It does a short list of things carefully rather than eve
 ## What it does today
 
 - Grids and levels you type in, in millimeters.
-- Columns, beams, braces and plates from published profile catalogs (AISC W, S, C, L, HSS and Pipe; European IPE, HEA, HEB and UPN), plus your own parametric profiles.
+- Columns, beams, braces and plates from published profile catalogs (AISC W, S, C, L, HSS and Pipe; European IPE, HEA, HEB and UPN; UK UB, UC, PFC, EA, UEA, SHS, RHS and CHS), plus your own parametric profiles.
 - Two connections: a bolted end plate from a beam to a column flange, and a column base plate with four anchor rods. Each can be copied to every similar joint.
 - Holes and copes typed in by position.
 - Rectangular pad footings with a bottom mat and starter bars.
