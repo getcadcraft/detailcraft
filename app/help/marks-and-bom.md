@@ -11,12 +11,12 @@ DetailCraft marks the model by itself. There is no numbering command and nothing
 ## Where marks show
 
 - The {{ui:Part marks}} list in the {{ui:Model}} panel: each mark with its profile, length and count. Click one to select the first part with that mark.
-- The {{ui:Properties}} panel of a selected member: {{ui:Part mark}} and {{ui:Assembly}}. The panel heading also carries the mark, for example "Beam b1".
+- The {{ui:Properties}} panel of a selected member (and the **Part marks** list in the left panel): {{ui:Part mark}} and {{ui:Assembly}}. The panel heading also carries the mark, for example "Beam b1".
 - The {{ui:Bill of materials}} tab, the CSV, the NC file names, the shop drawings and the IFC export (as each element's tag).
 
 ## How parts are marked
 
-- **Part marks:** c for columns, b for beams, br for braces, p for plates (including end plates and base plates). Then a number: c1, c2, b1, p1 …
+- **Part marks:** c for columns, b for beams, br for braces, st for stair stringers, p for plates (including end plates and base plates). Then a number: c1, c2, b1, p1 … When parts sit in more than one phase, a phase number comes first, for example 2-b1.
 - **Assembly marks:** C, B, BR or P. An assembly is a main member and the plates welded to it, such as a beam with its two end plates, or a column with its base plate.
 - Two parts share a mark when they have the same profile, material and cut length, and the same holes and copes, all within 1 mm, even if one is turned end for end or upside down relative to the other.
 - Numbering runs columns first, then beams, braces and plates; within each, by profile name, then longest first.
@@ -36,7 +36,7 @@ Open the {{ui:Bill of materials}} tab at the bottom. It has three tables.
 | Column | Meaning |
 |---|---|
 | Part mark | Click it to select the first part with this mark |
-| Type | beam, column, brace or plate |
+| Type | beam, column, brace, stringer or plate |
 | Profile | For example W16x26 or PL20x180 |
 | Material | The grade you set |
 | Length (mm) | Cut length, after connections |

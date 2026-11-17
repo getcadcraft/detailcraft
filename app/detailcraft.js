@@ -33,58 +33,59 @@
  * window.detailcraft exposes the model and actions for the browser check.
  */
 import { el, fillDl } from './ui-util.js';
-import { Model, starterState, gridsFromSpacings, spacingsOf, nodeName, pointAt, MATERIALS, defaultsFor, connPhase, MAX_PHASE } from './model.js';
+import { Model, starterState, gridsFromSpacings, spacingsOf, nodeName, pointAt, MATERIALS, defaultsFor, connPhase, recoverText } from './model.js';
+import { followJournal } from './history/index.js';   // 0.10 PERF.24
 import { getProfile, catalogGroups, plateName, CUSTOM_KINDS, describe, holeFaces, cleanCustom, cleanLibrary } from './profiles.js';
 import { build } from './build.js';
 import { markParts, bomTables, markFootings } from './marks.js';
-import { findJoints, similarJoints, similarColumns, freeSplices, similarSplices, freeBraceEnds, similarBraceEnds, freeMitres, similarMitres, MITRE_DEFAULTS, PARAM_LABELS, PARAM_HELP, PARAM_CHOICES, dg1Row, isBeamEnd } from './connections.js';
-import { mitrePreview } from './mitre-preview.js';   // 0.7.1 71.20: the Mitre dialog's drawing
+import { findJoints, similarJoints, similarColumns, freeSplices, similarSplices, freeBraceEnds, similarBraceEnds, freeMitres, similarMitres, PARAM_LABELS, PARAM_HELP, PARAM_CHOICES, dg1Row, isBeamEnd } from './connections.js';
 import { STAIR_DEFAULTS, stairGeometry } from './stair.js';
-import { BARS, BAR_SOURCE, BAR_SOURCE_BS, BAR_SETS, barLabel, bendingSchedule, scheduleTable, footingVolume, FOOTING_DEFAULTS, hookLeg, shapeCode, scheduleDims } from './rebar.js';
-import { sectionsCsv, toCsv } from './csv.js';
+import { barLabel, bendingSchedule, scheduleTable, FOOTING_DEFAULTS, shapeCode, scheduleDims } from './rebar.js';
 import { nestBars, piecesFromMarks, cutListTables } from './nest.js';
 import { installAgents } from './agents.js';
 import { mountDetailShell } from './shell-mount.js';   // 0.8 round 3: the shell's seven modules (calc, reasons, totals, lessons, Suggest, activity, Ask)
 import { writeIfc, guidFor } from './ifc.js';
 import { mountIds } from './ids-ui.js';   // 0.7.1 71.25: Output › Check against IDS… (cc-ids in ./ids/)
-import { writeNc1, ncRefusal } from './nc1.js';
-import { zip } from './zip.js';
-import { shopSet, shopRefusal } from './shop.js';
+import { shopRefusal } from './shop.js';
 import { toPdf } from './pdf.js';
 import { sampleModel } from './sample.js';
-import { drawingSet } from './drawings.js';
 import { PAPER_KEYS, paperLabel, DEFAULT_PAPER } from './paper.js';
-import { sheetModel, sheetDxf } from './dwgout.js';
-import { phaseReport, reportTables, reportCsv, reportSheets } from './report.js';
-import { clashCheck } from './clash.js';
-import { kissFile, kissMetric } from './kiss.js';
-import { sheetStatus, planIssue, revsByNumber } from './issues.js';
+import { phaseReport, reportTables } from './report.js';
 import { getHost } from "./host.js";
 import { Autosave } from "./app-autosave.js";
 import { handoffParam, takeHandoff } from "./handoff.js";
-import { importIfc, reportLines } from './ifc-import.js';
-import { copyClip, readClip, pasteInto, clipSegments, overlaps, CLIP_KEY } from './clipboard.js';
-import { AREA_KEY, cleanAreaClip, sameImage } from './areaclip.js';   // 0.8 D8.15: MarkupCraft's copied area (byte-identical copy; never edit)
-import { pictureFromClip, pictureSizeMm, pictureCorners, areaClipNewer, OPACITY_MIN } from './picture.js';
+import { clipSegments, CLIP_KEY } from './clipboard.js';
+import { pictureSizeMm, pictureCorners, areaClipNewer, OPACITY_MIN } from './picture.js';
 import { mountViewCube, mountAxisIcon } from './viewcube.js';
 import { t as tr, has as hasKey } from './i18n.js';   // t() of the language files, named tr here: t is a common local name in this file
 import { catalog as langCatalog } from './i18n.js';
 import { dcProblems, anchorOf } from './problems-detailcraft.js';   // 0.7.1 → 0.8: the shell's Problems (docs/0.8-PROBLEMS-SPEC.md)
 import { readNum } from './numtext.js';   // 0.6 DF.3: arithmetic in number boxes
-import { moveXf, rotateXf, mirrorXf, transformRefs, ghostLines, selectionCenter, manyPatchable, applyToMany } from './transform.js';
+import { moveXf, transformRefs, ghostLines, manyPatchable, applyToMany } from './transform.js';
 import { selectionItems, windowSelect } from './winsel.js';
 import { threeCubeOptions } from './viewcube-three.js';
 import { constructability } from './constructability.js';   // 0.8 EG.43: constructability checks in Problems
+import { mountDetailIssues } from './issues-detail.js';   // 0.10 BK.48 (bk-r3-stages-10): the shared issue history: DetailCraft's sheet issues, records against them
 import { mountSupply } from './supply-ui.js';   // 0.8 round 3, EG.51: the Supply tab (supplier stock and lead times against the cut list's bars)
 import { mountFraming } from './framing-ui.js';   // 0.8 EG.6: the Framing tab (timber / light-gauge panels, cut lists, shop drawings)
 import { mountFoundation } from './foundation-ui.js';   // 0.8 EG.5: the Foundation tab (footing design checks)
 import { mountCongestion } from './congestion-ui.js';   // 0.8 EG.74: the Congestion tab (rebar heat map per footing)
-import { rcBuild, mergeSchedule, rcProblems, rcAnchor, barOf as rcBarOf } from './rc-detail.js';   // 0.9 RC.1: reinforced concrete detailing (cc-rc in ./rc/)
+import { rcBuild, mergeSchedule, rcProblems, rcAnchor, barOf as rcBarOf } from './rc-detail.js';
+import { dcInterfaces } from './interfaces-detailcraft.js';   // 0.10 BK.20 (bk-r3-checks-10): LOD 350 interface rules on walls with openings (lib/modelaudit)   // 0.9 RC.1: reinforced concrete detailing (cc-rc in ./rc/)
 import { mountRc } from './rc-ui.js';   // 0.9 RC.1: the Concrete tab, an element's properties, reinforcement shop drawings
+import { genDefaults } from './stair-ui.js';   // 0.10 SU.1814c: the steel stair generator's fields and results
 import { mountAutopilot } from './autopilot-ui.js';   // 0.8 EG.73: the Autopilot tab (connections for the open joints)
 import { mountErection } from './erection-ui.js';   // 0.8 EG.72: the Erection tab (crane chart, picks, the movie file)
 import { mountAnalysis } from './analysis-ui.js';   // 0.6 LC.4: the Analysis tab (frame analysis, an aid, not a code check)
 import { mountUndoHook } from './undo-hook.js';   // 0.9 EG.77: tells Studio each finished step
+import { mountExports } from './export-ui.js';
+import { mountMitre } from './mitre-ui.js';
+import { mountXf } from './xf-ui.js';
+import { mountClipboard } from './clipboard-ui.js';
+import { mountDrawings } from './drawings-ui.js';
+import { mountIfcImport } from './ifc-import-ui.js';
+import { mountFootingStair } from './footing-stair-ui.js';
+import { mountClash } from './clash-ui.js';
 
 const root = document.querySelector('[data-detailcraft]');
 if (root) start(root);
@@ -141,6 +142,7 @@ async function start(root) {
   let multi = [];                      // two or more refs when several are (sel is then null)
   const selected = () => (multi.length ? multi : sel ? [sel] : []);
   const selListeners = new Set();      // the shell's design reasons listen for the selection (shell-mount.js)
+  let pickReady = false, pickLast = '', pickGuids = null;   // SC.5: the pick adapter (announcePick, near the end): on once the page is up
   let shellMount = null;               // the shell's seven modules, attached after the assistants below
   let pasteClip = null;                // the clipboard being placed by the paste tool
   let moveRefs = null;                 // what the Move tool moves (the selection when it started)
@@ -152,7 +154,7 @@ async function start(root) {
   let idsUi = null;                    // 0.7.1 71.25: the IDS check of the IFC export (ids-ui.js)
   let frameProblems = null, frameProblemsSet = null;   // the Analysis tab's concrete / seismic problems (0.8 SU.1056): kept until the shell's Problems is there
   let problemsSync = null;             // the shell's Problems (manifest "problems"): hands build.js's problems over after every rebuild
-  let breakSet = null, breakProblems = [], consSet = null, consTimer = 0, supply = null, supplySet = null, framing = null, frmSet = null, foundation = null, fndSet = null, congestion = null, congSet = null, rcUi = null, rcSet = null, rcb = null, autopilot = null, erection = null, extraProblems = [], extraSet = null, autoProblems = [], autoSet = null;   // the Erection tab (0.8 EG.72) and the problems of the round-2 checks, kept until the shell's Problems is there
+  let breakSet = null, breakProblems = [], consSet = null, consTimer = 0, consCache = new Map(),   /* 0.10 PERF.36: constructability re-checks only the connections an edit touched */ supply = null, supplySet = null, framing = null, frmSet = null, foundation = null, fndSet = null, congestion = null, congSet = null, rcUi = null, rcSet = null, ifaceSet = null, rcb = null, autopilot = null, erection = null, extraProblems = [], extraSet = null, autoProblems = [], autoSet = null;   // the Erection tab (0.8 EG.72) and the problems of the round-2 checks, kept until the shell's Problems is there
   let analysis = null;                 // the Analysis tab (0.6 LC.4, analysis-ui.js), mounted with the reports below
   let workspace = null;                // the workspace layouts (0.7 WS.13, workspace-detailcraft.js): told after every redraw
   const opts = {
@@ -160,6 +162,7 @@ async function start(root) {
     plate: { t: 20, w: 200, material: 'A36', position: 'middle', rotation: 0 },
     footing: { L: FOOTING_DEFAULTS.L, B: FOOTING_DEFAULTS.B, H: FOOTING_DEFAULTS.H, concrete: FOOTING_DEFAULTS.concrete, mat: { ...FOOTING_DEFAULTS.mat }, starters: { ...FOOTING_DEFAULTS.starters } },
     stair: { ...STAIR_DEFAULTS, tread: { ...STAIR_DEFAULTS.tread }, rise: 0 },      // rise 0 = up to the next level (D23)
+    steelStair: { ...genDefaults(), tread: { ...genDefaults().tread }, rise: 0 }, useGen: false,   // 0.10 SU.1814c: the generator's settings, and whether the Stair tool places one
   };
 
   // ---- the 3D view (WebGL may be missing: everything else still works) ----
@@ -386,11 +389,12 @@ async function start(root) {
     if (multi.length === 1) { sel = multi[0]; multi = []; }
     recompute();
     if (view) { view.setModel(model.state, built, marks); view.setSelection(selected()); }
+    announcePick();   // SC.5: a selection set without setSelection (a connection just added) and one that lost its object end here
     renderLeft();
     // while someone is typing or tabbing in the properties panel, redraw it once focus has settled
     if (ui.props.contains(ui.props.ownerDocument.activeElement)) setTimeout(renderProps, 0); else renderProps();   // ownerDocument: the panel may be in the panels window
     analysis?.modelChanged();
-    if (extraSet) { extraSet(erection.problems()); autoSet?.(autopilot.problems()); congSet?.(congestion.problems()); fndSet?.(foundation.problems()); frmSet?.(framing.problems()); rcSet?.(rcProblems(rcb)); if (consSet) { clearTimeout(consTimer); consTimer = setTimeout(() => consSet?.(constructability(model.state, built)), 400); } }   // 0.8 EG.72/73: their Problems follow the model, not the open tab
+    if (extraSet) { extraSet(erection.problems()); autoSet?.(autopilot.problems()); congSet?.(congestion.problems()); fndSet?.(foundation.problems()); frmSet?.(framing.problems()); rcSet?.(rcProblems(rcb)); ifaceSet?.(dcInterfaces(model.state).problems); if (consSet) { clearTimeout(consTimer); consTimer = setTimeout(() => consSet?.(constructability(model.state, built, { cache: consCache })), 400); } }   // 0.8 EG.72/73: their Problems follow the model, not the open tab
     problemsSync?.();
     idsUi?.changed();   // 0.7.1 71.25: re-check the IFC export against the IDS
     renderReport();
@@ -609,7 +613,7 @@ async function start(root) {
       return;
     }
     if (tool === 'stair') {
-      const o = opts.stair;
+      const o = opts.useGen ? opts.steelStair : opts.stair;
       let rise = o.rise;
       if (!rise) {
         const up = s.levels.filter((l) => l.z > n.p[2] + 0.5).sort((a, b) => a.z - b.z)[0];
@@ -617,7 +621,10 @@ async function start(root) {
         rise = up.z - n.p[2];
       }
       const id = edit(tr('app.undo.place.stair'), (tx) => tx.addStair({ ...o, tread: { ...o.tread }, x: n.p[0], y: n.p[1], z: n.p[2], rise, phase: curPhase }));
-      if (id) { const g = stairGeometry(model.stair(id), (nm) => getProfile(nm, model.state.profiles)); print(tr('app.place.stair.done', { n: g.n, r: r1(g.riser), gy: n.gy, gx: n.gx })); }
+      if (id) {
+        const g = stairGeometry(model.stair(id), (nm) => getProfile(nm, model.state.profiles));
+        print(opts.useGen ? tr('app.stair.gen.done', { n: g.n, r: r1(g.riser), g: r1(g.going), f: g.gen.flights.length, l: g.gen.landings.length }) : tr('app.place.stair.done', { n: g.n, r: r1(g.riser), gy: n.gy, gx: n.gx }));
+      }
       return;
     }
     if (!['beam', 'brace', 'plate'].includes(tool)) return;
@@ -691,7 +698,7 @@ async function start(root) {
   function describeRef(r) {
     if (r.kind === 'member') { const m = model.member(r.id); const mk = marks.partMark.get(r.id); return mk ? tr('app.ref.member.marked', { type: typeName(m.type), profile: m.profile, part: mk, asm: marks.asmMark.get(r.id) || '' }) : tr('app.ref.member', { type: typeName(m.type), profile: m.profile }); }
     if (r.kind === 'conn') { const c = model.connection(r.id); return tr('app.ref.' + c.type, { id: c.id }); }
-    if (r.kind === 'stair') { const x = model.stair(r.id); return tr('app.ref.stair', { mark: marks.asmMark.get(r.id + '.stringerL') || '', rise: mm(x.rise), width: mm(x.width) }); }
+    if (r.kind === 'stair') { const x = model.stair(r.id); return tr('app.ref.stair', { mark: (marks.asmMark.get(r.id + '.stringerL') || marks.asmMark.get(r.id + '.f1stringerL') || ''), rise: mm(x.rise), width: mm(x.width) }); }
     if (r.kind === 'picture') { const p = model.picture(r.id), [w, h] = pictureSizeMm(p); return tr('pic.ref', { name: p.name || tr('pic.unnamed'), w: mm(w), h: mm(h) }); }
     if (r.kind === 'rc') { const x = model.state.rc.elements.find((q) => q.id === r.id), it = rcb?.byId.get(r.id); return tr('rc.ref', { name: rcb?.labels.get(r.id) || r.id, n: it ? it.res.groups.reduce((a, g) => a + g.count, 0) : 0, fails: it ? it.checks.filter((c) => c.status === 'fail').length : 0, kind: tr('rc.kind.' + x.kind) }); }
     if (r.kind === 'rcbar') { const b = model.state.rc.loose.find((q) => q.id === r.id); return tr('rc.ref.loose', { bar: barLabel(b.bar, settings.barNames), mark: b.mark || '—', host: b.host?.name || b.host?.cls || tr('rc.loose.nohost') }); }
@@ -724,146 +731,15 @@ async function start(root) {
 
   // ---- clipboard: this tab's copy in memory, and in localStorage so another tab can paste it ----
   let clip = null, clipRaw = null;     // the last copy (checked by readClip) and the stored text it came from
-  function clipStored() { try { return localStorage.getItem(CLIP_KEY) !== null; } catch { return false; } }
-  /** The newest copy: another tab's (read as untrusted) when it changed since, else this tab's. */
-  function currentClip(say) {
-    let raw = null;
-    try { raw = localStorage.getItem(CLIP_KEY); } catch { /* private window: this tab's copy */ }
-    if (raw && raw !== clipRaw) {
-      try { clip = readClip(raw); clipRaw = raw; }
-      catch (err) { if (say && !clip) print(tr('app.paste.bad', { error: err.message })); }
-    }
-    return clip;
-  }
-  function countText(c) {
-    const out = [];
-    if (c.members) out.push(tr('app.count.members', { n: c.members }));
-    if (c.connections) out.push(tr('app.count.connections', { n: c.connections }));
-    if (c.footings) out.push(tr('app.count.footings', { n: c.footings }));
-    if (c.stairs) out.push(tr('app.count.stairs', { n: c.stairs }));
-    return out.length ? out.join(tr('app.count.sep')) : tr('app.count.nothing');
-  }
-  /** Copies the selection into a clip (not yet the clipboard). Says why when it can't. */
-  function takeCopy() {
-    const refs = selected();
-    if (!refs.length) { print(tr('app.copy.none')); return null; }
-    const r = copyClip(model.state, refs, { connections: settings.conns });
-    if (!r) { print(tr(refs.every((x) => x.kind === 'picture') ? 'pic.copy.no' : 'app.copy.conn-only')); return null; }
-    return r;
-  }
-  function leftOutText(c) {
-    if (!c.leftOut) return '';
-    return ' ' + (settings.conns ? tr('app.copy.left-out', { n: c.leftOut }) : tr('app.copy.left-out.off'));
-  }
-  function copySelection() {
-    const r = takeCopy();
-    if (!r) return null;
-    clip = readClip(r.clip);
-    clipRaw = JSON.stringify(r.clip);
-    try { localStorage.setItem(CLIP_KEY, clipRaw); }
-    catch { clipRaw = null; try { localStorage.removeItem(CLIP_KEY); } catch { /* fine */ } }   // too big or private window: this tab still has it
-    print(tr('app.copy.done', { what: countText(r.counts) }) + leftOutText(r.counts));
-    renderBar();
-    return r;
-  }
-  function cutSelection() {
-    const refs = selected();
-    const r = copySelection();
-    if (!r) return;
-    if (deleteRefs(refs, tr('app.undo.cut'))) print(tr('app.cut.done', { what: countText(r.counts) }) + leftOutText(r.counts));
-  }
-  function startPaste(inPlace) {
-    const c = currentClip(true);
-    if (!c) { if (!clipStored()) print(tr('app.paste.empty')); return; }
-    if (inPlace) { if (tool !== 'select') setTool('select'); pasteClipAt(c, [0, 0, 0], 'in-place'); return; }
-    setTool('paste');
-  }
-  // ---- reference pictures (0.8 D8.15): a copied area of a sheet, pasted at its true size ----
-  function storedArea() { try { return cleanAreaClip(localStorage.getItem(AREA_KEY)); } catch { return null; } }
-  /** Edit › Paste and Ctrl+V: the copied area when it was copied after DetailCraft's own clipboard, else the parts. */
-  function pasteNewest() {
-    const area = storedArea();
-    if (area && areaClipNewer(area, currentClip(false))) return pastePicture(area);
-    return startPaste(false);
-  }
-  /** The level a picture goes on: the plan's level in Plan, else the lowest. */
-  function pictureLevel() {
-    const lv = model.state.levels;
-    return (viewMode === 'plan' && lv.find((l) => l.name === ui.vlevel.value)) || lv[0] || { name: '', z: 0 };
-  }
-  /** One undo step: the clip as a picture in the middle of the grid on that level, selected. */
-  function pastePicture(area) {
-    const s = model.state, lv = pictureLevel();
-    const mid = (g) => (g.length ? (g[0].at + g[g.length - 1].at) / 2 : 0);
-    const r = pictureFromClip(area, { at: [mid(s.grids.x), mid(s.grids.y), lv.z] });
-    if (!r) { print(tr('pic.paste.bad')); return null; }
-    const hash = model.pictureSrcs.put(r.src);
-    const id = edit(tr('pic.undo.paste'), (tx) => tx.addPicture({ ...r.picture, hash }));
-    if (!id) return null;
-    if (tool !== 'select') setTool('select');
-    setSelection([{ kind: 'picture', id }]);
-    const [w, h] = pictureSizeMm(r.picture);
-    print(tr(r.size === 'real' ? 'pic.paste.real' : 'pic.paste.paper', { w: mm(w), h: mm(h), level: lv.name })
-      + (area.overlay ? ' ' + tr('pic.paste.overlay', { pct: String(Math.round(r.picture.opacity * 100)) }) : '') + ' ' + tr('pic.paste.drag') + ' ' + tr('app.paste.undo-hint'));
-    return id;
-  }
-  /** The dashed outline of the pictures among refs (a drag's ghost). */
-  function pictureGhost(refs) {
-    const out = [];
-    for (const r of refs) {
-      const p = r.kind === 'picture' && model.picture(r.id);
-      if (!p) continue;
-      const c = pictureCorners(p);
-      for (let i = 0; i < 4; i++) out.push([c[i], c[(i + 1) % 4]]);
-    }
-    return out;
-  }
-  /** A picture's pixel size (from the system clipboard), or null. */
-  async function imageSize(file) {
-    try { const b = await createImageBitmap(file); const wh = [b.width, b.height]; b.close?.(); return wh; } catch { return null; }
-  }
-  // Ctrl+V when the copied area is newer: the key leaves the browser's paste event to come (it shows what the system clipboard
-  // holds); if none comes (a browser that sends none to a page with nothing to type in), the area is pasted after a moment
-  let keyPaste = null;
-  function keyPasteArea(area) {
-    clearTimeout(keyPaste?.timer);
-    keyPaste = { area, timer: setTimeout(() => { keyPaste = null; pastePicture(area); }, 200) };
-  }
-  document.addEventListener('paste', async (e) => {
-    const kp = keyPaste;
-    if (kp) { clearTimeout(kp.timer); keyPaste = null; }
-    const t = e.target;
-    if (!kp && (document.querySelector('dialog[open]') || (t instanceof HTMLElement && (t.isContentEditable || /^(INPUT|SELECT|TEXTAREA)$/.test(t.tagName))))) return;
-    const item = [...(e.clipboardData?.items || [])].find((i) => i.kind === 'file' && /^image\//.test(i.type));
-    if (!kp && !item) return;   // text and the like: not ours
-    e.preventDefault();
-    const area = kp?.area || storedArea();
-    if (!item) { pastePicture(area); return; }   // Ctrl+V and no picture on the clipboard (some browsers keep it to themselves): the copied area
-    const wh = await imageSize(item.getAsFile());
-    if (area && wh && sameImage(area, wh[0], wh[1], kp ? { maxAgeMs: 0 } : {})) { pastePicture(area); return; }
-    print(tr(kp ? 'pic.paste.other' : 'pic.paste.unknown'));
+  const { clipStored, currentClip, countText, copySelection, cutSelection, startPaste, storedArea, pasteNewest, pictureGhost, keyPasteArea, duplicate, pasteClipAt } = mountClipboard({
+    ui, selected, print, edit, renderBar, setTool, setSelection, deleteRefs, mm,
+    get clipRaw() { return clipRaw; }, set clipRaw(v) { clipRaw = v; },
+    get clip() { return clip; }, set clip(v) { clip = v; },
+    get model() { return model; },
+    get settings() { return settings; },
+    get tool() { return tool; },
+    get viewMode() { return viewMode; },
   });
-  function duplicate() {
-    const r = takeCopy();
-    if (!r) return;
-    const o = settings.offset;
-    pasteClipAt(readClip(r.clip), o, 'duplicate', { x: String(o[0]), y: String(o[1]), z: String(o[2]) });
-  }
-  /** One undo step: the clip's contents at base + offset, selected afterwards. how: at | offset | in-place | duplicate
-   * (the undo label and the message); fills: node (at) or x, y, z (offset, duplicate). */
-  function pasteClipAt(c, offset, how, fills = {}) {
-    const over = overlaps(model.state, c, offset);
-    const label = tr(how === 'duplicate' ? 'app.undo.duplicate' : how === 'in-place' ? 'app.undo.paste-in-place' : 'app.undo.paste');
-    const r = edit(label, (tx) => pasteInto(tx, c, offset));
-    if (!r) return;
-    if (tool !== 'select') setTool('select');
-    setSelection(r.refs);
-    const n = { members: c.members.length, connections: r.refs.filter((x) => x.kind === 'conn').length, footings: c.footings.length, stairs: (c.stairs || []).length };
-    print(tr('app.paste.done.' + how, { ...fills, what: countText(n) })
-      + (over ? ' ' + tr('app.paste.over', { n: over }) : '')
-      + (r.profilesKept ? ' ' + tr('app.paste.profiles-kept') : '')
-      + (c.warnings?.length ? ' ' + c.warnings.join(' ') : '') + ' ' + tr('app.paste.undo-hint'));
-  }
 
   // ---- connections ----
   function addEndPlates() {
@@ -922,114 +798,14 @@ async function start(root) {
     if (!joints.length) { print(tr('app.mitre.none')); return; }
     openMitre({ joints });
   }
-  const svgEl = (tag, attrs = {}) => { const n = document.createElementNS('http://www.w3.org/2000/svg', tag); for (const [k, v] of Object.entries(attrs)) n.setAttribute(k, String(v)); return n; };
-  /** The Mitre dialog: the numbered fields beside our own drawing of the joint, made from the parameters as they are typed. */
-  function openMitre({ joints = null, conn = null }) {
-    const joint = conn ? { a: conn.a, aEnd: conn.aEnd, b: conn.b, bEnd: conn.bEnd } : joints[0];
-    const params = { ...MITRE_DEFAULTS, ...(conn ? conn.params : {}) };
-    lastFocus = document.activeElement;
-    const fig = svgEl('svg', { class: 'dc-mitre-svg', role: 'img', 'aria-label': tr('mitre.dlg.preview') });
-    const lede = el('p', { className: 'dc-note dc-mitre-lede' });
-    const msgs = el('ul', { className: 'dc-msgs', dataset: { mitreMsgs: '' }, 'aria-live': 'polite' });
-    const applyBtn = el('button', { type: 'button', className: 'btn-plot btn-sm-dc', dataset: { mitreApply: '' } }, tr(conn ? 'mitre.dlg.apply' : 'mitre.dlg.add'));
-    let bad = new Set();
-    const num_ = (k) => {
-      const i = numIn(params[k], (v) => {
-        if (!(v >= 0 && v <= 10000)) { i.setAttribute('aria-invalid', 'true'); bad.add(k); print(tr('mitre.dlg.bad', { name: PARAM_LABELS[k] || k })); update(); return; }
-        bad.delete(k); params[k] = v; update();
-      }, { id: 'dc-mi-' + k });
-      i.dataset.mitreParam = k;
-      if (PARAM_HELP[k]) i.title = PARAM_HELP[k];
-      return i;
-    };
-    const text_ = (k) => { const i = textIn(params[k], (v) => { params[k] = String(v).trim() || MITRE_DEFAULTS[k]; update(); }, { id: 'dc-mi-' + k, max: 30 }); i.dataset.mitreParam = k; return i; };
-    const tick = (k, label) => {
-      const c = el('input', { type: 'checkbox', id: 'dc-mi-' + k, checked: !!params[k], dataset: { mitreParam: k } });
-      c.addEventListener('change', () => { params[k] = c.checked ? 1 : 0; update(); });
-      return el('label', { className: 'dc-mitre-tick', for: c.id }, c, ' ', label);
-    };
-    const lab = (k) => el('label', { for: 'dc-mi-' + k }, PARAM_LABELS[k] || k);
-    const row = (n, ...kids) => el('div', { className: 'dc-mitre-row', dataset: { mitreRow: String(n) } },
-      el('span', { className: 'dc-mitre-n', 'aria-hidden': 'true' }, String(n)), el('span', { className: 'dc-mitre-t' }, tr('mitre.dlg.n' + n)), el('div', { className: 'dc-mitre-f' }, ...kids));
-    const pair = (k) => [lab(k), num_(k)];
-    const fields = el('div', { className: 'dc-mitre-fields' },
-      row(1, ...pair('mGap')),
-      row(2, tick('plates', tr('mitre.dlg.tick.plates')), ...pair('tp')),
-      row(3, ...pair('rows'), ...pair('mPitch'), ...pair('mGauge'), tick('outRow', tr('mitre.dlg.tick.outrow'))),
-      row(4, ...pair('extOuter')),
-      row(5, ...pair('extInner')),
-      row(6, tick('stiffs', tr('mitre.dlg.tick.stiffs')), ...pair('stiffDist')),
-      row(7, ...pair('stiffT')),
-      el('details', { className: 'dc-mitre-more' }, el('summary', {}, tr('mitre.dlg.bolts')),
-        el('div', { className: 'dc-props' }, ...pair('boltD'), ...pair('hole'), lab('grade'), text_('grade'), ...pair('allowance'))),
-      el('details', { className: 'dc-mitre-more' }, el('summary', {}, tr('mitre.dlg.plate')),
-        el('div', { className: 'dc-props' }, ...pair('mWidth'), ...pair('weld'), lab('plateGrade'), text_('plateGrade'))));
-    const dlg = el('dialog', { className: 'dc-dialog dc-mitre', 'aria-labelledby': 'dc-mitre-h', dataset: { mitre: '' } },
-      el('div', { className: 'dc-dlg' },
-        el('div', { className: 'dc-dlg-head' }, el('h2', { className: 'dc-h', id: 'dc-mitre-h' }, tr('mitre.dlg.title')),
-          el('button', { type: 'button', className: 'dc-x', 'aria-label': tr('mitre.dlg.close'), onclick: () => dlg.close() }, el('i', { className: 'bi bi-x-lg', 'aria-hidden': 'true' }))),
-        el('div', { className: 'dc-mitre-body' },
-          el('div', { className: 'dc-mitre-left' }, lede, el('figure', { className: 'dc-mitre-fig' }, fig, el('figcaption', { className: 'dc-note' }, tr('mitre.dlg.preview'))), msgs),
-          fields),
-        el('div', { className: 'dc-dlg-foot' }, el('span', { className: 'dc-note' }, tr('mitre.dlg.note')),
-          el('button', { type: 'button', className: 'btn-line btn-sm-dc', onclick: () => dlg.close() }, tr('mitre.dlg.cancel')), applyBtn)));
-    let ok = false;
-    function update() {
-      for (const k of ['tp', 'extOuter', 'extInner', 'mPitch', 'mGauge', 'outRow', 'mWidth']) for (const n of dlg.querySelectorAll('[data-mitre-param="' + k + '"]')) n.disabled = !params.plates;
-      for (const n of dlg.querySelectorAll('[data-mitre-param="rows"]')) n.disabled = !params.plates;
-      for (const k of ['stiffDist', 'stiffT']) dlg.querySelector('[data-mitre-param="' + k + '"]').disabled = !params.stiffs;
-      const pv = mitrePreview(model.state, joint, params, conn?.id);
-      ok = pv.ok && !bad.size;
-      applyBtn.disabled = !ok;
-      const A = model.member(joint.a), B = model.member(joint.b);
-      lede.textContent = pv.ok ? tr('mitre.dlg.joint', { a: (A?.profile || '') + ' ' + (marks.partMark.get(joint.a) || ''), b: (B?.profile || '') + ' ' + (marks.partMark.get(joint.b) || ''), angle: r1(pv.angle), cut: r1(pv.cut) })
-        + (joints && joints.length > 1 ? ' ' + tr('mitre.dlg.joints', { n: joints.length }) : '') : '';
-      msgs.replaceChildren(...(pv.problems.length ? pv.problems.map((x) => el('li', { className: x.hard ? 'is-hard' : '' }, x.hard ? tr('mitre.dlg.refused', { why: x.text }) : x.text))
-        : [el('li', { className: 'is-ok' }, tr('mitre.dlg.ok'))]));
-      drawMitre(fig, pv);
-    }
-    applyBtn.addEventListener('click', () => {
-      for (const i of fields.querySelectorAll('input[type="text"]')) i.dispatchEvent(new Event('change'));
-      if (!ok) return;
-      if (conn) {
-        const changed = Object.fromEntries(Object.entries(params).filter(([k, v]) => conn.params[k] !== v));
-        if (Object.keys(changed).length && edit(tr('app.undo.mitre-edit'), (tx) => tx.updateConnection(conn.id, changed)) !== null) print(tr('app.mitre.changed'));
-      } else {
-        const cids = edit(tr('app.undo.mitre'), (tx) => joints.map((j) => tx.addConnection({ type: 'mitre', a: j.a, aEnd: j.aEnd, b: j.b, bEnd: j.bEnd, params: { ...params } })));
-        if (cids) { sel = { kind: 'conn', id: cids[0] }; multi = []; refresh(); print(tr('app.mitre.added', { n: joints.length })); }
-      }
-      dlg.close();
-    });
-    dlg.addEventListener('close', () => { dlg.remove(); restoreFocus(); });
-    root.append(dlg);
-    update();
-    dlg.showModal();
-    dlg.querySelector('#dc-mi-mGap')?.focus();
-  }
-  /** Our own drawing of the joint (mitre-preview.js): members, plates, stiffeners, bolts and the numbered callouts. */
-  function drawMitre(svg, pv) {
-    svg.replaceChildren();
-    if (!pv.ok) { svg.setAttribute('viewBox', '0 0 100 60'); return; }
-    const [x0, y0, x1, y1] = pv.box, size = Math.max(x1 - x0, y1 - y0);
-    svg.setAttribute('viewBox', [x0, -y1, x1 - x0, y1 - y0].map((v) => Math.round(v * 10) / 10).join(' '));
-    const pts = (ps) => ps.map(([x, y]) => (Math.round(x * 10) / 10) + ',' + (Math.round(-y * 10) / 10)).join(' ');
-    for (const sh of pv.shapes) svg.append(svgEl(sh.closed ? 'polygon' : 'polyline', { points: pts(sh.pts), class: 'dc-mi-' + sh.kind }));
-    for (const [a, b] of pv.bolts) svg.append(svgEl('line', { x1: a[0], y1: -a[1], x2: b[0], y2: -b[1], class: 'dc-mi-bolt' }));
-    const cx = (x0 + x1) / 2, cy = (y0 + y1) / 2, r = size * 0.032;
-    // each number leaves its point its own way (1, 2, 3 sit close together at the plates), the stiffeners' outward from the middle
-    const AWAY = { 1: [1, 0.45], 2: [-1, 0.45], 3: [1, -0.45], 4: [0, 1], 5: [0, -1] };
-    for (const c of pv.callouts) {
-      let [dx, dy] = AWAY[c.n] || [c.at[0] - cx, c.at[1] - cy];
-      const d = Math.hypot(dx, dy);
-      if (d < 1e-6) { dx = -1; dy = 1; } else { dx /= d; dy /= d; }
-      const p = [c.at[0] + dx * size * 0.11, c.at[1] + dy * size * 0.11];
-      svg.append(svgEl('line', { x1: c.at[0], y1: -c.at[1], x2: p[0], y2: -p[1], class: 'dc-mi-leader' }));
-      svg.append(svgEl('circle', { cx: p[0], cy: -p[1], r, class: 'dc-mi-callout' }));
-      const tx = svgEl('text', { x: p[0], y: -p[1], class: 'dc-mi-num', 'font-size': r * 1.25, 'text-anchor': 'middle', 'dominant-baseline': 'central' });
-      tx.textContent = String(c.n);
-      svg.append(tx);
-    }
-  }
+  const { openMitre } = mountMitre({
+    print, refresh, edit, numIn, textIn, restoreFocus, root, r1,
+    get lastFocus() { return lastFocus; }, set lastFocus(v) { lastFocus = v; },
+    get model() { return model; },
+    get marks() { return marks; },
+    get sel() { return sel; }, set sel(v) { sel = v; },
+    get multi() { return multi; }, set multi(v) { multi = v; },
+  });
   function addBasePlate() {
     if (sel?.kind !== 'member') return;
     const id = sel.id;
@@ -1207,7 +983,7 @@ async function start(root) {
     else if (multi.length) { ui.propsH.textContent = tr('app.props.selected', { n: multi.length }); body.push(...multiProps()); }
     else if (sel?.kind === 'member') { const m = model.member(sel.id); ui.propsH.textContent = typeName(m.type) + (marks.partMark.get(m.id) ? ' ' + marks.partMark.get(m.id) : ''); body.push(...memberProps(m)); }
     else if (sel?.kind === 'conn') { const c = model.connection(sel.id); ui.propsH.textContent = tr('app.props.' + c.type); body.push(...connProps(c)); }
-    else if (sel?.kind === 'stair') { const x = model.stair(sel.id); ui.propsH.textContent = tr('app.props.stair', { mark: marks.asmMark.get(x.id + '.stringerL') || '' }); body.push(...stairProps(x)); }
+    else if (sel?.kind === 'stair') { const x = model.stair(sel.id); ui.propsH.textContent = tr('app.props.stair', { mark: (marks.asmMark.get(x.id + '.stringerL') || marks.asmMark.get(x.id + '.f1stringerL') || '') }); body.push(...stairProps(x)); }
     else if (sel?.kind === 'picture') { const p = model.picture(sel.id); ui.propsH.textContent = tr('pic.props'); body.push(...pictureProps(p)); }
     else if (sel?.kind === 'footing') { const f = model.footing(sel.id); ui.propsH.textContent = tr('app.props.footing', { mark: marks.footingMark.get(f.id) || '' }); body.push(...footingProps(f)); }
     else if (sel?.kind === 'rc') { const x = model.state.rc.elements.find((q) => q.id === sel.id); ui.propsH.textContent = rcb.labels.get(x.id) || tr('rc.kind.' + x.kind); body.push(...rcUi.props(x)); }
@@ -1408,89 +1184,12 @@ async function start(root) {
     return [box];
   }
 
-  /** "Move, rotate, mirror" for the selection's members and footings (connections follow). */
-  function xfBlock(refs) {
-    const own = refs.filter((r) => r.kind !== 'conn' && r.kind !== 'picture');   // a picture moves by dragging or its own Properties (D8.15)
-    if (!own.length) return [];
-    const s = model.state;
-    const box = el('div', { className: 'dc-block', dataset: { xf: '' } }, el('p', { className: 'dc-sub' }, tr('xf.title')));
-    const keep = el('input', { type: 'checkbox', id: 'dc-xf-copy', dataset: { xfCopy: '' } });
-    box.append(el('div', { className: 'dc-props' }, ...field(tr('xf.copy'), keep)));
-    // move by an offset, or by picking two grid intersections
-    const off = [0, 0, 0];
-    const row = el('div', { className: 'dc-xyz' }, ...[0, 1, 2].map((k) => { const i = numIn(0, (v) => { off[k] = v; }, { id: 'dc-xfoff' + k }); i.setAttribute('aria-label', tr('xf.move.axis', { axis: 'xyz'[k] })); return i; }));
-    const mv = el('form', { className: 'dc-props', dataset: { xfMove: '' } }, el('span', { className: 'k' }, tr('xf.move.sub')), row,
-      el('div', { className: ROW_START }, el('button', { type: 'submit', className: 'btn-line btn-sm-dc' }, tr('xf.move.go')),
-        el('button', { type: 'button', className: 'btn-line btn-sm-dc', title: tr('xf.move.pick.title'), onclick: () => setTool('move') }, tr('xf.move.pick'))));
-    mv.addEventListener('submit', (e) => {
-      e.preventDefault();
-      for (const i of mv.querySelectorAll('input')) i.dispatchEvent(new Event('change'));
-      let xf;
-      try { xf = moveXf(...off); } catch { print(tr('xf.bad.offset')); return; }
-      runXf(own, xf, keep.checked, { kind: 'move', d: off.slice() });
-    });
-    // rotate in plan about the selection's middle or a grid intersection
-    const nodesO = [['', tr('xf.rotate.middle')]];
-    for (const gy of s.grids.y) for (const gx of s.grids.x) nodesO.push([gy.label + '/' + gx.label, gy.label + '/' + gx.label]);
-    let deg = 90, about = '';
-    const ro = el('form', { className: 'dc-props', dataset: { xfRotate: '' } },
-      el('span', { className: 'span dc-sub2' }, tr('xf.rotate.sub')),
-      ...field(tr('xf.rotate.angle'), numIn(deg, (v) => { deg = v; }, { id: 'dc-xfdeg' })),
-      ...field(tr('xf.rotate.about'), selectIn(nodesO, about, (v) => { about = v; }, { id: 'dc-xfabout' })),
-      el('div', { className: ROW_START }, el('button', { type: 'submit', className: 'btn-line btn-sm-dc' }, tr('xf.rotate.go'))));
-    ro.addEventListener('submit', (e) => {
-      e.preventDefault();
-      for (const i of ro.querySelectorAll('input')) i.dispatchEvent(new Event('change'));
-      let c;
-      if (about) { const [gy, gx] = about.split('/'); const p = pointAt(s, gy, gx, s.levels[0].name); c = p && [p[0], p[1]]; }
-      else { const m = selectionCenter(s, own); c = m && [m[0], m[1]]; }
-      if (!c) return;
-      let xf;
-      try { xf = rotateXf(c, deg); } catch { print(tr('xf.bad.angle')); return; }
-      runXf(own, xf, keep.checked, { kind: 'rotate', deg, about: about || tr('xf.rotate.middle.short') });
-    });
-    // mirror in a grid line
-    const linesO = [...s.grids.y.map((g) => ['y:' + g.label, tr('xf.mirror.grid', { label: g.label })]), ...s.grids.x.map((g) => ['x:' + g.label, tr('xf.mirror.grid', { label: g.label })])];
-    const parts = [ro];
-    if (linesO.length) {
-      let line = linesO[0][0];
-      const mi = el('form', { className: 'dc-props', dataset: { xfMirror: '' } },
-        el('span', { className: 'span dc-sub2' }, tr('xf.mirror.sub')),
-        ...field(tr('xf.mirror.line'), selectIn(linesO, line, (v) => { line = v; }, { id: 'dc-xfline' })),
-        el('div', { className: ROW_START }, el('button', { type: 'submit', className: 'btn-line btn-sm-dc' }, tr('xf.mirror.go'))));
-      mi.addEventListener('submit', (e) => {
-        e.preventDefault();
-        const [ax, label] = [line.slice(0, 1), line.slice(2)];
-        const g = (ax === 'x' ? s.grids.x : s.grids.y).find((q) => q.label === label);
-        if (!g) return;
-        const xf = ax === 'x' ? mirrorXf([g.at, 0], [g.at, 1]) : mirrorXf([0, g.at], [1, g.at]);
-        runXf(own, xf, keep.checked, { kind: 'mirror', line: label });
-      });
-      parts.push(mi);
-    }
-    box.append(mv, ...parts, el('p', { className: 'dc-note' }, tr('xf.note')));
-    return [box];
-  }
+  const { xfBlock, runXf, whatText } = mountXf({
+    print, edit, setTool, setSelection, field, numIn, selectIn, ROW_START, mm,
+    get model() { return model; },
+    get settings() { return settings; },
+  });
 
-  /** One undo step: the refs (or a copy of them, with keep) through xf; the result selected and said. */
-  function runXf(refs, xf, keep, how) {
-    const s = model.state;
-    let r = null;
-    if (keep) {
-      const c = copyClip(s, refs, { connections: settings.conns });
-      if (!c) { print(tr('xf.none')); return; }
-      const clip = readClip(c.clip);
-      r = edit(tr('xf.undo.' + how.kind + '.copy'), (tx) => { const p = pasteInto(tx, clip, [0, 0, 0]); const x = transformRefs(tx, tx.s, p.refs, xf); return { ...x, refs: p.refs }; });
-    } else {
-      r = edit(tr('xf.undo.' + how.kind), (tx) => ({ ...transformRefs(tx, tx.s, refs, xf), refs }));
-    }
-    if (!r) return;
-    setSelection(r.refs);
-    const what = whatText(r.members, r.footings);
-    const fills = { what, x: mm(how.d?.[0] ?? 0), y: mm(how.d?.[1] ?? 0), z: mm(how.d?.[2] ?? 0), deg: String(how.deg ?? ''), about: how.about || '', line: how.line || '' };
-    print(tr('xf.done.' + how.kind + (keep ? '.copy' : ''), fills) + r.notes.map((n) => ' ' + tr(n.key, { n: n.n })).join('') + ' ' + tr('xf.undo.hint'));
-  }
-  const whatText = (members, footings) => [members ? tr('what.members', { n: members }) : '', footings ? tr('what.footings', { n: footings }) : ''].filter(Boolean).join(tr('what.and'));
 
   function memberProps(m) {
     const part = built.byId.get(m.id);
@@ -1657,111 +1356,14 @@ async function start(root) {
     return [g, info, el('p', { className: 'dc-note' }, tr(p.size === 'paper' ? 'pic.note.paper' : 'pic.note.real')),
       el('div', { className: 'dc-actions' }, el('button', { type: 'button', className: 'btn-line btn-sm-dc dc-danger', onclick: deleteSelection }, tr('app.btn.delete')))];
   }
-  function footingProps(f) {
-    const out = [el('div', { className: 'dc-props' }, ...phaseField([{ kind: 'footing', id: f.id }], f.phase || 1)), ...footingForm(f, (patch) => edit(tr('app.undo.footing'), (tx) => tx.updateFooting(f.id, patch)), false)];
-    const ft = built.footings.find((x) => x.f.id === f.id);
-    const list = schedule.byFooting.get(f.id) || [];
-    const t = el('table', { className: 'dc-table' }, el('thead', {}, el('tr', {}, el('th', {}, tr('app.bars.mark')), el('th', {}, tr('app.bars.bars')), el('th', { className: 'n' }, tr('app.bars.no')), el('th', { className: 'n' }, tr('app.bars.length')))),
-      el('tbody', {}, ...list.map(({ group, mark }) => el('tr', {}, el('td', {}, mark), el('td', {}, barLabel(group.bar, settings.barNames) + ' ' + group.role.toLowerCase()), el('td', { className: 'n' }, String(group.count)), el('td', { className: 'n' }, mm(group.length))))));
-    out.push(el('div', { className: 'dc-block' }, el('p', { className: 'dc-sub' }, tr('app.bars.title')), t,
-      el('p', { className: 'dc-note' }, tr(BARS.get(f.mat.barX)?.set === 'bs' ? 'app.bars.note.bs' : 'app.bars.note', { m3: footingVolume(f).toFixed(2), source: BARS.get(f.mat.barX)?.set === 'bs' ? BAR_SOURCE_BS : BAR_SOURCE }))));
-    if (ft?.problems.length) out.push(el('ul', { className: 'dc-msgs' }, ...ft.problems.map((x) => el('li', {}, x.text))));
-    out.push(...xfBlock([{ kind: 'footing', id: f.id }]));
-    out.push(el('div', { className: 'dc-actions' }, el('button', { type: 'button', className: 'btn-line btn-sm-dc dc-danger', onclick: deleteSelection }, tr('app.btn.delete'))));
-    return out;
-  }
-  /** 0.8 PANEL-COMPACT: the footing's fields in the shared property grid (assets/js/app-propgrid.js, manifest "propgrid"): categories,
-   *  label / value columns, the same arithmetic in number rows (numtext.js through the grid's parse) and the same refusal words as numIn. */
-  function footingGrid(f, set, placing, barO) {
-    const opts = barO.flatMap((g) => g.items.map(([value, label]) => ({ value, label })));
-    const P = tr('app.foot.cat.position'), Z = tr('app.foot.cat.size'), M = tr('app.foot.mat'), S = tr('app.foot.starters');
-    const n = (id, category, label, value) => ({ id, category, label, type: 'number', value: Math.round(value * 1000) / 1000, parse: readNum });
-    const rows = [];
-    if (!placing) rows.push(n('x', P, tr('app.foot.cx'), f.x), n('y', P, tr('app.foot.cy'), f.y), n('top', P, tr('app.foot.top'), f.top), n('rotation', P, tr('app.f.rotation'), f.rotation));
-    rows.push(n('L', Z, tr('app.foot.l'), f.L), n('B', Z, tr('app.foot.b'), f.B), n('H', Z, tr('app.foot.h'), f.H),
-      { id: 'concrete', category: Z, label: tr('app.foot.concrete'), type: 'text', value: f.concrete ?? '', maxLength: 30 },
-      { id: 'mat.barX', category: M, label: tr('app.foot.long'), type: 'select', value: f.mat.barX, options: opts }, n('mat.sX', M, tr('app.foot.spacing.x'), f.mat.sX),
-      { id: 'mat.barY', category: M, label: tr('app.foot.short'), type: 'select', value: f.mat.barY, options: opts }, n('mat.sY', M, tr('app.foot.spacing.y'), f.mat.sY),
-      n('mat.cover', M, tr('app.foot.cover'), f.mat.cover), { id: 'mat.hooks', category: M, label: tr('app.foot.hooks'), type: 'checkbox', value: !!f.mat.hooks },
-      { id: 'starters.on', category: S, label: tr('app.foot.starters'), type: 'checkbox', value: !!f.starters.on });
-    if (f.starters.on) {
-      const s = f.starters;
-      rows.push({ id: 'starters.bar', category: S, label: tr('app.foot.bar'), type: 'select', value: s.bar, options: opts }, n('starters.nx', S, tr('app.foot.nx'), s.nx), n('starters.ny', S, tr('app.foot.ny'), s.ny),
-        n('starters.sx', S, tr('app.foot.sx'), s.sx), n('starters.sy', S, tr('app.foot.sy'), s.sy), n('starters.projection', S, tr('app.foot.projection'), s.projection),
-        { id: 'starters.hook', category: S, label: tr('app.foot.hook'), type: 'checkbox', value: !!s.hook });
-    }
-    const host = el('div', { className: 'dc-grid' });
-    ccPropGrid.create(host, {
-      label: tr('app.props.footing', { mark: '' }).trim(), key: 'footing', rows,
-      onChange: (id, v) => { const path = id.split('.'); const patch = {}; let at = patch; path.forEach((k, i) => { if (i === path.length - 1) at[k] = v; else at = at[k] = {}; }); set(patch); },
-      onInvalid: (id, r, text) => { if (r && r.code) print(tr('calc.err.' + r.code, { pos: r.pos + 1, text: r.text })); else print(tr('app.num.bad')); },
-    });
-    return host;
-  }
-  function footingForm(f, set, placing) {
-    const opt = (b) => [b, barLabel(b, settings.barNames) + ' (' + r1(BARS.get(b).db) + ' mm)'];
-    const barO = [{ group: BAR_SOURCE, items: BAR_SETS.astm.map(opt) }, { group: BAR_SOURCE_BS, items: BAR_SETS.bs.map(opt) }];
-    if (window.ccPropGrid) {   // 0.8: the shared grid where the shell has it (a build or edition without it keeps the form below)
-      const g = [footingGrid(f, set, placing, barO)];
-      if (placing) { g.push(el('p', { className: 'dc-note' }, tr('app.foot.hook-leg', { bar: barLabel(f.mat.barX, settings.barNames), leg: mm(hookLeg(BARS.get(f.mat.barX))) }))); g.push(addByGridForm()); }
-      return g;
-    }
-    const p = el('div', { className: 'dc-props' });
-    if (!placing) p.append(...field(tr('app.foot.cx'), numIn(f.x, (v) => set({ x: v }))), ...field(tr('app.foot.cy'), numIn(f.y, (v) => set({ y: v }))), ...field(tr('app.foot.top'), numIn(f.top, (v) => set({ top: v }))), ...field(tr('app.f.rotation'), numIn(f.rotation, (v) => set({ rotation: v }))));
-    p.append(...field(tr('app.foot.l'), numIn(f.L, (v) => set({ L: v }), { min: 300 })), ...field(tr('app.foot.b'), numIn(f.B, (v) => set({ B: v }), { min: 300 })), ...field(tr('app.foot.h'), numIn(f.H, (v) => set({ H: v }), { min: 150 })),
-      ...field(tr('app.foot.concrete'), textIn(f.concrete, (v) => set({ concrete: v }), { max: 30 })));
-    const m = el('div', { className: 'dc-props dc-block' }, el('p', { className: 'dc-sub' }, tr('app.foot.mat')),
-      ...field(tr('app.foot.long'), selectIn(barO, f.mat.barX, (v) => set({ mat: { barX: v } }))), ...field(tr('app.foot.spacing.x'), numIn(f.mat.sX, (v) => set({ mat: { sX: v } }), { min: 50 })),
-      ...field(tr('app.foot.short'), selectIn(barO, f.mat.barY, (v) => set({ mat: { barY: v } }))), ...field(tr('app.foot.spacing.y'), numIn(f.mat.sY, (v) => set({ mat: { sY: v } }), { min: 50 })),
-      ...field(tr('app.foot.cover'), numIn(f.mat.cover, (v) => set({ mat: { cover: v } }), { min: 20 })),
-      ...field(tr('app.foot.hooks'), check(f.mat.hooks, (v) => set({ mat: { hooks: v } }))));
-    const s = f.starters;
-    const st = el('div', { className: 'dc-props dc-block' }, el('p', { className: 'dc-sub' }, tr('app.foot.starters')),
-      ...field(tr('app.foot.starters'), check(s.on, (v) => set({ starters: { on: v } }))));
-    if (s.on) st.append(...field(tr('app.foot.bar'), selectIn(barO, s.bar, (v) => set({ starters: { bar: v } }))),
-      ...field(tr('app.foot.nx'), numIn(s.nx, (v) => set({ starters: { nx: v } }), { min: 1, step: 1 })), ...field(tr('app.foot.ny'), numIn(s.ny, (v) => set({ starters: { ny: v } }), { min: 1, step: 1 })),
-      ...field(tr('app.foot.sx'), numIn(s.sx, (v) => set({ starters: { sx: v } }), { min: 50 })), ...field(tr('app.foot.sy'), numIn(s.sy, (v) => set({ starters: { sy: v } }), { min: 50 })),
-      ...field(tr('app.foot.projection'), numIn(s.projection, (v) => set({ starters: { projection: v } }), { min: 0 })),
-      ...field(tr('app.foot.hook'), check(s.hook, (v) => set({ starters: { hook: v } }))));
-    const out = [p, m, st];
-    if (placing) { out.push(el('p', { className: 'dc-note' }, tr('app.foot.hook-leg', { bar: barLabel(f.mat.barX, settings.barNames), leg: mm(hookLeg(BARS.get(f.mat.barX))) }))); out.push(addByGridForm()); }
-    return out;
-  }
-  /** A stair's settings (D23): in the Stair tool's options (placing) or for a selected stair. */
-  function stairForm(x, set, placing) {
-    const p = el('div', { className: 'dc-props' });
-    if (!placing) p.append(...field(tr('app.foot.cx'), numIn(x.x, (v) => set({ x: v }))), ...field(tr('app.foot.cy'), numIn(x.y, (v) => set({ y: v }))), ...field(tr('app.stair.z'), numIn(x.z, (v) => set({ z: v }))));
-    const strO = catalogGroups(model.state.profiles).map((g) => ({ group: g.label + ' — ' + g.source, items: g.names.filter((n) => ['C', 'PL'].includes(getProfile(n, model.state.profiles)?.kind)).map((n) => [n, n]) })).filter((g) => g.items.length);
-    p.append(...field(tr('app.stair.dir'), numIn(x.dir, (v) => set({ dir: v }))),
-      ...field(tr(placing ? 'app.stair.rise.tool' : 'app.stair.rise'), numIn(x.rise, (v) => set({ rise: v }), { min: 0 })),
-      ...field(tr('app.stair.going'), numIn(x.going, (v) => set({ going: v }), { min: 150 })),
-      ...field(tr('app.stair.width'), numIn(x.width, (v) => set({ width: v }), { min: 400 })),
-      ...field(tr('app.stair.max-riser'), numIn(x.maxRiser, (v) => set({ maxRiser: v }), { min: 100 })),
-      ...field(tr('app.stair.stringer'), selectIn(strO, x.stringer, (v) => set({ stringer: v }))),
-      ...field(tr('app.stair.tread-t'), numIn(x.tread.t, (v) => set({ tread: { t: v } }), { min: 3 })),
-      ...field(tr('app.stair.nosing'), numIn(x.tread.nosing, (v) => set({ tread: { nosing: v } }), { min: 0 })),
-      ...field(tr('app.f.material'), selectIn(materialOptions(), x.material, (v) => set({ material: v }))));
-    const out = [p];
-    if (placing) out.push(el('p', { className: 'dc-note' }, tr('app.stair.note')));
-    return out;
-  }
-  function stairProps(x) {
-    const out = [el('div', { className: 'dc-props' }, ...phaseField([{ kind: 'stair', id: x.id }], x.phase || 1)), ...stairForm(x, (patch) => edit(tr('app.undo.stair'), (tx) => tx.updateStair(x.id, patch)), false)];
-    const g = stairGeometry(x, (nm) => getProfile(nm, model.state.profiles));
-    const dl = el('dl', { className: 'dc-props dc-block' });
-    fillDl(dl, [[tr('app.stair.risers'), tr('app.stair.risers.v', { n: g.n, r: r1(g.riser) })], [tr('app.stair.treads'), tr('app.stair.treads.v', { n: g.treads, run: mm(g.run) })],
-      [tr('app.stair.pitch'), r1(g.pitch) + '°'], [tr('app.stair.blondel'), mm(g.blondel)]]);
-    for (const n of dl.querySelectorAll('dt')) n.className = 'k';
-    for (const n of dl.querySelectorAll('dd')) n.className = 'v';
-    out.push(dl);
-    const probs = built.problems.filter((q) => q.ref === x.id);
-    if (probs.length) out.push(el('ul', { className: 'dc-msgs' }, ...probs.map((q) => el('li', { className: q.hard ? 'is-hard' : '' }, q.text))));
-    out.push(el('p', { className: 'dc-note' }, tr('app.stair.props-note')));
-    out.push(...xfBlock([{ kind: 'stair', id: x.id }]));
-    const acts = el('div', { className: 'dc-actions' }, el('button', { type: 'button', className: 'btn-line btn-sm-dc dc-danger', onclick: deleteSelection }, tr('app.btn.delete')));
-    out.push(acts);
-    return out;
-  }
+  const { footingProps, footingForm, stairForm, stairProps } = mountFootingStair({
+    opts, print, edit, deleteSelection, phaseField, renderProps, field, numIn, textIn, selectIn, materialOptions, addByGridForm, xfBlock, check, deepAssign, download, mm, r1,
+    get built() { return built; },
+    get schedule() { return schedule; },
+    get settings() { return settings; },
+    get model() { return model; },
+    get safeName() { return safeName; },
+  });
   function check(value, onSet) {
     const i = el('input', { type: 'checkbox', checked: !!value });
     i.addEventListener('change', () => onSet(i.checked));
@@ -1786,6 +1388,7 @@ async function start(root) {
 
   // ---- reports ----
   erection = mountErection({ getModel: () => model, built: () => built, marks: () => marks, edit, print, download: (n, d, ty) => download(n, d, ty), safeName: () => safeName(), rerender: () => renderReport(), setProblems: (list) => { extraProblems = list; extraSet?.(list); } });
+  window.detailcraftIssues = mountDetailIssues({ root, t: tr, model: () => model, download: (data, name, type) => download(name, data, type) });   // 0.10 BK.48; tests
   supply = mountSupply({ getModel: () => model, edit, print, nest: () => nestResult(), built: () => built, rerender: () => renderReport(), setProblems: (list) => supplySet?.(list) });
   framing = mountFraming({ getModel: () => model, edit, print, download: (n, d, ty) => download(n, d, ty), safeName: () => safeName(), rerender: () => renderReport(), setProblems: (list) => frmSet?.(list) });
   foundation = mountFoundation({ getModel: () => model, edit, print, rerender: () => renderReport(), select, label: (id) => marks?.footingMark?.get(id) || id, analysisResult: () => analysis?.result || null, profileSize: (name) => { const p = getProfile(name, model.state.customProfiles || []); return p ? [Math.round(p.width), Math.round(p.depth)] : null; }, setProblems: (list) => fndSet?.(list) });
@@ -1957,6 +1560,8 @@ async function start(root) {
     setTool('select');
     print(tr('app.file.sample'));
   }
+  root.querySelectorAll('[data-sample-open]').forEach((b) => b.addEventListener('click', openSample));
+  { const regSample = () => window.ccPalette?.register?.([{ id: 'detail-sample', label: tr('ui.hint.trysample'), group: 'file', keywords: 'sample example demo try frame', run: openSample }]); if (window.ccPalette) regSample(); else window.addEventListener('load', regSample); }
   ui.file.addEventListener('change', () => { const f = ui.file.files[0]; ui.file.value = ''; if (f) openFile(f); });
   /** A File or a host.js HostFile (both have name, size, text(); bytes from either). */
   const bytesOf = async (f) => (f.bytes ? f.bytes() : new Uint8Array(await f.arrayBuffer()));
@@ -2003,99 +1608,28 @@ async function start(root) {
     setTimeout(() => location.assign(url.href), model.dirty ? 0 : 800);
   });
 
-  // ---- exports ----
-  function exportIfc() {
-    if (!built.parts.length && !model.state.footings.length && !rcb.items.length && !rcb.loose.length) { print(tr('app.export.nothing')); return; }
-    const txt = writeIfc(model.state, built, marks, schedule, {});
-    download(safeName() + '.ifc', txt, 'application/x-step');
-    print(tr('app.export.ifc', { parts: built.parts.length, bolts: built.bolts.length, footings: model.state.footings.length, bars: built.footings.reduce((s, f) => s + f.bars.reduce((t, g) => t + g.count, 0), 0) }));
-    if (rcb.items.length || rcb.loose.length) print(tr('app.export.ifc', { parts: built.parts.length, bolts: built.bolts.length, footings: model.state.footings.length, bars: built.footings.reduce((s, f) => s + f.bars.reduce((t, g) => t + g.count, 0), 0) }) + ' ' + tr('rc.export.ifc', { n: rcb.items.length, bars: rcb.items.reduce((s, i) => s + i.res.groups.reduce((t2, g) => t2 + g.count, 0), 0) + rcb.loose.reduce((s, g) => s + g.count, 0) }));
-  }
-  // 0.7 XF.8 (session usd): the steel model as USD — usd-detailcraft.js on cc-usd (./usd/, lib/usd synced)
-  async function exportUsd() {
-    if (!built.parts.length) { print(tr('app.export.nothing')); return; }
-    const k = await ask({ title: tr('usd.dialog.title'), text: tr('usd.export.lede'), buttons: [['cancel', tr('app.ask.cancel'), 'btn-line'], ['usda', tr('usd.dialog.format.usda'), 'btn-line'], ['usdc', tr('usd.dialog.format.usdc'), 'btn-line'], ['usdz', tr('usd.dialog.format.usdz'), 'btn-plot']] });
-    if (!['usda', 'usdc', 'usdz'].includes(k)) return;
-    try {
-      const { steelUsd } = await import('./usd-detailcraft.js');
-      const r = steelUsd(built, marks, { format: k, name: safeName() });
-      download(safeName() + '.' + k, new Blob([r.data], { type: k === 'usda' ? 'model/vnd.usda' : k === 'usdz' ? 'model/vnd.usdz+zip' : 'application/octet-stream' }));
-      print(tr('usd.done', { name: safeName() + '.' + k, n: r.report.parts }) + (r.report.notes.length ? ' ' + tr('usd.steel.not_in') : ''));
-    } catch (err) { print(tr('usd.export.failed', { why: String(err.message || err) })); }
-  }
-  /** The NC1 files of every part that can have one: { files: [{ name, data }], skipped: [marks] }. */
-  function ncFiles() {
-    const files = [], skipped = [];
-    for (const row of marks.parts) {
-      const part = built.byId.get(row.ids[0]);
-      const why = ncRefusal(part);
-      if (why) { skipped.push(row.mark); continue; }
-      files.push({ name: row.mark + '.nc1', data: writeNc1(part, { order: model.state.name, mark: row.mark, count: row.count, phase: String(part.phase || 1) }) });
-    }
-    return { files, skipped };
-  }
-  // 0.8 round 3 (EG.40): "Send NC to a machine…". Studio's desktop shell offers `window.ccSendToMachine({ app, kind, files: [{ name, bytes }], note }) → Promise<{ ok, sent, error? }>`
-  // (the dialog that picks the machine, studio_PART_3) and the bridge `cadcraftDesktop.machines`; without both the button stays hidden. Files are uploaded, never started from here.
-  const machinesReady = () => !!(window.ccSendToMachine && window.cadcraftDesktop && window.cadcraftDesktop.machines);
-  async function sendNc() {
-    if (!machinesReady()) { print(tr('ncsend.none')); return; }
-    const { files, skipped } = ncFiles();
-    if (!files.length) { print(tr(built.parts.length ? 'app.export.nc.none2' : 'app.export.nothing')); return; }
-    const enc = new TextEncoder();
-    try {
-      const r = await window.ccSendToMachine({ app: 'detailcraft', kind: 'nc1', files: files.map((f) => ({ name: f.name, bytes: typeof f.data === 'string' ? enc.encode(f.data) : f.data })), note: model.state.name });
-      if (r && r.ok) print(tr('ncsend.done', { n: r.sent ?? files.length }) + (skipped.length ? ' ' + tr('app.export.nc.skipped2', { marks: skipped.join(', ') }) : '') + ' ' + tr('app.export.nc.check'));
-      else if (r && r.cancelled) print(tr('ncsend.cancelled'));
-      else print(tr('ncsend.failed', { error: String((r && r.error) || '') }));
-    } catch (err) { print(tr('ncsend.failed', { error: String(err && err.message || err) })); }
-  }
-  function exportNc() {
-    const { files, skipped } = ncFiles();
-    if (!files.length) { print(tr(built.parts.length ? 'app.export.nc.none2' : 'app.export.nothing')); return; }
-    download(safeName() + ' NC.zip', new Blob([zip(files)], { type: 'application/zip' }));
-    print(tr('app.export.nc.done', { n: files.length }) + (skipped.length ? ' ' + tr('app.export.nc.skipped2', { marks: skipped.join(', ') }) : '') + ' ' + tr('app.export.nc.check'));
-  }
-  function exportBom() {
-    const t = bomTables(marks, built.bolts);
-    download(safeName() + ' BOM.csv', '﻿' + sectionsCsv([[tr('app.k.parts'), t.parts], [tr('app.k.assemblies'), t.assemblies], [tr('app.rep.bolts'), t.bolts]]), 'text/csv');
-    print(tr('app.export.bom', { n: marks.parts.length }));
-  }
+  const { exportIfc, exportUsd, machinesReady, sendNc, exportNc, exportBom, exportNest, exportReport, exportReportPdf, exportKiss, exportBending } = mountExports({
+    print, safeName, download, nestResult, ask,
+    get built() { return built; },
+    get model() { return model; },
+    get rcb() { return rcb; },
+    get marks() { return marks; },
+    get schedule() { return schedule; },
+    get settings() { return settings; },
+  });
   // ---- clash check (D15): on demand, visible phases only; the result is kept until the model changes ----
   let clashRes = null, clashTol = 1;
-  function runClashes() {
-    const phases = new Set(model.state.phases.map((p) => p.n).filter((n) => !hiddenPhases.has(n)));
-    clashRes = { ...clashCheck(model.state, built, { tol: clashTol, phases }), version: model.version, hidden: hiddenPhases.size };
-    reportTab = 'clashes';
-    renderReport();
-    const n = clashRes.clashes.length;
-    print(tr(n ? 'clash.found' : 'clash.none', { n, parts: clashRes.checked, ms: clashRes.ms }));
-  }
-  const refLabel = (r) => {
-    if (r.kind === 'member') { const m = model.member(r.id); return (marks.partMark.get(r.id) || '') + ' ' + (m ? m.profile : ''); }
-    if (r.kind === 'conn') { const p = built.byId.get(r.id + '.plate') || built.parts.find((x) => x.conn === r.id); return (p ? marks.partMark.get(p.id) + ' ' + p.profileName : r.id); }
-    return (marks.footingMark.get(r.id) || '') + ' ' + tr('clash.footing');
-  };
-  function clashPanel() {
-    const tol = numIn(clashTol, (v) => { clashTol = Math.max(0, Math.min(50, v)); }, { min: 0, max: 50, step: 0.5, id: 'dc-clash-tol' });
-    tol.dataset.clashTol = '';
-    const head = el('div', { className: 'dc-rep-head' }, el('h3', {}, tr('clash.title')),
-      el('label', { for: 'dc-clash-tol', className: 'dc-muted' }, tr('clash.tol')), tol,
-      el('button', { type: 'button', className: 'btn-line btn-sm-dc', dataset: { clashRun: '' }, onclick: () => { tol.dispatchEvent(new Event('change')); runClashes(); } }, tr('clash.run')));
-    const out = [head];
-    if (!clashRes) { out.push(el('p', { className: 'dc-note' }, tr('clash.intro'))); return out; }
-    if (clashRes.version !== model.version) out.push(el('p', { className: 'dc-warn' }, tr('clash.stale')));
-    if (!clashRes.clashes.length) out.push(el('p', { className: 'dc-note' }, tr('clash.clean', { parts: clashRes.checked })));
-    else {
-      const rows = clashRes.clashes.map((c) => el('tr', { dataset: { clash: '' } },
-        el('td', {}, refLabel(c.a)), el('td', {}, refLabel(c.b)), el('td', { className: 'n' }, String(c.depth)), el('td', {}, nodeName(model.state, c.at)),
-        el('td', {}, el('button', { type: 'button', className: 'dc-linkbtn', onclick: () => { if (tool !== 'select') setTool('select'); setSelection([c.a, c.b].filter(exists)); view?.focusPoint(c.at, 2500); print(tr('clash.shown', { a: refLabel(c.a), b: refLabel(c.b), d: c.depth })); } }, tr('clash.show')))));
-      out.push(el('table', { className: 'dc-table' },
-        el('thead', {}, el('tr', {}, el('th', { scope: 'col' }, tr('clash.col.a')), el('th', { scope: 'col' }, tr('clash.col.b')), el('th', { scope: 'col', className: 'n' }, tr('clash.col.depth')), el('th', { scope: 'col' }, tr('clash.col.at')), el('th', { scope: 'col' }, ''))),
-        el('tbody', {}, ...rows)));
-    }
-    out.push(el('p', { className: 'dc-note' }, tr('clash.note') + (clashRes.hidden ? ' ' + tr('clash.hidden') : '')));
-    return out;
-  }
+  const { clashPanel } = mountClash({
+    hiddenPhases, print, exists, setTool, setSelection, numIn, renderReport,
+    get model() { return model; },
+    get clashRes() { return clashRes; }, set clashRes(v) { clashRes = v; },
+    get built() { return built; },
+    get clashTol() { return clashTol; }, set clashTol(v) { clashTol = v; },
+    get reportTab() { return reportTab; }, set reportTab(v) { reportTab = v; },
+    get marks() { return marks; },
+    get tool() { return tool; },
+    get view() { return view; },
+  });
 
   /** Cut list (D24): the linear parts nested into stock lengths; the stock, kerf, trim and keep length are settings. */
   function nestResult() { const o = settings.nest; return nestBars(piecesFromMarks(marks), { stock: o.stock, kerf: o.kerf, trim: o.trim, keep: o.keep }); }
@@ -2114,265 +1648,24 @@ async function start(root) {
     out.push(table(T.summary, [2, 4, 5, 6]), el('div', { className: 'dc-rep-head' }, el('h3', {}, tr('nest.bars'))), table(T.bars, [1, 2, 4]), el('p', { className: 'dc-note' }, tr('nest.note')));
     return out;
   }
-  function exportNest() {
-    const T = cutListTables(nestResult());
-    download(safeName() + ' ' + tr('nest.file') + '.csv', '\ufeff' + sectionsCsv([[tr('nest.summary'), T.summary], [tr('nest.bars'), T.bars]]), 'text/csv');
-    print(tr('nest.saved'));
-  }
-  function exportReport() {
-    const rep = phaseReport(model.state, built, marks, schedule);
-    download(safeName() + ' ' + tr('rep.file') + '.csv', '\ufeff' + reportCsv(rep), 'text/csv');
-    print(tr('rep.saved.csv', { n: rep.phases.length }));
-  }
-  async function exportReportPdf() {
-    const rep = phaseReport(model.state, built, marks, schedule);
-    const pages = reportSheets(rep, { paper: settings.paper, model: model.state.name, date: new Date().toISOString().slice(0, 10) });
-    const { bytes, missing } = await toPdf(pages, { title: tr('rep.title') });
-    download(safeName() + ' ' + tr('rep.file') + '.pdf', new Blob([bytes], { type: 'application/pdf' }));
-    print(tr('rep.saved.pdf', { n: pages.length, paper: paperLabel(settings.paper) }) + (missing ? ' ' + tr('app.pdf.missing', { n: missing }) : ''));
-  }
-  function exportKiss() {
-    if (!built.parts.length) { print(tr('kiss.empty')); return; }
-    const metric = settings.kiss === 'auto' ? kissMetric(built) : settings.kiss === 'metric';
-    const r = kissFile(model.state, built, marks, { metric, revs: revsByNumber(model.state.issues) });
-    download(safeName() + '.kss', r.text, 'text/plain');
-    print(tr('kiss.saved', { job: r.job, units: tr(metric ? 'kiss.metric' : 'kiss.imperial'), d: r.counts.D, m: r.counts.M }));
-  }
-  function exportBending() {
-    if (!schedule.rows.length) { print(tr('app.export.bending.none')); return; }
-    download(safeName() + ' ' + tr('app.export.bending.file') + '.csv', '﻿' + toCsv(scheduleTable(schedule.rows, { codes: settings.shapeCodes, naming: settings.barNames })), 'text/csv');
-    print(tr('app.export.bending', { n: schedule.rows.length }));
-  }
 
-  // ---- IFC import (cc-ifc, ./ifc/, loads on first use) ----
-  let ifcLib = null;
-  async function openIfc(file) {
-    if (file.size > 200 * 1024 * 1024) { print(tr('app.ifc.too-big')); return; }
-    if (!(await confirmDiscard())) return;
-    print(tr('app.ifc.reading', { file: file.name }));
-    try {
-      if (!ifcLib) {
-        const W = await import('./ifc/api.js');   // cc-ifc, our own IFC engine (0.4 I.11; was web-ifc)
-        const api = new W.IfcAPI();
-        await api.Init();
-        ifcLib = { W, api };
-      }
-      const { state, report } = await importIfc(ifcLib.W, ifcLib.api, await bytesOf(file), { name: file.name.replace(/\.ifc$/i, '') });
-      const m = new Model(state);
-      m.version = 1;                      // an imported model is not saved yet
-      setModel(m);
-      setTool('select');
-      const n = state.members.length;
-      print(tr('app.ifc.imported', { file: file.name, n, levels: state.levels.length, grids: state.grids.x.length + state.grids.y.length, other: report.notConverted.reduce((t, r) => t + r.n, 0) }));
-      showImportReport(file.name, report);
-    } catch (err) { print(tr('app.ifc.error', { file: file.name, error: String(err.message || err) })); }
-  }
-  function showImportReport(fileName, report) {
-    lastFocus = document.activeElement;
-    const body = [...reportLines(report).map((t) => el('p', {}, t)), ...report.warnings.map((t) => el('p', { className: 'dc-warn' }, t))];
-    if (report.notConverted.length) {
-      body.push(el('p', {}, tr('app.ifc.rep.by-class')));
-      body.push(table([[tr('app.ifc.rep.class'), tr('app.ifc.rep.count'), tr('app.ifc.rep.why')], ...report.notConverted.map((r) => [r.cls, String(r.n), r.why])], [1]));
-    } else body.push(el('p', {}, tr('app.ifc.rep.all')));
-    body.push(el('p', { className: 'dc-note' }, tr('app.ifc.rep.note')));
-    const dlg = el('dialog', { className: 'dc-dialog dc-report-dlg', 'aria-labelledby': 'dc-rep-h' },
-      el('div', { className: 'dc-dlg' },
-        el('div', { className: 'dc-dlg-head' }, el('h2', { className: 'dc-h', id: 'dc-rep-h' }, tr('app.ifc.rep.title', { file: fileName }))),
-        el('div', { className: 'dc-report-body', dataset: { importReport: '' } }, ...body),
-        el('div', { className: 'dc-dlg-foot' }, el('button', { type: 'button', className: 'btn-plot btn-sm-dc', dataset: { key: 'ok' } }, tr('app.ok')))));
-    dlg.addEventListener('click', (e) => { if (e.target.closest('button[data-key]')) dlg.close(); });
-    dlg.addEventListener('close', () => { dlg.remove(); restoreFocus(); });
-    root.append(dlg);
-    dlg.showModal();
-    dlg.querySelector('button[data-key]').focus();
-  }
+  const { openIfc } = mountIfcImport({
+    print, setModel, setTool, table, confirmDiscard, bytesOf, restoreFocus, root,
+    get lastFocus() { return lastFocus; }, set lastFocus(v) { lastFocus = v; },
+  });
 
   // ---- drawings dialog: GA plans and elevations + assembly drawings, made from the model on every open ----
   let dwgSet = null;
-  function makeDrawings() { return drawingSet(model.state, built, marks, { date: new Date().toISOString().slice(0, 10), paper: settings.paper }); }
-  function openDrawings() {
-    if (!built.parts.length) { print(tr('app.dwg.nothing')); return; }
-    if (!fillDrawings(0)) return;
-    lastFocus = document.activeElement;
-    ui.dwg.showModal();
-    requestAnimationFrame(() => drawList(ui.dwgCanvas, dwgSet.sheets[Number(ui.dwgSheet.value) || 0]));
-    ui.dwgSheet.focus();
-  }
-  /** (Re)makes the set on the chosen sheet size and fills the dialog; keeps the sheet shown. */
-  function fillDrawings(at) {
-    dwgSet = makeDrawings();
-    if (!dwgSet.sheets.length) { print(tr('app.dwg.empty')); return false; }
-    const st = sheetStatus(dwgSet.sheets, model.state.issues);
-    const tag = (sh) => { const x = st.get(sh.id); return !x.issued ? '' : x.changed ? ' ' + tr('issue.tag.changed', { rev: x.rev }) : ' ' + tr('issue.tag.rev', { rev: x.rev }); };
-    ui.dwgSheet.replaceChildren(...dwgSet.sheets.map((sh, i) => el('option', { value: String(i) }, sh.number + ' — ' + sh.title + ' (' + sh.scale + ')' + tag(sh))));
-    ui.dwgSheet.value = String(Math.min(at, dwgSet.sheets.length - 1));
-    syncIssue();
-    fillPaper(ui.dwgPaper);
-    ui.dwgNote.textContent = tr('dwg.note', { n: dwgSet.sheets.length, paper: paperLabel(dwgSet.paper), ref: dwgSet.ref });
-    return true;
-  }
-  ui.dwgPaper.addEventListener('change', () => {
-    setSetting('paper', PAPER_KEYS.includes(ui.dwgPaper.value) ? ui.dwgPaper.value : DEFAULT_PAPER, tr('dwg.paper.set', { paper: paperLabel(ui.dwgPaper.value) }));
-    if (dwgSet && fillDrawings(Number(ui.dwgSheet.value) || 0)) drawList(ui.dwgCanvas, dwgSet.sheets[Number(ui.dwgSheet.value)]);
-  });
-  ui.dwgSheet.addEventListener('change', () => { if (dwgSet) { drawList(ui.dwgCanvas, dwgSet.sheets[Number(ui.dwgSheet.value)]); syncIssue(); } });
-  // ---- issue log (D17) ----
-  function syncIssue() {
-    if (!dwgSet) return;
-    const st = sheetStatus(dwgSet.sheets, model.state.issues);
-    const sh = dwgSet.sheets[Number(ui.dwgSheet.value)], x = st.get(sh.id);
-    ui.issueStatus.textContent = !x.issued ? tr('issue.st.new') : x.changed ? tr('issue.st.changed', { rev: x.rev, date: x.date }) : tr('issue.st.current', { rev: x.rev, date: x.date });
-    ui.issueStatus.classList.toggle('is-changed', x.issued && x.changed);
-    ui.issueOne.disabled = x.issued && !x.changed;
-    ui.issueOne.title = ui.issueOne.disabled ? tr('issue.one.why') : '';
-    const n = dwgSet.sheets.filter((s2) => st.get(s2.id).changed).length;
-    ui.issueAll.textContent = tr('issue.all', { n });
-    ui.issueAll.disabled = !n;
-  }
-  function issueSheets(ids) {
-    const date = new Date().toISOString().slice(0, 10);
-    const list = planIssue(dwgSet.sheets, model.state.issues, ids, { date, note: ui.issueNote.value });
-    if (!list.length) return;
-    if (!edit(tr('issue.undo'), (tx) => tx.addIssues(list))) return;
-    const at = Number(ui.dwgSheet.value) || 0;
-    if (fillDrawings(at)) drawList(ui.dwgCanvas, dwgSet.sheets[Number(ui.dwgSheet.value)]);
-    print(list.length === 1 ? tr('issue.done.one', { number: list[0].number, rev: list[0].rev }) : tr('issue.done.all', { n: list.length }));
-  }
-  ui.issueOne.addEventListener('click', () => { if (dwgSet) issueSheets([dwgSet.sheets[Number(ui.dwgSheet.value)].id]); });
-  ui.issueAll.addEventListener('click', () => { if (dwgSet) { const st = sheetStatus(dwgSet.sheets, model.state.issues); issueSheets(dwgSet.sheets.filter((s2) => st.get(s2.id).changed).map((s2) => s2.id)); } });
-  ui.dwgClose.addEventListener('click', () => ui.dwg.close());
-  ui.dwg.addEventListener('close', () => { dwgSet = null; restoreFocus(); });
-  // PDF, DWG (cc-dwg's writer, loaded on first use) or DXF R12 (dwgout.js); several DWG / DXF sheets go in one zip
-  const fmtName = () => ui.dwgFormat.selectedOptions[0]?.textContent || 'PDF';
-  function syncFormat() {
-    ui.dwgOneLabel.textContent = tr('dwg.one', { format: fmtName() });
-    ui.dwgAllLabel.textContent = tr('dwg.all', { format: fmtName() });
-  }
-  ui.dwgFormat.addEventListener('change', syncFormat);
-  syncFormat();
-  let dwgWriter = null;
-  async function cadFiles(sheets) {
-    const f = ui.dwgFormat.value;
-    const name = (sh) => safeName() + ' ' + sh.number + (f === 'dxf' ? '.dxf' : '.dwg');
-    if (f === 'dxf') {
-      let fills = 0;
-      const files = sheets.map((sh) => { const r = sheetDxf(sh, { title: sh.title }); fills += r.notes.reduce((t, n) => t + n.n, 0); return { name: name(sh), data: latin1(r.text) }; });
-      return { files, notes: fills ? [tr('dxf.note.fills', { n: fills })] : [] };
-    }
-    if (!dwgWriter) {
-      try { dwgWriter = await import('./dwg/write.js'); }
-      catch { print(tr('dwg.nowriter')); return null; }
-    }
-    const version = f.slice(4), notes = [];
-    const files = sheets.map((sh) => { const r = dwgWriter.writeDwg(sheetModel(sh, { title: sh.title }), { version }); notes.push(...r.report.notes); return { name: name(sh), data: r.bytes }; });
-    return { files, notes };
-  }
-  const latin1 = (s) => Uint8Array.from(s, (c) => c.charCodeAt(0) & 255);
-  async function saveCad(sheets, all) {
-    const r = await cadFiles(sheets);
-    if (!r) return;
-    const ext = ui.dwgFormat.value === 'dxf' ? 'DXF' : 'DWG';
-    if (r.files.length === 1) download(r.files[0].name, new Blob([r.files[0].data], { type: 'application/octet-stream' }));
-    else download(safeName() + ' ' + tr('app.dwg.file') + ' ' + ext + '.zip', new Blob([zip(r.files)], { type: 'application/zip' }));
-    print(tr(all ? 'dwg.saved.all' : 'dwg.saved.one', { n: r.files.length, format: fmtName(), paper: paperLabel(dwgSet.paper) }) + (r.notes.length ? ' ' + r.notes.join(' ') : ''));
-  }
-  ui.dwgAll.addEventListener('click', async () => {
-    if (!dwgSet) return;
-    if (ui.dwgFormat.value !== 'pdf') return saveCad(dwgSet.sheets, true);
-    const { bytes, missing } = await toPdf(dwgSet.sheets, { title: tr('app.dwg.pdf-title', { name: model.state.name }) });
-    download(safeName() + ' ' + tr('app.dwg.file') + '.pdf', new Blob([bytes], { type: 'application/pdf' }));
-    print(tr('app.dwg.saved.pdf', { n: dwgSet.sheets.length, ref: dwgSet.ref }) + (missing ? ' ' + tr('app.pdf.missing', { n: missing }) : ''));
-  });
-  ui.dwgOne.addEventListener('click', async () => {
-    if (!dwgSet) return;
-    const sh = dwgSet.sheets[Number(ui.dwgSheet.value)];
-    if (ui.dwgFormat.value !== 'pdf') return saveCad([sh], false);
-    const { bytes } = await toPdf(sh, { title: sh.number + ' ' + sh.title });
-    download(safeName() + ' ' + sh.number + '.pdf', new Blob([bytes], { type: 'application/pdf' }));
-    print(tr('app.dwg.saved.sheet', { number: sh.number }));
+  const { makeDrawings, exportSet, openDrawings, openShop, drawList } = mountDrawings({
+    ui, print, fillPaper, setSetting, edit, selectedPart, safeName, download, exportNc, exportIfc, restoreFocus, mm,
+    get settings() { return settings; },
+    get model() { return model; },
+    get built() { return built; },
+    get marks() { return marks; },
+    get lastFocus() { return lastFocus; }, set lastFocus(v) { lastFocus = v; },
+    get dwgSet() { return dwgSet; }, set dwgSet(v) { dwgSet = v; },
   });
 
-  // ---- shop drawing dialog ----
-  let shopSheets = null, shopList = null, shopMark = '';
-  function openShop() {
-    if (!built.parts.length) { print(tr('app.dwg.nothing')); return; }
-    const part = selectedPart();
-    if (!fillShop(part ? part.id : null, 0)) return;
-    lastFocus = document.activeElement;
-    ui.shop.showModal();
-    requestAnimationFrame(drawShop);
-    ui.shopPdf.focus();
-  }
-  /** (Re)makes the set: one sheet per part mark, on the chosen sheet size. Opens on the part's own mark, else on sheet `at`. */
-  function fillShop(partId, at) {
-    const date = new Date().toISOString().slice(0, 10);
-    const weld = (part) => { const w = built.welds.find((x) => x.between.includes(part.id)); return w ? tr('app.shop.weld', { size: w.size, where: w.where.toLowerCase() }) : ''; };
-    const set = shopSet(built, marks, { model: model.state.name, date, paper: settings.paper, weld });
-    if (!set.sheets.length) { print(tr('app.dwg.empty')); return false; }
-    shopSheets = set.sheets;
-    const own = partId ? shopSheets.findIndex((s) => s.ids.includes(partId)) : -1;
-    ui.shopSheet.replaceChildren(...shopSheets.map((s, i) => el('option', { value: String(i) }, s.mark + ' — ' + s.profileName + ' x ' + mm(s.length) + (s.count > 1 ? ' (' + s.count + ')' : ''))));
-    ui.shopSheet.value = String(own >= 0 ? own : Math.min(at, shopSheets.length - 1));
-    ui.shopAll.lastChild.textContent = ' ' + tr('shop.all', { n: shopSheets.length });
-    fillPaper(ui.shopPaper);
-    showShop();
-    return true;
-  }
-  function showShop() {
-    const s = shopSheets[Number(ui.shopSheet.value)] || shopSheets[0];
-    shopList = s; shopMark = s.mark;
-    ui.shopH.textContent = tr('app.shop.title', { mark: shopMark });
-    ui.shopNote.textContent = tr('shop.note', { part: s.profileName + ' x ' + mm(s.length), n: s.count, paper: paperLabel(s.paper) });
-  }
-  ui.shopSheet.addEventListener('change', () => { if (shopSheets) { showShop(); drawShop(); } });
-  ui.shopPaper.addEventListener('change', () => {
-    setSetting('paper', PAPER_KEYS.includes(ui.shopPaper.value) ? ui.shopPaper.value : DEFAULT_PAPER, tr('dwg.paper.set', { paper: paperLabel(ui.shopPaper.value) }));
-    if (shopSheets && fillShop(null, Number(ui.shopSheet.value) || 0)) drawShop();
-  });
-  function drawShop() { if (shopList) drawList(ui.shopCanvas, shopList); }
-  /** Paints a display list (pdf.js items, mm, y up) on a canvas, white paper, black ink. */
-  function drawList(c, list) {
-    if (!list) return;
-    const r = c.getBoundingClientRect(), dpr = Math.min(window.devicePixelRatio || 1, 2);
-    c.width = Math.max(1, Math.round(r.width * dpr)); c.height = Math.max(1, Math.round(r.height * dpr));
-    const ctx = c.getContext('2d');
-    const k = Math.min(c.width / list.w, c.height / list.h);
-    ctx.fillStyle = '#ffffff'; ctx.fillRect(0, 0, c.width, c.height);
-    ctx.setTransform(k, 0, 0, -k, (c.width - list.w * k) / 2, (c.height + list.h * k) / 2);
-    ctx.strokeStyle = '#000'; ctx.fillStyle = '#000'; ctx.lineCap = 'round'; ctx.lineJoin = 'round';
-    for (const it of list.items) {
-      if (it.k === 'path' || it.k === 'circle') {
-        ctx.lineWidth = Math.max(it.w ?? 0.25, 0.6 / k * dpr * 0.5);
-        ctx.setLineDash(it.dash || []);
-        ctx.beginPath();
-        if (it.k === 'circle') ctx.arc(it.c[0], it.c[1], it.r, 0, Math.PI * 2);
-        else { ctx.moveTo(it.pts[0][0], it.pts[0][1]); for (const p of it.pts.slice(1)) ctx.lineTo(p[0], p[1]); if (it.closed) ctx.closePath(); }
-        if (it.fill) ctx.fill(); else ctx.stroke();
-      } else if (it.k === 'text') {
-        ctx.save();
-        ctx.translate(it.x, it.y); ctx.rotate(it.rot || 0); ctx.scale(1, -1);
-        ctx.font = (it.bold ? '700 ' : '400 ') + it.h + 'px Helvetica, Arial, sans-serif';   // i18n-ignore (CSS font)
-        ctx.textAlign = it.align || 'left'; ctx.textBaseline = 'alphabetic';
-        ctx.fillText(it.s, 0, 0);
-        ctx.restore();
-      }
-    }
-    ctx.setLineDash([]);
-  }
-  ui.shopPdf.addEventListener('click', async () => {
-    if (!shopList) return;
-    const { bytes, missing } = await toPdf(shopList, { title: tr('app.shop.title', { mark: shopMark }) });
-    download(safeName() + ' ' + shopMark + '.pdf', new Blob([bytes], { type: 'application/pdf' }));
-    print(tr('app.shop.saved', { mark: shopMark }) + (missing ? ' ' + tr('app.pdf.missing', { n: missing }) : ''));
-  });
-  ui.shopAll.addEventListener('click', async () => {
-    if (!shopSheets) return;
-    const { bytes, missing } = await toPdf(shopSheets, { title: tr('app.shop.set-title', { name: model.state.name }) });
-    download(safeName() + ' ' + tr('app.shop.file') + '.pdf', new Blob([bytes], { type: 'application/pdf' }));
-    print(tr('app.shop.saved.all', { n: shopSheets.length }) + (missing ? ' ' + tr('app.pdf.missing', { n: missing }) : ''));
-  });
-  ui.shopClose.addEventListener('click', () => ui.shop.close());
-  ui.shop.addEventListener('close', () => { shopSheets = null; shopList = null; restoreFocus(); });
 
   // ---- in-page question dialog (never window.confirm) ----
   let lastFocus = null;
@@ -2450,6 +1743,7 @@ async function start(root) {
   });
 
   window.detailcraft = {
+    get exportSet() { return exportSet; },   // Finalize and export in SuperCad Studio (SC.7): the outputs with options, no dialogs
     get model() { return model; }, get built() { return built; }, get marks() { return marks; }, get schedule() { return schedule; },
     get view() { return view; }, get viewMode() { return viewMode; }, get selection() { return sel; }, get selected() { return selected(); }, get tool() { return tool; },
     get settings() { return settings; }, get toolOptions() { return opts; }, clipboard: () => currentClip(),
@@ -2471,7 +1765,8 @@ async function start(root) {
 
   // ---- autosave and crash recovery (0.4 1.2): the open model is the document ----
   const autosave = new Autosave({ app: 'detailcraft' });
-  const adoc = autosave.doc({ id: 'open', name: model.state.name, snapshot: async () => ({ data: { text: model.toJSON() }, meta: { name: model.state.name } }) });
+  // 0.10 PERF.24: the first copy is the whole model, then only what each edit changed (lib/history; the open model is followed when a file opens)
+  const adoc = autosave.doc({ id: 'open', name: model.state.name, journal: followJournal(() => model.autosaveJournal()) });
   let copyPending = false;
   function refreshAutosave() {
     if (model.dirty) { adoc.rename(model.state.name); adoc.changed(); copyPending = true; }
@@ -2481,7 +1776,7 @@ async function start(root) {
   // automated browsers (tests, which leave edits open mid-run) see "Recover your work?" only when they ask: ?autosave=offer
   if (!navigator.webdriver || new URLSearchParams(location.search).get('autosave') === 'offer') autosave.offer({
     onRecover: async (rec) => {
-      const text = rec.data?.text;
+      const text = rec.data?.kind === 'chunks' ? recoverText(rec) : rec.data?.text;
       if (typeof text !== 'string') throw new Error('This copy is empty.');   // i18n-ignore: shown by the shell's dialog for a damaged copy
       if (!(await confirmDiscard())) throw new Error('Kept the open model.');  // i18n-ignore: the copy stays, the shell says why
       const m = new Model();
@@ -2507,6 +1802,52 @@ async function start(root) {
     }
     return guidMap.get(g) || null;
   }
+  // ---- SC.5 (sc-r5-select): the pick is announced to the page (SuperCad Studio hears `cc-pick` and keeps one selection across its panels) and a pick from another
+  // panel comes back through window.ccPickers.detailcraft. Both are inert outside Super. Ids are the project's object registry's: a member by its id, `conn:<id>`,
+  // `footing:<id>`, `stair:<id>`. Each ref also carries the GlobalIds its parts get in the IFC export (ifc.js: stable), so the same steel in the building model is
+  // found; a ref that is a GlobalId is taken back to the member, connection, stair or footing it came from (refOfGuid).
+  const PICK_PREFIX = { member: '', conn: 'conn:', footing: 'footing:', stair: 'stair:' };
+  const pickRefKey = (r) => r.kind + '\u0001' + r.id;
+  function guidsOfRef(r) {
+    if (!built) return [];
+    refOfGuid('');   // (re)builds the map for the model as built now
+    if (pickGuids?.map !== guidMap) { pickGuids = { map: guidMap, by: new Map() }; for (const [g, x] of guidMap) { const k = pickRefKey(x); if (!pickGuids.by.has(k)) pickGuids.by.set(k, []); pickGuids.by.get(k).push(g); } }
+    return pickGuids.by.get(pickRefKey(r)) || [];
+  }
+  function pickRefs() {
+    const list = selected().filter((r) => Object.hasOwn(PICK_PREFIX, r.kind)).slice(0, 2000);
+    return list.map((r) => { const g = guidsOfRef(r); return { id: PICK_PREFIX[r.kind] + r.id, ...(g.length ? { guid: g[0] } : {}), ...(g.length > 1 ? { aka: g.slice(1, 9) } : {}) }; });
+  }
+  function announcePick() {
+    if (!pickReady) return;
+    const refs = pickRefs();
+    const key = refs.map((r) => r.id).join(',');
+    if (key === pickLast) return;
+    pickLast = key;
+    try { window.dispatchEvent(new CustomEvent('cc-pick', { detail: { app: 'detailcraft', ids: refs.map((r) => r.id), refs } })); } catch { /* no window */ }
+  }
+  selListeners.add(announcePick);
+  pickReady = true;
+  const pickRefOf = (raw) => {
+    const id = String(raw ?? '');
+    for (const [kind, pre] of Object.entries(PICK_PREFIX)) {
+      if (pre ? !id.startsWith(pre) : id.includes(':')) continue;
+      const own = id.slice(pre.length), list = kind === 'member' ? model.state.members : kind === 'conn' ? model.state.connections : kind === 'footing' ? model.state.footings : model.state.stairs;
+      const o = (list || []).find((x) => String(x.id) === own);
+      if (o) return { kind, id: o.id };
+    }
+    return built && /^[0-9A-Za-z_$]{22}$/.test(id) ? refOfGuid(id) : null;
+  };
+  /** Show a pick from another panel. → the ids shown, or false */
+  function pickApply(refs) {
+    const list = (refs || []).slice(0, 5000).map((r) => (r ? pickRefOf(r.id) : null)).filter(Boolean);
+    if (!list.length) return false;
+    if (tool !== 'select') setTool('select');
+    setSelection(list);
+    return selected().filter((r) => Object.hasOwn(PICK_PREFIX, r.kind)).map((r) => PICK_PREFIX[r.kind] + r.id);
+  }
+  (window.ccPickers = window.ccPickers || {}).detailcraft = { apply: pickApply, get: () => { const refs = pickRefs(); return { ids: refs.map((r) => r.id), refs }; }, clear: () => { if (selected().length) setSelection([]); return true; },
+    has: (id) => !!pickRefOf(id) };   // has: is this id (or GlobalId) something of the open model? (the same steel in the building model, with no link needed)
   // ---- Problems (0.7.1 → 0.8; docs/0.8-PROBLEMS-SPEC.md): build.js's problems in the shell's ⚠ panel, ⚠ markers in the 3D view and in
   // plan / elevation, accepted problems saved in the file (model.state.problems, one undo step). Only with the shell's module (manifest
   // "problems"); the Problems tab below the view keeps working either way.
@@ -2548,6 +1889,10 @@ async function start(root) {
       const rcSrc = P.source({ id: 'detailcraft.rebar', kind: 'check', label: tr('problems.src.rebar') });   // 0.9 RC.1: laps, anchorage, cover, spacing, steel
       rcSet = (list) => rcSrc.set(list);
       rcSet(rcProblems(rcb));
+      // 0.10 BK.20: the shared LOD 350 interface rules, read on DetailCraft's walls with openings (framed panels, concrete walls): advisory
+      const ifaceSrc = P.source({ id: 'detailcraft.interfaces', kind: 'check', label: tr('problems.src.interfaces') });
+      ifaceSet = (list) => ifaceSrc.set(list);
+      ifaceSet(dcInterfaces(model.state).problems);
       const fndSrc = P.source({ id: 'detailcraft.foundation', kind: 'engine', label: tr('problems.src.foundation') });
       fndSet = (list) => fndSrc.set(list);
       fndSet(foundation.problems());
@@ -2562,7 +1907,7 @@ async function start(root) {
       frmSet(framing.problems());
       const consSrc = P.source({ id: 'detailcraft.constructability', kind: 'engine', label: tr('problems.src.constructability') });
       consSet = (list) => consSrc.set(list);
-      consSet(constructability(model.state, built));
+      consSet(constructability(model.state, built, { cache: consCache }));
       frameProblemsSet = (list) => frameSrc.set(list);
       if (frameProblems) frameProblemsSet(frameProblems);
       problemsSync();

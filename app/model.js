@@ -59,6 +59,7 @@ import { cleanIdsRecord, cleanIdsRef, idsHash, idsTextStore } from './ids/record
 import { cleanPicture, readPictures, MAX_PICTURES } from './picture.js';   // 0.8 D8.15: reference pictures (a copied area of a sheet)
 import { cleanRc, cleanOne, mergeInto, cleanSettingsRc, MAX_ELEMENTS } from './rc-detail.js';   // 0.9 RC.1: reinforced concrete detailing
 import { t } from './i18n.js';
+import { ChunkHistory, chunkJournal, recoverState, recoverExtras, join } from './history/index.js';   // 0.10 PERF.21 / PERF.24: undo by change records, autosave that writes what changed
 
 export const FORMAT = 'detailcraft';
 export const VERSION = 2;              // 2: phases (0.4 D13)
@@ -66,6 +67,9 @@ export const MAX_PHASE = 999;
 export const MEMBER_TYPES = ['beam', 'column', 'brace', 'plate'];
 export const MATERIALS = ['A992', 'A36', 'A572 Gr 50', 'A500 Gr C', 'S235', 'S275', 'S355'];
 const UNDO_DEPTH = 200;
+const UNDO_BYTES = 96e6;
+/** How the state is cut into chunks (lib/history): the lists of objects with an id are one chunk per object. */
+export const HISTORY_SPEC = Object.freeze({ arrays: { members: 'id', connections: 'id', footings: 'id', stairs: 'id', bolts: 'id', profiles: 'id', pictures: 'id', issues: 'id' } });
 
 export function emptyState(name = t('model.name.untitled')) {
   return {
@@ -149,16 +153,24 @@ export function defaultsFor(type) {
 }
 
 export class Model {
+  static verifyHints = typeof process !== 'undefined' && process.env?.HISTORY_VERIFY === '1';   // tests: check every hinted commit against a full look
   constructor(state = starterState()) {
+    this.h = new ChunkHistory({ spec: HISTORY_SPEC, limit: UNDO_DEPTH, maxBytes: UNDO_BYTES });
     this.state = state;
-    this.undoStack = [];
-    this.redoStack = [];
     this.version = 0;
     this.savedVersion = 0;
     this.listeners = new Set();
     this.idsTexts = idsTextStore();   // 0.7.1 71.25: IDS texts by hash, once, outside the undo snapshots (state.ids is { name, hash })
     this.pictureSrcs = idsTextStore();   // 0.8 D8.15: the pictures' PNGs (data URLs) by hash, the same way (state.pictures[].hash)
   }
+  /** The document. Putting a whole new one in starts the history again from it. */
+  get state() { return this._state; }
+  set state(v) { this._state = v; this.h.reset(v); }
+  /** The steps (0.10: change records, see lib/history; `label` on each, `before` the state's JSON before the step, newest step only). */
+  get undoStack() { return this.h.undoStack; }
+  set undoStack(v) { this.h.undoStack.length = 0; if (v && v.length) throw new Error('The undo stack can only be cleared.'); }
+  get redoStack() { return this.h.redoStack; }
+  set redoStack(v) { this.h.redoStack.length = 0; if (v && v.length) throw new Error('The redo stack can only be cleared.'); }
   get dirty() { return this.version !== this.savedVersion; }
   markSaved() { this.savedVersion = this.version; }
   on(fn) { this.listeners.add(fn); return () => this.listeners.delete(fn); }
@@ -166,51 +178,71 @@ export class Model {
 
   /** One undo step. fn(tx) edits through tx (see Tx). Throws (and changes nothing) if fn throws. */
   change(label, fn) {
-    const before = JSON.stringify(this.state);
     const tx = new Tx(this.state);
     let result;
-    try { result = fn(tx); }
-    catch (e) { this.state = JSON.parse(before); throw e; }
-    const after = JSON.stringify(this.state);
-    if (after === before) return result;
-    this.undoStack.push({ label, before });
-    if (this.undoStack.length > UNDO_DEPTH) this.undoStack.shift();
-    this.redoStack = [];
+    try { result = fn(hintedTx(tx)); }
+    catch (e) { this.h.rollback(this.state); throw e; }
+    // 0.10: an edit made only through the hinted methods names its chunks; anything else (or a closure that edits the state itself) is looked at in full
+    const step = this.h.commit(this.state, label, { keys: tx.full || !tx.keys.size ? null : tx.keys, verify: Model.verifyHints });
+    if (!step) return result;
+    Object.defineProperty(step, 'before', { configurable: true, get: () => this.beforeText(step) });   // live.js reads the newest step's `before`
     if (this.idsTexts.size > 1) this.pruneIds();
     if (this.pictureSrcs.size > (this.state.pictures?.length || 0) + 4) this.prunePictures();   // a few deleted ones kept for undo without searching the snapshots each edit
     this.version++;
     this.emit('change');
     return result;
   }
-  get canUndo() { return this.undoStack.length > 0; }
-  get canRedo() { return this.redoStack.length > 0; }
+  /** The state's JSON as it was before `step` (the newest step: the chunks it changed put back). */
+  beforeText(step) {
+    const table = new Map(this.h.cur);
+    for (const [k, s] of step.undo) { if (s === null) table.delete(k); else table.set(k, s); }
+    return JSON.stringify(join(table, HISTORY_SPEC));
+  }
+  get canUndo() { return this.h.canUndo; }
+  get canRedo() { return this.h.canRedo; }
   undo() {
-    const s = this.undoStack.pop();
-    if (!s) return null;
-    this.redoStack.push({ label: s.label, after: JSON.stringify(this.state) });
-    this.state = JSON.parse(s.before);
+    const label = this.h.undo(this.state);
+    if (label === null) return null;
     this.version++;
     this.emit('undo');
-    return s.label;
+    return label;
   }
   redo() {
-    const s = this.redoStack.pop();
-    if (!s) return null;
-    this.undoStack.push({ label: s.label, before: JSON.stringify(this.state) });
-    this.state = JSON.parse(s.after);
+    const label = this.h.redo(this.state);
+    if (label === null) return null;
     this.version++;
     this.emit('redo');
-    return s.label;
+    return label;
+  }
+
+  /**
+   * Autosave that writes what changed (0.10 PERF.24): the journal the shell's Autosave.doc({ journal }) takes. Its base is every chunk of the
+   * state (once), then only the chunks each edit changed. The IDS text and the pictures' PNGs live outside the state: they go along as extra chunks.
+   */
+  autosaveJournal() { return chunkJournal(this.h, { meta: () => ({ name: this.state.name }), prepare: () => this.syncExtras() }); }
+  syncExtras() {
+    const want = new Map(), ih = this.state.ids?.hash;
+    if (ih) { const text = this.idsTexts.get(ih); if (text) want.set('x:ids:' + ih, text); }
+    for (const p of this.state.pictures || []) { const src = this.pictureSrcs.get(p.hash); if (src) want.set('x:pic:' + p.hash, src); }
+    for (const k of this.h.extraKeys()) if (!want.has(k)) this.h.setExtra(k, null);
+    for (const [k, v] of want) this.h.setExtra(k, v);
+  }
+
+  /** Every chunk string the steps hold (what an undo or redo could bring back). */
+  stepStrings() {
+    const out = [];
+    for (const st of [...this.undoStack, ...this.redoStack]) { for (const v of st.undo.values()) if (v) out.push(v); for (const v of st.redo.values()) if (v) out.push(v); }
+    return out;
   }
 
   /** IDS texts no state and no undo / redo snapshot refers to any more are let go (0.7.1 71.25). */
   pruneIds() {
-    const refs = [JSON.stringify(this.state.ids || null), ...this.undoStack.map((x) => x.before), ...this.redoStack.map((x) => x.after)];
+    const refs = [JSON.stringify(this.state.ids || null), ...this.stepStrings()];
     this.idsTexts.prune((h) => refs.some((r) => r.includes(h)));
   }
   /** PNGs no state and no snapshot refers to any more are let go (0.8 D8.15); one a redo could bring back stays. */
   prunePictures() {
-    const refs = [JSON.stringify(this.state.pictures || null), ...this.undoStack.map((x) => x.before), ...this.redoStack.map((x) => x.after)];
+    const refs = [JSON.stringify(this.state.pictures || null), ...this.stepStrings()];
     this.pictureSrcs.prune((h) => refs.some((r) => r.includes(h)));
   }
   /** The text of the IDS the model refers to now, or null. */
@@ -251,13 +283,32 @@ export class Model {
   stair(id) { return (this.state.stairs || []).find((x) => x.id === id) || null; }
 }
 
+/** The Tx methods that say which chunks they touch (`keys`); a call to any other method, or to `tx.s`, makes the history look at everything. */
+const HINTED = new Set(['nextId', 'ensurePhase', 'addMember', 'updateMember', 'removeMembers', 'addConnection']);
+function hintedTx(tx) {
+  return new Proxy(tx, { get(target, k) {
+    const v = target[k];
+    if (typeof v !== 'function' || HINTED.has(k)) return typeof v === 'function' ? v.bind(target) : v;
+    return (...a) => { target.full = true; return v.apply(target, a); };
+  } });
+}
+
+/** The file text of a model an autosave journal (base + changes) holds: the app opens it with Model.load, like any file, so it is checked the same way. */
+export function recoverText(rec) {
+  const tmp = new Model(recoverState(rec, HISTORY_SPEC));
+  for (const [k, v] of recoverExtras(rec)) { if (k.startsWith('x:ids:')) tmp.idsTexts.put(v); else if (k.startsWith('x:pic:')) tmp.pictureSrcs.put(v); }
+  return tmp.toJSON();
+}
+
 /** The edit vocabulary; each checks its input so a bad edit throws before anything is kept. */
 class Tx {
-  constructor(state) { this.s = state; }
-  nextId(prefix) { return prefix + (this.s.seq++); }
+  constructor(state) { this._s = state; this.keys = new Set(); this.full = false; }
+  /** The raw state, for an edit that is not one of the hinted methods below: the history then looks at everything (0.10 PERF.21). */
+  get s() { this.full = true; return this._s; }
+  nextId(prefix) { this.keys.add('k:seq'); return prefix + (this._s.seq++); }
 
-  setName(name) { this.s.name = cleanText(name, 80) || t('model.name.untitled'); }
-  setGrids(grids) { this.s.grids = { x: grids.x.map((g) => ({ ...g })), y: grids.y.map((g) => ({ ...g })) }; }
+  setName(name) { this._s.name = cleanText(name, 80) || t('model.name.untitled'); }
+  setGrids(grids) { this._s.grids = { x: grids.x.map((g) => ({ ...g })), y: grids.y.map((g) => ({ ...g })) }; }
   setLevels(levels) {
     if (!levels.length) throw new Error(t('model.err.level-keep'));
     const names = new Set();
@@ -269,41 +320,42 @@ class Tx {
       names.add(name);
       return { name, z };
     });
-    this.s.levels = out.sort((a, b) => a.z - b.z);
+    this._s.levels = out.sort((a, b) => a.z - b.z);
   }
 
   // ---- phases (D13) ----
   ensurePhase(n) {
-    if (!Array.isArray(this.s.phases)) this.s.phases = [{ n: 1, name: '' }];   // a state made before phases (an IFC import, a test)
-    if (!this.s.numbering) this.s.numbering = { perPhase: true };
-    if (!this.s.phases.some((p) => p.n === n)) { this.s.phases.push({ n, name: '' }); this.s.phases.sort((a, b) => a.n - b.n); }
+    if (!Array.isArray(this._s.phases)) this._s.phases = [{ n: 1, name: '' }];   // a state made before phases (an IFC import, a test)
+    if (!this._s.numbering) this._s.numbering = { perPhase: true };
+    if (!this._s.phases.some((p) => p.n === n)) { this._s.phases.push({ n, name: '' }); this._s.phases.sort((a, b) => a.n - b.n); }
+    this.keys.add('k:phases').add('k:numbering');
   }
   addPhase(name = '') {
-    const n = Math.max(0, ...this.s.phases.map((p) => p.n)) + 1;
+    const n = Math.max(0, ...this._s.phases.map((p) => p.n)) + 1;
     if (n > MAX_PHASE) throw new Error(t('phase.err.max', { max: MAX_PHASE }));
-    this.s.phases.push({ n, name: cleanText(name, 40) });
+    this._s.phases.push({ n, name: cleanText(name, 40) });
     return n;
   }
   renamePhase(n, name) {
-    const p = this.s.phases.find((x) => x.n === n);
+    const p = this._s.phases.find((x) => x.n === n);
     if (!p) throw new Error(t('phase.err.gone'));
     p.name = cleanText(name, 40);
   }
   removePhase(n) {
-    const used = [...this.s.members, ...this.s.footings, ...(this.s.stairs || []), ...(this.s.rc?.elements || [])].filter((x) => x.phase === n).length;
+    const used = [...this._s.members, ...this._s.footings, ...(this._s.stairs || []), ...(this._s.rc?.elements || [])].filter((x) => x.phase === n).length;
     if (used) throw new Error(t('phase.err.used', { n: used, phase: n }));
-    if (this.s.phases.length <= 1) throw new Error(t('phase.err.last'));
-    this.s.phases = this.s.phases.filter((p) => p.n !== n);
+    if (this._s.phases.length <= 1) throw new Error(t('phase.err.last'));
+    this._s.phases = this._s.phases.filter((p) => p.n !== n);
   }
-  setNumbering(o) { this.s.numbering = { perPhase: !!o.perPhase }; }
+  setNumbering(o) { this._s.numbering = { perPhase: !!o.perPhase }; }
   /** The problems accepted as intended (the shell's Problems panel; one undo step like any edit). [] removes the key. */
-  setAcceptedProblems(list) { const a = cleanAcceptedDc(list); if (a.length) this.s.problems = { accepted: a }; else delete this.s.problems; }
+  setAcceptedProblems(list) { const a = cleanAcceptedDc(list); if (a.length) this._s.problems = { accepted: a }; else delete this._s.problems; }
   /** The IDS the IFC export is checked against (0.7.1 71.25): its { name, hash } (put the text in Model.idsTexts first); null forgets it. */
-  setIds(ref) { const r = cleanIdsRef(ref); if (r) this.s.ids = { name: r.name, hash: r.hash }; else delete this.s.ids; }   // the text: Model.idsTexts
+  setIds(ref) { const r = cleanIdsRef(ref); if (r) this._s.ids = { name: r.name, hash: r.hash }; else delete this._s.ids; }   // the text: Model.idsTexts
   /** Adds drawing issues (issues.js planIssue records). */
   addIssues(list) {
-    if (!Array.isArray(this.s.issues)) this.s.issues = [];
-    for (const x of list) { const c = cleanIssue(x); if (!c) throw new Error(t('issue.err.bad')); this.s.issues.push(c); }
+    if (!Array.isArray(this._s.issues)) this._s.issues = [];
+    for (const x of list) { const c = cleanIssue(x); if (!c) throw new Error(t('issue.err.bad')); this._s.issues.push(c); }
   }
   /** Puts members and footings (refs) in phase n. */
   setPhaseOf(refs, n) {
@@ -311,10 +363,10 @@ class Tx {
     if (!ph) throw new Error(t('phase.err.number', { max: MAX_PHASE }));
     this.ensurePhase(ph);
     const ids = new Set(refs.map((r) => r.kind + ':' + r.id));
-    for (const m of this.s.members) if (ids.has('member:' + m.id)) m.phase = ph;
-    for (const f of this.s.footings) if (ids.has('footing:' + f.id)) f.phase = ph;
-    for (const x of this.s.rc?.elements || []) if (ids.has('rc:' + x.id)) x.phase = ph;
-    for (const x of this.s.stairs || []) if (ids.has('stair:' + x.id)) x.phase = ph;
+    for (const m of this._s.members) if (ids.has('member:' + m.id)) m.phase = ph;
+    for (const f of this._s.footings) if (ids.has('footing:' + f.id)) f.phase = ph;
+    for (const x of this._s.rc?.elements || []) if (ids.has('rc:' + x.id)) x.phase = ph;
+    for (const x of this._s.stairs || []) if (ids.has('stair:' + x.id)) x.phase = ph;
   }
 
   addMember(m) {
@@ -328,13 +380,14 @@ class Tx {
       name: cleanText(m.name ?? '', 40), cuts: [], holes: [], phase: cleanPhase(m.phase) || 1,
     };
     if (m.panel) mem.panel = cleanText(m.panel, 40);   // 0.8 round 3 (EG.6): a piece of a placed framing panel
-    checkMember(mem, this.s.profiles);
+    checkMember(mem, this._s.profiles);
     this.ensurePhase(mem.phase);
-    this.s.members.push(mem);
+    this._s.members.push(mem);
+    this.keys.add('o:members').add('e:members:' + mem.id);
     return mem.id;
   }
   updateMember(id, patch) {
-    const m = this.s.members.find((x) => x.id === id);
+    const m = this._s.members.find((x) => x.id === id);
     if (!m) throw new Error(t('model.err.member-gone'));
     const next = { ...m, ...patch };
     if (patch.start) next.start = vec(patch.start);
@@ -342,17 +395,22 @@ class Tx {
     if (patch.name !== undefined) next.name = cleanText(patch.name, 40);
     if (patch.rotation !== undefined) next.rotation = Number(patch.rotation);
     if (patch.phase !== undefined) { next.phase = cleanPhase(patch.phase); if (!next.phase) throw new Error(t('phase.err.number', { max: MAX_PHASE })); this.ensurePhase(next.phase); }
-    checkMember(next, this.s.profiles);
+    checkMember(next, this._s.profiles);
     Object.assign(m, next);
+    this.keys.add('e:members:' + id);
   }
   removeMembers(ids) {
     const set = new Set(ids);
-    this.s.members = this.s.members.filter((m) => !set.has(m.id));
+    this._s.members = this._s.members.filter((m) => !set.has(m.id));
     // a connection without its parts goes too
-    this.s.connections = this.s.connections.filter((c) => !membersOf(c).some((id) => set.has(id)));
+    const gone = this._s.connections.filter((c) => membersOf(c).some((id) => set.has(id)));
+    this._s.connections = this._s.connections.filter((c) => !membersOf(c).some((id) => set.has(id)));
+    this.keys.add('o:members').add('o:connections');
+    for (const id of set) this.keys.add('e:members:' + id);
+    for (const c of gone) this.keys.add('e:connections:' + c.id);
   }
   addHole(memberId, h) {
-    const m = this.s.members.find((x) => x.id === memberId);
+    const m = this._s.members.find((x) => x.id === memberId);
     if (!m) throw new Error(t('model.err.member-gone'));
     const hole = cleanHole(h);
     if (!hole) throw new Error(t('model.err.hole'));
@@ -361,11 +419,11 @@ class Tx {
     return hole.id;
   }
   removeHole(memberId, holeId) {
-    const m = this.s.members.find((x) => x.id === memberId);
+    const m = this._s.members.find((x) => x.id === memberId);
     if (m) m.holes = m.holes.filter((h) => h.id !== holeId);
   }
   addCut(memberId, c) {
-    const m = this.s.members.find((x) => x.id === memberId);
+    const m = this._s.members.find((x) => x.id === memberId);
     if (!m) throw new Error(t('model.err.member-gone'));
     const cut = cleanCut(c);
     if (!cut) throw new Error(t('model.err.cope'));
@@ -374,40 +432,41 @@ class Tx {
     return cut.id;
   }
   removeCut(memberId, cutId) {
-    const m = this.s.members.find((x) => x.id === memberId);
+    const m = this._s.members.find((x) => x.id === memberId);
     if (m) m.cuts = m.cuts.filter((c) => c.id !== cutId);
   }
 
   addConnection(c) {
     const id = this.nextId('j');
     if (isBeamEnd(c)) {
-      if (this.s.connections.some((x) => isBeamEnd(x) && x.beam === c.beam && x.end === c.end)) throw new Error(t('model.err.end-taken'));
-      this.s.connections.push({ id, type: c.type, beam: c.beam, end: c.end === 'start' ? 'start' : 'end', column: c.column, params: { ...DEFAULTS_OF[c.type], ...(c.params || {}) } });
+      if (this._s.connections.some((x) => isBeamEnd(x) && x.beam === c.beam && x.end === c.end)) throw new Error(t('model.err.end-taken'));
+      this._s.connections.push({ id, type: c.type, beam: c.beam, end: c.end === 'start' ? 'start' : 'end', column: c.column, params: { ...DEFAULTS_OF[c.type], ...(c.params || {}) } });
     } else if (c.type === 'baseplate') {
-      if (this.s.connections.some((x) => x.type === 'baseplate' && x.column === c.column)) throw new Error(t('model.err.base-taken'));
-      this.s.connections.push({ id, type: 'baseplate', column: c.column, params: { ...BASEPLATE_DEFAULTS, ...(c.params || {}) } });
+      if (this._s.connections.some((x) => x.type === 'baseplate' && x.column === c.column)) throw new Error(t('model.err.base-taken'));
+      this._s.connections.push({ id, type: 'baseplate', column: c.column, params: { ...BASEPLATE_DEFAULTS, ...(c.params || {}) } });
     } else if (c.type === 'splice') {
-      if (!this.s.members.some((m) => m.id === c.a) || !this.s.members.some((m) => m.id === c.b) || c.a === c.b) throw new Error(t('model.err.conn-gone'));
+      if (!this._s.members.some((m) => m.id === c.a) || !this._s.members.some((m) => m.id === c.b) || c.a === c.b) throw new Error(t('model.err.conn-gone'));
       const aEnd = c.aEnd === 'start' ? 'start' : 'end';
-      if (this.s.connections.some((x) => x.type === 'splice' && ((x.a === c.a && x.aEnd === aEnd) || (x.a === c.b && x.b === c.a) || (x.a === c.a && x.b === c.b)))) throw new Error(t('model.err.splice-taken'));
-      this.s.connections.push({ id, type: 'splice', a: c.a, aEnd, b: c.b, params: { ...DEFAULTS_OF.splice, ...(c.params || {}) } });
+      if (this._s.connections.some((x) => x.type === 'splice' && ((x.a === c.a && x.aEnd === aEnd) || (x.a === c.b && x.b === c.a) || (x.a === c.a && x.b === c.b)))) throw new Error(t('model.err.splice-taken'));
+      this._s.connections.push({ id, type: 'splice', a: c.a, aEnd, b: c.b, params: { ...DEFAULTS_OF.splice, ...(c.params || {}) } });
     } else if (c.type === 'gusset') {
-      const br = this.s.members.find((m) => m.id === c.brace);
-      if (!br || br.type !== 'brace' || !this.s.members.some((m) => m.id === c.support) || c.brace === c.support) throw new Error(t('model.err.conn-gone'));
+      const br = this._s.members.find((m) => m.id === c.brace);
+      if (!br || br.type !== 'brace' || !this._s.members.some((m) => m.id === c.support) || c.brace === c.support) throw new Error(t('model.err.conn-gone'));
       const end = c.end === 'start' ? 'start' : 'end';
-      if (this.s.connections.some((x) => x.type === 'gusset' && x.brace === c.brace && x.end === end)) throw new Error(t('model.err.end-taken'));
-      this.s.connections.push({ id, type: 'gusset', brace: c.brace, end, support: c.support, params: { ...DEFAULTS_OF.gusset, ...(c.params || {}) } });
+      if (this._s.connections.some((x) => x.type === 'gusset' && x.brace === c.brace && x.end === end)) throw new Error(t('model.err.end-taken'));
+      this._s.connections.push({ id, type: 'gusset', brace: c.brace, end, support: c.support, params: { ...DEFAULTS_OF.gusset, ...(c.params || {}) } });
     } else if (c.type === 'mitre') {
-      if (!this.s.members.some((m) => m.id === c.a) || !this.s.members.some((m) => m.id === c.b) || c.a === c.b) throw new Error(t('model.err.conn-gone'));
+      if (!this._s.members.some((m) => m.id === c.a) || !this._s.members.some((m) => m.id === c.b) || c.a === c.b) throw new Error(t('model.err.conn-gone'));
       const aEnd = c.aEnd === 'start' ? 'start' : 'end', bEnd = c.bEnd === 'start' ? 'start' : 'end';
-      const ends = new Set(this.s.connections.filter((x) => x.type === 'mitre').flatMap((x) => [x.a + ':' + x.aEnd, x.b + ':' + x.bEnd]));
+      const ends = new Set(this._s.connections.filter((x) => x.type === 'mitre').flatMap((x) => [x.a + ':' + x.aEnd, x.b + ':' + x.bEnd]));
       if (ends.has(c.a + ':' + aEnd) || ends.has(c.b + ':' + bEnd)) throw new Error(t('model.err.end-taken'));
-      this.s.connections.push({ id, type: 'mitre', a: c.a, aEnd, b: c.b, bEnd, params: { ...DEFAULTS_OF.mitre, ...(c.params || {}) } });
+      this._s.connections.push({ id, type: 'mitre', a: c.a, aEnd, b: c.b, bEnd, params: { ...DEFAULTS_OF.mitre, ...(c.params || {}) } });
     } else throw new Error(t('model.err.conn-unknown'));
+    this.keys.add('o:connections').add('e:connections:' + id);
     return id;
   }
   updateConnection(id, params) {
-    const c = this.s.connections.find((x) => x.id === id);
+    const c = this._s.connections.find((x) => x.id === id);
     if (!c) throw new Error(t('model.err.conn-gone'));
     const next = { ...c.params };
     for (const [k, v] of Object.entries(params)) {
@@ -417,8 +476,8 @@ class Tx {
     }
     c.params = next;
   }
-  swapConnectionEnd(id) { const c = this.s.connections.find((x) => x.id === id); if (c) c.end = c.end === 'start' ? 'end' : 'start'; }
-  removeConnections(ids) { const set = new Set(ids); this.s.connections = this.s.connections.filter((c) => !set.has(c.id)); }
+  swapConnectionEnd(id) { const c = this._s.connections.find((x) => x.id === id); if (c) c.end = c.end === 'start' ? 'end' : 'start'; }
+  removeConnections(ids) { const set = new Set(ids); this._s.connections = this._s.connections.filter((c) => !set.has(c.id)); }
 
   addFooting(f) {
     const id = this.nextId('f');
@@ -426,25 +485,25 @@ class Tx {
     if (!r.ok) throw new Error(r.error);
     const phase = cleanPhase(f.phase) || 1;
     this.ensurePhase(phase);
-    this.s.footings.push({ id, ...r.footing, phase });
+    this._s.footings.push({ id, ...r.footing, phase });
     return id;
   }
   updateFooting(id, patch) {
-    const i = this.s.footings.findIndex((x) => x.id === id);
+    const i = this._s.footings.findIndex((x) => x.id === id);
     if (i < 0) throw new Error(t('model.err.footing-gone'));
-    const f = this.s.footings[i];
+    const f = this._s.footings[i];
     const r = cleanFooting({ ...f, ...patch, mat: { ...f.mat, ...(patch.mat || {}) }, starters: { ...f.starters, ...(patch.starters || {}) } });
     if (!r.ok) throw new Error(r.error);
     const phase = patch.phase !== undefined ? cleanPhase(patch.phase) : f.phase || 1;
     if (!phase) throw new Error(t('phase.err.number', { max: MAX_PHASE }));
     this.ensurePhase(phase);
-    this.s.footings[i] = { id, ...r.footing, phase };
+    this._s.footings[i] = { id, ...r.footing, phase };
   }
-  removeFootings(ids) { const set = new Set(ids); this.s.footings = this.s.footings.filter((f) => !set.has(f.id)); }
+  removeFootings(ids) { const set = new Set(ids); this._s.footings = this._s.footings.filter((f) => !set.has(f.id)); }
 
   // ---- reinforced concrete (0.9 RC.1, rc-detail.js) ----
-  rcState() { if (!this.s.rc) this.s.rc = { settings: cleanSettingsRc({}), elements: [], loose: [] }; return this.s.rc; }
-  dropRcIfEmpty() { const r = this.s.rc; if (r && !r.elements.length && !r.loose.length && !r.touched) delete this.s.rc; }
+  rcState() { if (!this._s.rc) this._s.rc = { settings: cleanSettingsRc({}), elements: [], loose: [] }; return this._s.rc; }
+  dropRcIfEmpty() { const r = this._s.rc; if (r && !r.elements.length && !r.loose.length && !r.touched) delete this._s.rc; }
   addRc(e) {
     const rc = this.rcState();
     if (rc.elements.length >= MAX_ELEMENTS) throw new Error(t('rc.err.too-many', { n: MAX_ELEMENTS }));
@@ -465,11 +524,11 @@ class Tx {
     this.ensurePhase(phase);
     rc.elements[i] = { id, phase, ...el };
   }
-  removeRc(ids) { if (!this.s.rc || !ids.length) return; const set = new Set(ids); this.s.rc.elements = this.s.rc.elements.filter((x) => !set.has(x.id)); this.dropRcIfEmpty(); }
+  removeRc(ids) { if (!this._s.rc || !ids.length) return; const set = new Set(ids); this._s.rc.elements = this._s.rc.elements.filter((x) => !set.has(x.id)); this.dropRcIfEmpty(); }
   setRcSettings(patch) { const rc = this.rcState(); rc.settings = cleanSettingsRc({ ...rc.settings, ...patch }); rc.touched = true; }
   /** Bars read from a file (already checked by cleanRc / the importer). */
   addLoose(list) { const rc = this.rcState(); const ids = []; for (const b of list) { const id = this.nextId('x'); rc.loose.push({ id, ...b }); ids.push(id); } return ids; }
-  removeLoose(ids = null) { if (!this.s.rc) return; const set = ids && new Set(ids); this.s.rc.loose = set ? this.s.rc.loose.filter((b) => !set.has(b.id)) : []; this.dropRcIfEmpty(); }
+  removeLoose(ids = null) { if (!this._s.rc) return; const set = ids && new Set(ids); this._s.rc.loose = set ? this._s.rc.loose.filter((b) => !set.has(b.id)) : []; this.dropRcIfEmpty(); }
 
   addStair(x) {
     const id = this.nextId('s');
@@ -477,69 +536,69 @@ class Tx {
     if (!r.ok) throw new Error(t('stair.err.field', { name: r.error }));
     const phase = cleanPhase(x.phase) || 1;
     this.ensurePhase(phase);
-    if (!Array.isArray(this.s.stairs)) this.s.stairs = [];
-    this.s.stairs.push({ id, ...r.stair, phase });
+    if (!Array.isArray(this._s.stairs)) this._s.stairs = [];
+    this._s.stairs.push({ id, ...r.stair, phase });
     return id;
   }
   updateStair(id, patch) {
-    const i = (this.s.stairs || []).findIndex((x) => x.id === id);
+    const i = (this._s.stairs || []).findIndex((x) => x.id === id);
     if (i < 0) throw new Error(t('stair.err.gone'));
-    const x = this.s.stairs[i];
+    const x = this._s.stairs[i];
     const r = cleanStair({ ...x, ...patch, tread: { ...x.tread, ...(patch.tread || {}) } });
     if (!r.ok) throw new Error(t('stair.err.field', { name: r.error }));
     const phase = patch.phase !== undefined ? cleanPhase(patch.phase) : x.phase || 1;
     if (!phase) throw new Error(t('phase.err.number', { max: MAX_PHASE }));
     this.ensurePhase(phase);
-    this.s.stairs[i] = { id, ...r.stair, phase };
+    this._s.stairs[i] = { id, ...r.stair, phase };
   }
   addBolt(b) {
     const c = cleanBolt(b);
     if (!c) throw new Error(t('model.err.bolt'));
-    if (!Array.isArray(this.s.bolts)) this.s.bolts = [];
+    if (!Array.isArray(this._s.bolts)) this._s.bolts = [];
     const id = this.nextId('k');
-    this.s.bolts.push({ id, ...c });
+    this._s.bolts.push({ id, ...c });
     return id;
   }
   /** Removes loose bolts (ids), or all of them (null). */
-  removeBolts(ids = null) { const set = ids && new Set(ids); this.s.bolts = set ? (this.s.bolts || []).filter((b) => !set.has(b.id)) : []; }
-  removeStairs(ids) { const set = new Set(ids); this.s.stairs = (this.s.stairs || []).filter((x) => !set.has(x.id)); }
+  removeBolts(ids = null) { const set = ids && new Set(ids); this._s.bolts = set ? (this._s.bolts || []).filter((b) => !set.has(b.id)) : []; }
+  removeStairs(ids) { const set = new Set(ids); this._s.stairs = (this._s.stairs || []).filter((x) => !set.has(x.id)); }
 
   // ---- reference pictures (0.8 D8.15, picture.js): put the PNG in Model.pictureSrcs first, then add it by its hash ----
   addPicture(p) {
     const c = cleanPicture(p);
     if (!c || !c.hash) throw new Error(t('pic.err.bad'));
-    if (!Array.isArray(this.s.pictures)) this.s.pictures = [];
-    if (this.s.pictures.length >= MAX_PICTURES) throw new Error(t('pic.err.max', { max: MAX_PICTURES }));
+    if (!Array.isArray(this._s.pictures)) this._s.pictures = [];
+    if (this._s.pictures.length >= MAX_PICTURES) throw new Error(t('pic.err.max', { max: MAX_PICTURES }));
     const id = this.nextId('g');
-    this.s.pictures.push({ id, ...c });
+    this._s.pictures.push({ id, ...c });
     return id;
   }
   /** Changes x, y, z, opacity or mmPerPx (checked as a whole picture; the PNG stays). */
   updatePicture(id, patch) {
-    const i = (this.s.pictures || []).findIndex((p) => p.id === id);
+    const i = (this._s.pictures || []).findIndex((p) => p.id === id);
     if (i < 0) throw new Error(t('pic.err.gone'));
-    const keep = this.s.pictures[i], next = { ...keep };
+    const keep = this._s.pictures[i], next = { ...keep };
     for (const k of ['x', 'y', 'z', 'opacity', 'mmPerPx']) if (patch[k] !== undefined) next[k] = Number(patch[k]);
     const c = cleanPicture(next);
     if (!c) throw new Error(t('pic.err.value'));
-    this.s.pictures[i] = { id, ...c, hash: keep.hash };
+    this._s.pictures[i] = { id, ...c, hash: keep.hash };
   }
   movePictures(ids, d) {
     const set = new Set(ids);
-    for (const p of this.s.pictures || []) if (set.has(p.id)) this.updatePicture(p.id, { x: p.x + d[0], y: p.y + d[1], z: p.z + d[2] });
+    for (const p of this._s.pictures || []) if (set.has(p.id)) this.updatePicture(p.id, { x: p.x + d[0], y: p.y + d[1], z: p.z + d[2] });
   }
   removePictures(ids) {
     const set = new Set(ids);
-    if (!this.s.pictures) return;
-    this.s.pictures = this.s.pictures.filter((p) => !set.has(p.id));
-    if (!this.s.pictures.length) delete this.s.pictures;
+    if (!this._s.pictures) return;
+    this._s.pictures = this._s.pictures.filter((p) => !set.has(p.id));
+    if (!this._s.pictures.length) delete this._s.pictures;
   }
 
   addProfile(p) {
     const r = cleanCustom(p);
     if (!r.ok) throw new Error(r.error);
-    if (this.s.profiles.some((x) => x.name.toUpperCase() === r.profile.name.toUpperCase())) throw new Error(t('model.err.profile-taken', { name: r.profile.name }));
-    this.s.profiles.push(r.profile);
+    if (this._s.profiles.some((x) => x.name.toUpperCase() === r.profile.name.toUpperCase())) throw new Error(t('model.err.profile-taken', { name: r.profile.name }));
+    this._s.profiles.push(r.profile);
   }
 }
 
@@ -699,6 +758,7 @@ export function readModel(text) {
     const v = j[k];
     if (v && typeof v === 'object' && !Array.isArray(v) && v.format === 'cadcraft-' + k && JSON.stringify(v).length <= 2e6) s[k] = v;
   }
+  if (j.issuelog && typeof j.issuelog === 'object' && j.issuelog.format === 'cadcraft-issues' && JSON.stringify(j.issuelog).length <= 8e6) s.issuelog = j.issuelog;   // 0.10 BK.48: the shared issue history (issues-detail.js; issuelog/history.js cleans it)
   const pics = readPictures(j.pictures);   // 0.8 D8.15: reference pictures, each with its PNG (kept by the Model, outside the state)
   if (pics.pictures.length) s.pictures = pics.pictures.map((p) => ({ ...p, id: uid(p.id, 'g') }));
   if (pics.dropped) warnings.push(t('pic.warn.dropped', { n: pics.dropped }));

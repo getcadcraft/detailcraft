@@ -27,7 +27,7 @@
  *                 a cylinder of `torchRadius` (a gun nozzle is 16 to 22 mm across) runs out along that bisector, from where it first clears both faces of the fillet (radius × √2) for `torchReach` mm; if it meets the member's
  *                 own flange or another part, the weld there is blocked. Typical numbers, not a standard's: ask the fabricator for the process and nozzle.
  */
-import { solids, depthIn } from './clash.js';
+import { solids, depthIn, solidIndex } from './clash.js';
 import { membersOf } from './connections.js';
 
 export const CONS_DEFAULTS = Object.freeze({ socketLength: 60, socketWall: 4, nutRatio: 0.8, headRatio: 0.65, cornersRatio: 1.96, torchRadius: 10, torchReach: 30, rules: ['access', 'bolts', 'weld', 'weldaccess', 'water'] });
@@ -47,9 +47,10 @@ function perp(a) {
 }
 
 /** Does a point lie inside the OBB of a solid (with margin)? */
-function inBox(S, p, m = 2) {
-  const d = sub(p, S.box.c);
-  return S.box.ax.every((a, i) => Math.abs(dot(d, a)) <= S.box.h[i] + m);
+function inBox(S, p, m = 2) {   // the same sums as dot(sub(p, c), axis), without a vector per call
+  const c = S.box.c, ax = S.box.ax, h = S.box.h, x = p[0] - c[0], y = p[1] - c[1], z = p[2] - c[2];
+  for (let i = 0; i < 3; i++) { const a = ax[i]; if (Math.abs(x * a[0] + y * a[1] + z * a[2]) > h[i] + m) return false; }
+  return true;
 }
 
 const REF = (b) => (b.conn ? { kind: 'conn', id: b.conn } : b.loose ? { kind: 'bolt', id: b.loose } : null);
@@ -59,7 +60,29 @@ export function constructability(state, built, optsIn = {}) {
   const on = new Set(o.rules);
   const out = [], source = { kind: 'engine', name: 'detailcraft.constructability' };
   const S = solids(state, built, null).filter((s) => s.kind === 'steel');
+  const index = solidIndex(S), near = index.near;   // 0.10 FX.144: a sample point meets only the few solids whose box holds it, in the list's order
+  const byPartId = new Map();   // the first solid of an id, as S.find gave it
+  for (const q of S) if (!byPartId.has(q.id)) byPartId.set(q.id, q);
+  // 0.10 PERF.36: `optsIn.cache` (a Map the caller keeps) holds each connection's access and bolt-spacing problems with a fingerprint of its bolts and of the steel
+  // within reach of them; an edit re-checks only the connections whose fingerprint moved. Other options change the answer, so they clear it.
+  const cache = optsIn.cache instanceof Map ? optsIn.cache : null;
+  const optKey = cache ? JSON.stringify({ ...o, cache: undefined }) : '';
+  if (cache && cache.get('\0opts') !== optKey) { cache.clear(); cache.set('\0opts', optKey); }
+  const solidSig = new Map();
+  const rounded = (k, v) => (typeof v === 'number' ? Math.round(v * 100) : v);   // 0.01 mm: below what a drawing shows
+  const sigOf = (q) => { let g = solidSig.get(q); if (g === undefined) { g = JSON.stringify([q.id, q.kind, q.box, q.frame, q.L, q.voff, q.loops, q.cuts, q.depth], rounded); solidSig.set(q, g); } return g; };
+  const connPrint = (list) => {
+    const near2 = new Set();
+    let sig = '';
+    for (const b of list) {
+      const ax = unit(b.axis), tip = add(b.head, mul(ax, b.grip)), reach = o.socketLength + (o.cornersRatio / 2 + o.nutRatio) * b.d + o.socketWall + 4;
+      for (const q of index.within([Math.min(b.head[0], tip[0]), Math.min(b.head[1], tip[1]), Math.min(b.head[2], tip[2])], [Math.max(b.head[0], tip[0]), Math.max(b.head[1], tip[1]), Math.max(b.head[2], tip[2])], reach)) near2.add(q);
+      sig += [...b.head, ...b.axis, b.d, b.grip].map((v) => Math.round(v * 100)).join(',') + ';';
+    }
+    return sig + '|' + [...near2].map(sigOf).join(';');
+  };
   const partLabel = (id) => id;
+  const discs = new Map();
   const push = (code, severity, vars, about, key) => out.push({ id: 'cons:' + code + ':' + key, code: 'cons.' + code, severity, msg: { key: 'cons.prob.' + code, vars }, about, source });
 
   if (on.has('access') || on.has('bolts')) {
@@ -70,6 +93,13 @@ export function constructability(state, built, optsIn = {}) {
       byConn.get(b.conn).push(b);
     }
     for (const [conn, list] of byConn) {
+      const first0 = out.length;
+      let print = null;
+      if (cache) {
+        print = connPrint(list);
+        const hit = cache.get(conn);
+        if (hit && hit.print === print) { out.push(...hit.items); continue; }
+      }
       const hits = new Map();   // side|part → { n, free }
       for (const b of list) {
         const ax = unit(b.axis), d = b.d;
@@ -82,13 +112,17 @@ export function constructability(state, built, optsIn = {}) {
         if (on.has('access')) for (const sd of sides) {
           const [u, v] = perp(sd.dir);
           let first = null;
-          const step = Math.max(2.5, Rs / 8), pts = [[0, 0]];   // a grid over the socket's disc, fine enough to meet a 6 mm web
-          for (let gx = -Rs; gx <= Rs; gx += step) for (let gy = -Rs; gy <= Rs; gy += step) if ((gx || gy) && gx * gx + gy * gy <= Rs * Rs) pts.push([gx, gy]);
+          let pts = discs.get(Rs);   // a grid over the socket's disc, fine enough to meet a 6 mm web; one per radius
+          if (!pts) {
+            const step = Math.max(2.5, Rs / 8); pts = [[0, 0]];
+            for (let gx = -Rs; gx <= Rs; gx += step) for (let gy = -Rs; gy <= Rs; gy += step) if ((gx || gy) && gx * gx + gy * gy <= Rs * Rs) pts.push([gx, gy]);
+            discs.set(Rs, pts);
+          }
           for (let k = 0; k <= 4 && !first; k++) {
             const s = k === 0 ? 0 : (o.socketLength * k) / 4;
             for (const [gx, gy] of (k === 0 ? [[0, 0]] : pts)) {
               const p = add(add(sd.from, mul(sd.dir, s)), add(mul(u, gx), mul(v, gy)));
-              for (const q of S) {
+              for (const q of near(p)) {
                 if (!inBox(q, p)) continue;
                 if (depthIn(q, p) > 0.5) { first = { q, s, r: Math.hypot(gx, gy) }; break; }
               }
@@ -121,7 +155,9 @@ export function constructability(state, built, optsIn = {}) {
         }
         if (worst) push('bolts', 'warning', { conn, spacing: r1(worst.lat), need: r1(worst.need), d: worst.d }, [{ kind: 'conn', id: conn }], conn);
       }
+      if (cache) cache.set(conn, { print, items: out.slice(first0) });
     }
+    if (cache) for (const k of [...cache.keys()]) if (k[0] !== '\0' && !byConn.has(k)) cache.delete(k);
   }
   if (on.has('weld')) {
     const groups = new Map();   // the same size on the same thickness is one problem naming every connection that has it
@@ -142,12 +178,22 @@ export function constructability(state, built, optsIn = {}) {
     for (const [key, g] of groups) push('weld', 'warning', { n: g.conns.size, conns: [...g.conns].slice(0, 6).join(', '), size: g.size, limit: g.limit, t: g.t, which: g.which }, [...g.conns].map((id) => ({ kind: 'conn', id })), key);
   }
   if (on.has('weldaccess')) {
-    const groups = new Map();
-    const partOf = (id) => S.find((q) => q.id === id);
+    const groups = new Map(), weldKeys = new Set();
+    const partOf = (id) => byPartId.get(id);
     for (const w of built.welds || []) {
       if (w.kind !== 'fillet' || !w.allRound || !w.between || w.between.length < 2 || !w.conn) continue;
       const A = partOf(w.between[0]), B = partOf(w.between[1]);
       if (!A || !B || !A.loops?.[0]) continue;
+      // PERF.36: the trial of one weld depends on the weld, its two parts and the steel within the torch's reach of the member; same print = same answer
+      let wkey = null, trial = null;
+      if (cache) {
+        const bx = A.box, e = [0, 1, 2].map((k) => Math.abs(bx.ax[0][k]) * bx.h[0] + Math.abs(bx.ax[1][k]) * bx.h[1] + Math.abs(bx.ax[2][k]) * bx.h[2]);
+        const reachW = o.torchRadius * Math.SQRT2 + 1 + o.torchReach + 1.5 * o.torchRadius + 5;
+        wkey = JSON.stringify(w, rounded) + '|' + sigOf(A) + '|' + sigOf(B) + '|' + index.within([0, 1, 2].map((k) => bx.c[k] - e[k]), [0, 1, 2].map((k) => bx.c[k] + e[k]), reachW).map(sigOf).join(';');
+        let wm = cache.get('\0welds'); if (!wm) cache.set('\0welds', wm = new Map());
+        trial = wm.get(wkey); weldKeys.add(wkey);
+      }
+      if (!trial) trial = (() => {
       // the end of the member nearest the plate; the direction away from the plate along the member
       const atStart = Math.hypot(...sub(A.frame.o, B.box.c)) <= Math.hypot(...sub(add(A.frame.o, mul(A.frame.x, A.L)), B.box.c));
       const lx = atStart ? 0 : A.L, away = atStart ? A.frame.x : mul(A.frame.x, -1);
@@ -175,7 +221,7 @@ export function constructability(state, built, optsIn = {}) {
             for (let s = s0; s <= s0 + o.torchReach && !hit; s += 5) {
               for (const [gx, gy] of rings) {
                 const pt = add(add(p0, mul(dir, s)), add(mul(pu, gx * o.torchRadius), mul(pv, gy * o.torchRadius)));
-                for (const q of S) {
+                for (const q of near(pt)) {
                   if (q.id === B.id || !inBox(q, pt)) continue;
                   if (depthIn(q, pt) > 0.5) { hit = { q, s }; break; }
                 }
@@ -186,20 +232,26 @@ export function constructability(state, built, optsIn = {}) {
           }
         }
       }
-      if (!blocked) continue;
+      return { blocked, total, free, byId: by ? by.id : null };
+      })();
+      if (cache && !cache.get('\0welds').has(wkey)) cache.get('\0welds').set(wkey, trial);
+      const { blocked, total, free } = trial, by = trial.byId == null ? null : byPartId.get(trial.byId);
+      if (!blocked || !by) continue;
       const key = w.conn + ':' + by.id;
       const g = groups.get(key) || { conn: w.conn, part: by.id, blocked: 0, total: 0, free: Infinity, size: w.size, where: w.where };
       g.blocked += blocked; g.total += total; g.free = Math.min(g.free, free);
       groups.set(key, g);
     }
     for (const g of groups.values()) push('weldaccess', 'warning', { conn: g.conn, part: partLabel(g.part), pct: Math.round(100 * g.blocked / g.total), free: r1(g.free), need: o.torchReach, size: g.size, where: g.where || '' }, [{ kind: 'conn', id: g.conn }], g.conn + ':' + g.part);
+    if (cache?.has('\0welds')) for (const k of [...cache.get('\0welds').keys()]) if (!weldKeys.has(k)) cache.get('\0welds').delete(k);   // keep only this run's welds
   }
   if (on.has('water')) {
     const closing = new Set(['endplate', 'baseplate']);
-    const closed = new Set();
+    const closed = new Set(), memberById = new Map();
+    for (const m of state.members) if (!memberById.has(m.id)) memberById.set(m.id, m);
     for (const c of state.connections) {
       if (!closing.has(c.type)) continue;
-      closed.add((c.type === 'baseplate' ? c.column : c.beam) + ':' + (c.type === 'baseplate' ? bottomEnd(state, c.column) : c.end));
+      closed.add((c.type === 'baseplate' ? c.column : c.beam) + ':' + (c.type === 'baseplate' ? bottomEnd(memberById, c.column) : c.end));
     }
     for (const m of state.members) {
       const p = built.byId.get(m.id)?.profile;
@@ -216,7 +268,7 @@ export function constructability(state, built, optsIn = {}) {
   return out;
 }
 const b2grip = (b) => b.grip + 0;
-function bottomEnd(state, colId) {
-  const m = state.members.find((x) => x.id === colId);
+function bottomEnd(memberById, colId) {
+  const m = memberById.get(colId);
   return m && m.start[2] <= m.end[2] ? 'start' : 'end';
 }

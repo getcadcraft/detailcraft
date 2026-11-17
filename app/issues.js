@@ -22,17 +22,9 @@
  * clouds stay on the revision that made them, as on a printed sheet). No base → no clouds (the first issue, or issues
  * made before 0.4 D19, which have no prints).
  */
-const LETTERS = 'ABCDEFGHJKLMNPQRSTUVWXYZ';
-
-export function nextRev(rev) {
-  if (!rev) return 'A';
-  const digits = [...String(rev).toUpperCase()].map((c) => LETTERS.indexOf(c));
-  if (digits.some((d) => d < 0)) return 'A';
-  let i = digits.length - 1;
-  while (i >= 0 && digits[i] === LETTERS.length - 1) { digits[i] = 0; i--; }
-  if (i < 0) digits.unshift(0); else digits[i]++;
-  return digits.map((d) => LETTERS[d]).join('');
-}
+// 0.10 BK.48: the revision letters are the shared issue history's (issuelog/history.js: moved there from here, the same rule)
+import { nextRev } from './issuelog/history.js';
+export { nextRev };
 
 export const sheetLog = (issues, id) => (issues || []).filter((x) => x.sheet === id);
 

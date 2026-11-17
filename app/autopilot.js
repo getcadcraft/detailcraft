@@ -20,7 +20,7 @@
  * weld strength, and the column's side, are the engineer's. The proposal says so on every line.
  */
 import { getProfile } from './profiles.js';
-import { SHEARTAB_DEFAULTS, ENDPLATE_DEFAULTS, BASEPLATE_DEFAULTS, GUSSET_DEFAULTS, SPLICE_DEFAULTS, MITRE_DEFAULTS, findJoints, freeSplices, freeBraceEnds, freeMitres, isBeamEnd, dg1Row } from './connections.js';
+import { SHEARTAB_DEFAULTS, ENDPLATE_DEFAULTS, BASEPLATE_DEFAULTS, GUSSET_DEFAULTS, SPLICE_DEFAULTS, MITRE_DEFAULTS, findJoints, pointGrid, freeSplices, freeBraceEnds, freeMitres, isBeamEnd, dg1Row } from './connections.js';
 
 const FNV = { A325: 372, A490: 457 };   // MPa, threads in the shear plane (AISC 360-16 Table J3.2)
 const PHI = 0.75;
@@ -87,9 +87,11 @@ export function sizeBasePlate(col, custom) {
 /** Columns that stand on the ground side: no other column ends where this one starts. */
 function baseColumns(state) {
   const cols = state.members.filter((m) => m.type === 'column' && Math.abs(m.start[0] - m.end[0]) < 1 && Math.abs(m.start[1] - m.end[1]) < 1);
+  const atXY = pointGrid(2);   // 0.10 PERF.36: only a column standing within 1 mm across can carry this one
+  cols.forEach((o, i) => atXY.add(i, [o.start[0], o.start[1], 0]));
   return cols.filter((c) => {
     const low = c.start[2] <= c.end[2] ? c.start : c.end;
-    return !cols.some((o) => o !== c && Math.abs(o.start[0] - low[0]) < 1 && Math.abs(o.start[1] - low[1]) < 1 && Math.max(o.start[2], o.end[2]) >= low[2] - 1 && Math.min(o.start[2], o.end[2]) < low[2] - 1);
+    return !atXY.near([low[0], low[1], 0]).some((i) => { const o = cols[i]; return o !== c && Math.abs(o.start[0] - low[0]) < 1 && Math.abs(o.start[1] - low[1]) < 1 && Math.max(o.start[2], o.end[2]) >= low[2] - 1 && Math.min(o.start[2], o.end[2]) < low[2] - 1; });
   });
 }
 

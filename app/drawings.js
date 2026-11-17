@@ -38,7 +38,8 @@
  */
 import { textWidth } from './pdf.js';
 import { toWorld, toLocal, dot, add, mul, endX } from './geom.js';
-import { faceThickness } from './profiles.js';
+import { faceThickness, getProfile } from './profiles.js';
+import { stairGeometry } from './stair.js';   // 0.10 SU.1814c: the stair sheet reads the generator's layout
 import { crc32 } from './zip.js';
 import { cloudBase } from './issues.js';
 import { paperOf, DEFAULT_PAPER } from './paper.js';
@@ -267,7 +268,7 @@ function titleBlock(S, tb) {
   const x0 = SHEET.w - 170, y0 = 10, x1 = SHEET.w - 10, y1 = 52, mid = SHEET.w - 90;
   S.rect(x0, y0, x1, y1, STYLE.thick);
   S.T(tb.title, x0 + 2, y1 - 6, 3.6, { bold: true });
-  if (tb.subtitle) S.T(tb.subtitle, x0 + 2, y1 - 10.5, 2.2);
+  if (tb.subtitle || tb.project) S.T([tb.subtitle, ...(tb.project || [])].filter(Boolean).join('   '), x0 + 2, y1 - 10.5, 2.2);   // tb.project: the project's name, client and drawn by (SC.7, SuperCad Studio's export set)
   const rows = [[t('sheet.tb.drawing'), tb.number, t('sheet.tb.scale'), tb.scale], [t('sheet.tb.model'), tb.model, t('sheet.tb.model-ref'), tb.ref], [t('sheet.tb.date'), tb.date, t('sheet.tb.sheet'), tb.sheet]];
   S.P([[x0, y1 - 12.5], [x1, y1 - 12.5]], STYLE.thin);
   rows.forEach((r, i) => {
@@ -719,6 +720,70 @@ export function assemblySheet(built, marks, row, i) {
 }
 
 /**
+ * The stair sheet of a generator stair (0.10 SU.1814c): the left stringer of each flight drawn straight with its fixing holes (stations from the lower end, written out),
+ * and the tread detail: the section of one tread (a folded pan's return, the nosing) and the end flange with its holes. The assembly sheets of the flights, landings and
+ * rails are the ordinary ones (the stringer's holes are in its part); this sheet is what the workshop reads the stair's own numbers from.
+ */
+export function stairSheet(state, built, marks, st, i) {
+  const G = stairGeometry(st, (name) => getProfile(name, state.profiles)), g = G.gen, rec = g.rec;
+  const S = sheetBuilder();
+  frameOfSheet(S);
+  const k = SHEET.k, W = SHEET.w, Hs = SHEET.h, td = treadDetailOf(g);
+  const asm = marks.asmMark.get(st.id + '.f1stringerL') || st.id;
+  S.T(t('sheet.stair.title', { id: asm }), 22, Hs - 18, 4.2, { bold: true });
+  S.T(t('sheet.stair.sub', { rule: g.rule, n: g.n, r: fmt(g.riser), g: fmt(g.going), pitch: Math.round(g.pitch * 10) / 10, f: g.flights.length, l: g.landings.length }), 22, Hs - 24, 2.6);
+  // stringers: one bar per flight, the part's own length and the holes where its web has them
+  const bars = g.parts.filter((p) => /^f\d+stringerL$/.test(p.key)), room = W - 28 - 28;
+  const nx = pickScale(Math.max(...bars.map((b) => b.length)), room);
+  let y = Hs - 36 * k;
+  S.T(t('sheet.stair.stringer'), 28, y, 2.8, { bold: true });
+  for (const b of bars) {
+    const part = built.byId.get(st.id + '.' + b.key), sd = part ? part.profile.depth : 250, X = (x) => 28 + x / nx, h = sd / nx;
+    const top = y - 10;
+    S.rect(28, top - h, X(b.length), top, STYLE.outline);
+    for (const hole of b.holes) S.C([X(hole.x), top - h / 2 - hole.y / nx], Math.max(0.5, hole.d / 2 / nx), { w: 0.25 });
+    S.dimH(28, X(b.length), top + 5, top, b.length, 'stringer');
+    if (b.holes.length > 1) S.dimH(X(b.holes[0].x), X(b.holes[Math.min(2, b.holes.length - 1)].x), top - h - 4, top - h, b.holes[Math.min(2, b.holes.length - 1)].x - b.holes[0].x, 'stringer');
+    S.T(`${b.key}  ${b.profileName}  ${fmt(b.length)}`, 28, top - h - 10, 2.2);
+    const xs = b.holes.map((hole) => fmt(hole.x));
+    for (let r = 0; r * 14 < xs.length; r++) S.T((r === 0 ? t('sheet.stair.stations') + ': ' : '    ') + xs.slice(r * 14, r * 14 + 14).join('  '), 28, top - h - 14 - r * 3.4, 2);
+    y = top - h - 22 - Math.ceil(xs.length / 14) * 3.4;
+  }
+  // tread detail, 1:ns: the section (side) and the end flange (the tread seen from the stringer)
+  const ns = pickScale(Math.max(td.depth, 60), 140), ox = 40, oy = Math.max(70, y - 40 - td.fold / ns);
+  const X = (v) => ox + v / ns, Y = (v) => oy + v / ns;   // section: x from the nosing, y up from the plate's underside
+  const tt = td.t;
+  S.T(t('sheet.stair.tread'), 28, Y(tt) + 14, 2.8, { bold: true });
+  if (td.type === 'folded') S.P([[X(0), Y(-td.fold)], [X(tt), Y(-td.fold)], [X(tt), Y(0)], [X(td.depth), Y(0)], [X(td.depth), Y(tt)], [X(0), Y(tt)]], { ...STYLE.outline, closed: true });
+  else S.rect(X(0), Y(0), X(td.depth), Y(tt), STYLE.outline);
+  S.dimH(X(0), X(td.depth), Y(td.fold ? -td.fold : 0) - 8, Y(0), td.depth, 'tread');
+  S.dimV(Y(0), Y(tt), X(td.depth) + 8, X(td.depth), tt, 'tread', 1);
+  if (td.fold) S.dimV(Y(-td.fold), Y(0), X(0) - 8, X(0), td.fold, 'tread', -1);
+  S.T(t('sheet.stair.tread.nosing', { n: td.nosing }), X(0), Y(tt) + 4, 2.1);
+  const fx = ox + td.depth / ns + 40;   // the end flange, seen from the stringer: depth across, the return down
+  const fh = td.fold || 40;
+  S.rect(fx, Y(-fh), fx + td.depth / ns, Y(0), STYLE.outline);
+  if (td.bolted) for (const a of td.holeAt) S.C([fx + a / ns, Y(-fh / 2)], Math.max(0.5, td.holeD / 2 / ns), { w: 0.25 });
+  S.dimH(fx, fx + td.depth / ns, Y(-fh) - 8, Y(-fh), td.depth, 'tread');
+  if (td.bolted) S.dimH(fx, fx + td.holeAt[0] / ns, Y(0) + 6, Y(0), td.holeAt[0], 'tread');
+  let ny = Y(-(td.fold || 40)) - 22;   // under the section's dimensions
+  const notes = [t('sheet.stair.tread.t', { type: t('app.stair.gen.tread.' + td.type), t: td.t, depth: fmt(td.depth), width: fmt(td.width), count: td.count })];
+  if (td.fold) notes.push(t('sheet.stair.tread.fold', { fold: td.fold }));
+  if (td.bolted) notes.push(t('sheet.stair.tread.holes', { d: td.holeD, a: td.holeAt[0], b: td.holeAt[1] }));
+  else notes.push(t('sheet.stair.tread.weld'));
+  if (td.bar) notes.push(t('sheet.stair.tread.bar', td.bar));
+  notes.push(t('sheet.stair.note'));
+  for (const n of notes) { S.T(n, 28, ny, 2.1); ny -= 4.4; }
+  return { id: 'stair:' + st.id, kind: 'stair', title: t('sheet.stair.title', { id: asm }), scale: ratio(nx) + ' / ' + ratio(ns), S, sortKey: i };
+}
+/** The numbers the tread detail draws; steelstair.js treadDetail, kept next to the drawing. */
+const treadDetailOf = (g) => {
+  const rec = g.rec, tr = rec.tread, bolted = rec.fix === 'bolt' || (rec.fix === 'auto' && rec.treadType !== 'chequer'), depth = g.going + tr.nosing;
+  return { type: rec.treadType, width: rec.width, depth: Math.round(depth * 10) / 10, t: rec.treadType === 'grating' ? Math.round((tr.barDepth * tr.barT / tr.barPitch) * 100) / 100 : tr.t, nosing: tr.nosing, fold: rec.treadType === 'folded' ? tr.fold : 0,
+    bolted, holeD: tr.bolt + 2, holeAt: [0.3, 0.7].map((f) => Math.round((f * depth) * 10) / 10), bar: rec.treadType === 'grating' ? { depth: tr.barDepth, t: tr.barT, pitch: tr.barPitch } : null, count: g.stats.treadCount };
+};
+
+/**
  * Holes in a view: paper axes i, j of the local [x, u, v] point, view axis k. A hole whose axis runs into
  * the view is a circle with crosshair center lines; one square to the view is a pair of hidden lines
  * through the thickness it goes through. r is paper mm per model mm for hole sizes (the across scale).
@@ -867,10 +932,10 @@ export function modelRef(state) {
 }
 
 /** Every GA plan and elevation, then every assembly drawing, with title blocks. */
-export function drawingSet(state, built, marks, { date = '', paper = DEFAULT_PAPER, hiddenLines = true } = {}) {
+export function drawingSet(state, built, marks, { date = '', paper = DEFAULT_PAPER, hiddenLines = true, titleBlock: ptb = null } = {}) {   // ptb: the project's title block { use, project, client, drawnBy, revision, date, labels } (SC.7)
   usePaper(paper);
   HIDDEN = hiddenLines;
-  try { return makeSet(state, built, marks, date); } finally { usePaper(DEFAULT_PAPER); HIDDEN = true; }
+  try { return makeSet(state, built, marks, date, ptb); } finally { usePaper(DEFAULT_PAPER); HIDDEN = true; }
 }
 /** The sheet's content hash (issues.js): CRC-32 of what is drawn, before the title block and revision table. */
 function contentHash(items) {
@@ -961,7 +1026,7 @@ function revisionTable(S, log) {
   });
 }
 
-function makeSet(state, built, marks, date) {
+function makeSet(state, built, marks, date, ptb = null) {
   const ref = modelRef(state);
   const raw = [];
   [...state.levels].sort((a, b) => a.z - b.z).forEach((lv, i) => { const s = planSheet(state, built, marks, lv, i); if (s) raw.push(s); });
@@ -971,9 +1036,10 @@ function makeSet(state, built, marks, date) {
   if (anchor) raw.push(anchor);
   const nGa = raw.length;
   for (const a of marks.assemblies) raw.push(assemblySheet(built, marks, a));
+  for (const st of state.stairs || []) if (st.gen && built.byId.has(st.id + '.f1stringerL')) raw.push(stairSheet(state, built, marks, st, raw.length));   // 0.10 SU.1814c
   const printSets = partPrints(built, marks);
   const sheets = raw.map((r, k) => {
-    const number = r.kind === 'assembly' ? 'A-' + r.id.slice('assembly:'.length) : 'GA-' + String(k + 1).padStart(2, '0');
+    const number = r.kind === 'assembly' ? 'A-' + r.id.slice('assembly:'.length) : r.kind === 'stair' ? 'ST-' + (marks.asmMark.get(r.id.slice('stair:'.length) + '.f1stringerL') || r.id.slice('stair:'.length)) : 'GA-' + String(k + 1).padStart(2, '0');
     const hash = contentHash(r.S.items);
     const log = (state.issues || []).filter((x) => x.sheet === r.id);
     const rev = log.length ? log[log.length - 1].rev : '';
@@ -982,7 +1048,7 @@ function makeSet(state, built, marks, date) {
     for (const g of r.S.regions) if (allPrints.has(g.key)) prints[g.key] = allPrints.get(g.key);
     const base = cloudBase(log, hash);
     const clouds = base ? revisionClouds(r.S, allPrints, base) : [];
-    titleBlock(r.S, { title: r.title, subtitle: r.kind === 'assembly' ? t('sheet.sub.assembly') : t('sheet.sub.ga'), number: rev ? t('dwg.rev.number', { number, rev }) : number, scale: r.scale, model: state.name, ref, date, sheet: t('sheet.tb.sheet-of', { n: k + 1, total: raw.length }) + '  ' + SHEET.key.replace('-', ' ') });
+    titleBlock(r.S, { title: r.title, subtitle: r.kind === 'assembly' ? t('sheet.sub.assembly') : r.kind === 'stair' ? t('sheet.sub.stair') : t('sheet.sub.ga'), number: (rev || ptb?.revision) ? t('dwg.rev.number', { number, rev: rev || ptb.revision }) : number, project: ptb ? [ptb.project, ptb.client && `${ptb.labels?.client || ''}: ${ptb.client}`, ptb.drawnBy && `${ptb.labels?.drawn_by || ''}: ${ptb.drawnBy}`].filter(Boolean) : null, scale: r.scale, model: state.name, ref, date, sheet: t('sheet.tb.sheet-of', { n: k + 1, total: raw.length }) + '  ' + SHEET.key.replace('-', ' ') });
     revisionTable(r.S, log);
     return { id: r.id, kind: r.kind, number, title: r.title, scale: r.scale, w: SHEET.w, h: SHEET.h, paper: SHEET.key, items: r.S.items, dims: r.S.dims, labels: r.S.labels, asm: r.asm, rods: r.rods, welds: r.S.welds, hash, rev, prints, clouds };
   });

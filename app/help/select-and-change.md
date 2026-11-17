@@ -45,7 +45,7 @@ In {{ui:Plan}} and {{ui:Elevation}}, pan with the right or middle button while t
 
 ## Change a property on many members
 
-Select several members. Under **Change on all of them** in the {{ui:Properties}} panel:
+Select two or more members. Under **Change on all of them** in the {{ui:Properties}} panel:
 
 - {{ui:Profile}}, {{ui:Position}}: for the beams, columns and braces among them.
 - {{ui:Plate thickness (mm)}} and {{ui:Plate width (mm)}}: for the plates.

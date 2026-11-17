@@ -2,7 +2,7 @@
 title: What's new in 0.7 (earlier)
 summary: Design checks of steel I-shapes with load combinations from ASCE 7 or EN 1990 and member checks to AISC 360 or EN 1993-1-1, USD export of the steel model, an assistant tool for USD, a Steel ribbon with large and small buttons, panels that tidy away and dialogs that move.
 section: start
-order: 6
+order: 7
 keywords: whats new 0.7, earlier release, release notes, changelog, changes, 0.7, version, new features, design checks, steel design, utilisation, utilization, load combinations, ASCE 7, EN 1990, AISC 360, EN 1993-1-1, Eurocode, National Annex, roof live, deflection limit, usd, usda, usdc, usdz, openusd, assistant, mcp, steel ribbon, ribbon, split button, units, compact, panels, dialogs, portuguese
 ---
 

@@ -103,11 +103,12 @@ export function build(state) {
     if (g.problems.some((pr) => pr.code === 'stringer')) continue;
     for (const q of g.parts) {
       const profile = getProfile(q.profileName, state.profiles);
+      if (!profile) { problems.push({ ref: st.id, text: t('stair.gen.prob.section', { name: q.profileName }), hard: true }); continue; }   // a generator stair names more sections (posts, rails, balusters)
       const f = frame(q.start, q.end, q.rotation);
       finish({
-        id: st.id + '.' + q.key, member: null, conn: null, stair: st.id, type: q.type, role: q.role, ifc: q.type === 'stringer' ? 'IfcMember' : 'IfcPlate', name: q.role,
+        id: st.id + '.' + q.key, member: null, conn: null, stair: st.id, type: q.type, role: q.role, ifc: q.type === 'stringer' ? 'IfcMember' : q.type === 'column' ? 'IfcColumn' : 'IfcPlate', name: q.role,
         profile, profileName: profile.name, material: q.material, frame: f, voff: 0, length: f.len, start: q.start, end: q.end,
-        position: 'middle', rotation: q.rotation, holes: [], cuts: [], setback: { start: 0, end: 0 }, attachTo: q.attachTo ? st.id + '.' + q.attachTo : null,
+        position: 'middle', rotation: q.rotation, holes: (q.holes || []).map((h) => ({ face: h.face, x: h.x, y: h.y, d: h.d, conn: null })), cuts: [], setback: { start: 0, end: 0 }, attachTo: q.attachTo ? st.id + '.' + q.attachTo : null,
         phase: st.phase || 1,
       });
     }

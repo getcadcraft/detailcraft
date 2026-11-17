@@ -81,6 +81,7 @@ export class View3D {
     this.ghost = null;
     this.showBolts = true;
     this.hiddenPhases = new Set();
+    try { if (localStorage.getItem('detailcraft.nobatch') === '1') this.batchParts = false; } catch (e) { /* no storage: batched */ }   // a switch for telling a drawing problem from a batching one (0.10 PERF.36)
     this.hoverNode = null;
     this.pickables = [];
     this.pictureSrc = null;
@@ -204,7 +205,7 @@ export class View3D {
   renderNow() { this.renderer.render(this.scene, this.camera); }
 
   clearGroup(g) {
-    g.traverse((o) => { if (o.geometry) o.geometry.dispose(); if (o.material?.map && !o.material.map.userData.kept) o.material.map.dispose(); });
+    g.traverse((o) => { if (o.geometry) o.geometry.dispose(); if (o.isBatchedMesh) o.dispose(); if (o.material?.map && !o.material.map.userData.kept) o.material.map.dispose(); });
     g.clear();
   }
 
@@ -212,6 +213,7 @@ export class View3D {
   setModel(state, built, marks) {
     this.state = state; this.built = built; this.marks = marks;
     this.clearGroup(this.root);
+    this.recByKey = null;
     this.pickables = [];
     this.box.makeEmpty();
     const addPick = (mesh, ref, matKey) => { mesh.userData.ref = ref; mesh.userData.mat = matKey; this.pickables.push(mesh); this.root.add(mesh); };
@@ -250,21 +252,31 @@ export class View3D {
     holeGeo.rotateX(Math.PI / 2);          // axis along z
     const holes = [];
     const shown = (ph) => !this.hiddenPhases.has(ph || 1);
+    // 0.10 PERF.36: a scene of one Mesh + one edge object per part is 2 draw calls a part (1,925 for 948 parts). With BatchedMesh the parts are one draw call per
+    // material and all the edges one object; a selected part is drawn by a mesh of its own (see applySelection), so every material and pick stays what it was.
+    const batch = this.batchParts !== false && typeof THREE.BatchedMesh === 'function';
+    const recs = [], edgeChunks = [];
+    this.selMeshes = []; this.batches = [];
     for (const p of built.parts) {
       if (!shown(p.phase)) continue;
-      const geo = partGeometry(p);
-      const m = new THREE.Mesh(geo, this.mats[p.type === 'plate' ? 'plate' : p.type === 'stringer' ? 'beam' : p.type]);
+      const ent = this.partEntry(p), geo = ent.geo;   // 0.10 PERF.36: one geometry (and its edges) per profile, length and cuts, shared by the parts that are alike and kept between rebuilds
+      const matKey = p.type === 'plate' ? 'plate' : p.type === 'stringer' ? 'beam' : p.type;
       const f = p.frame;
       const basis = new THREE.Matrix4().makeBasis(v3(f.u), v3(f.v), v3(f.x));
       basis.setPosition(new THREE.Vector3(...f.o).addScaledVector(v3(f.v), p.voff));
-      m.applyMatrix4(basis);
       const ref = p.member ? { kind: 'member', id: p.member } : p.stair ? { kind: 'stair', id: p.stair } : { kind: 'conn', id: p.conn };
-      addPick(m, ref, p.type === 'plate' ? 'plate' : p.type === 'stringer' ? 'beam' : p.type);
-      const edges = new THREE.LineSegments(new THREE.EdgesGeometry(geo, 35), this.mats.edge);
-      edges.applyMatrix4(basis);
-      this.root.add(edges);
-      geo.computeBoundingBox();
-      this.box.union(geo.boundingBox.clone().applyMatrix4(basis));
+      if (batch) {
+        edgeChunks.push(transformed(ent.edges, basis));
+        recs.push({ p, geo, basis, ref, matKey, shared: true });
+      } else {
+        const m = new THREE.Mesh(geo, this.mats[matKey]);
+        m.applyMatrix4(basis);
+        addPick(m, ref, matKey);
+        const edges = new THREE.LineSegments(ent.edgesGeo, this.mats.edge);
+        edges.applyMatrix4(basis);
+        this.root.add(edges);
+      }
+      this.box.union(ent.bbox.clone().applyMatrix4(basis));
       const pr = p.profile;
       for (const h of p.holes) {
         // a dark plug through the face, a little proud of both sides
@@ -316,8 +328,9 @@ export class View3D {
           const pts = barPolyline(g, set, 4).map((p) => v3(p));
           const path = new THREE.CurvePath();
           for (let i = 1; i < pts.length; i++) path.add(new THREE.LineCurve3(pts[i - 1], pts[i]));
-          const tube = new THREE.Mesh(new THREE.TubeGeometry(path, pts.length * 2, r, 6, false), this.mats.bar);
-          addPick(tube, { kind: 'footing', id: f.id }, 'bar');
+          const make = () => new THREE.TubeGeometry(path, pts.length * 2, r, 6, false);
+          if (batch) { const tg = make(); tg.deleteAttribute('uv'); recs.push({ geo: tg, basis: new THREE.Matrix4(), ref: { kind: 'footing', id: f.id }, matKey: 'bar', make }); }
+          else addPick(new THREE.Mesh(make(), this.mats.bar), { kind: 'footing', id: f.id }, 'bar');
         }
       }
     }
@@ -332,7 +345,9 @@ export class View3D {
         if (!tubes) { const geo = new THREE.BufferGeometry().setFromPoints(v); const l = new THREE.Line(geo, this.mats.barLine || (this.mats.barLine = new THREE.LineBasicMaterial({ color: this.colors.bar }))); this.root.add(l); return; }
         const path = new THREE.CurvePath();
         for (let i = 1; i < v.length; i++) path.add(new THREE.LineCurve3(v[i - 1], v[i]));
-        addPick(new THREE.Mesh(new THREE.TubeGeometry(path, Math.max(2, v.length * 2), r, 6, false), this.mats.bar), ref, 'bar');
+        const make = () => new THREE.TubeGeometry(path, Math.max(2, v.length * 2), r, 6, false);
+        if (batch) { const tg = make(); tg.deleteAttribute('uv'); recs.push({ geo: tg, basis: new THREE.Matrix4(), ref, matKey: 'bar', make }); }
+        else addPick(new THREE.Mesh(make(), this.mats.bar), ref, 'bar');
       };
       for (const it of rcb.items) {
         const el = it.el;
@@ -363,11 +378,67 @@ export class View3D {
         for (const pts of g.polys) for (const p of pts) this.box.expandByPoint(v3(p));
       }
     }
+    if (recs.length) this.addBatches(recs, edgeChunks);
     this.addPictures(state.pictures || [], addPick);
     this.applySelection();
     this.applyClipping();
     if (!this.fitted && !this.box.isEmpty()) { this.fit(); this.fitted = true; }
     this.render();
+  }
+
+  /** The geometry of a part with its edge lines (local, 35 degrees) and box, made once per profile, length and cuts (PERF.36). Shared: never edited by a caller. */
+  partEntry(p) {
+    if (!this.geoCache) this.geoCache = new Map();
+    const pr = p.profile, loops = pr.loops;
+    // the profile is told apart by its name and its measured shape (a model's own profile may share a catalog name): width, depth, area and the outline's size
+    const key = pr.name + '|' + pr.width + '|' + pr.depth + '|' + pr.area + '|' + loops.length + '|' + loops.reduce((n, l) => n + l.length, 0) + '|' + Math.round(p.length * 1000)
+      + '|' + (p.cuts.length ? JSON.stringify(p.cuts) : '') + '|' + (p.endCuts ? JSON.stringify(p.endCuts) : '');
+    let ent = this.geoCache.get(key);
+    if (!ent) {
+      if (this.geoCache.size > 6000) this.geoCache.clear();
+      const geo = partGeometry(p);
+      geo.deleteAttribute('uv');   // a batch holds geometries of one attribute set; mitred and coped parts have no uv, and no part material uses one
+      const eg = new THREE.EdgesGeometry(geo, 35);
+      geo.computeBoundingBox();
+      ent = { geo, edgesGeo: eg, edges: eg.attributes.position.array, bbox: geo.boundingBox.clone() };
+      this.geoCache.set(key, ent);
+    }
+    return ent;
+  }
+
+  /** The shown parts (and footing / RC bar tubes) as one BatchedMesh per material and one object for all the parts' edges (PERF.36). `recs`: [{ p | make, geo, basis, ref, matKey }]; `make()` builds a tube's geometry again for the picked copy. */
+  addBatches(recs, edgeChunks) {
+    const byMat = new Map();
+    for (const r of recs) { if (!byMat.has(r.matKey)) byMat.set(r.matKey, []); byMat.get(r.matKey).push(r); }
+    this.recByKey = new Map();
+    this.batchHidden = [];
+    for (const [matKey, list] of byMat) {
+      let nv = 0, ni = 0;
+      for (const r of list) { nv += r.geo.attributes.position.count; ni += r.geo.index ? r.geo.index.count : 0; }
+      const bm = new THREE.BatchedMesh(list.length, nv, ni, this.mats[matKey]);
+      bm.sortObjects = false;
+      const refs = [];
+      for (const r of list) {
+        const iid = bm.addInstance(bm.addGeometry(r.geo));
+        bm.setMatrixAt(iid, r.basis);
+        refs[iid] = r.ref; r.bm = bm; r.iid = iid;
+        if (!r.shared) r.geo.dispose();   // the batch holds the vertices (a shared part geometry stays in the cache)
+        r.geo = null;
+        const k = r.ref.kind + ':' + r.ref.id;
+        if (!this.recByKey.has(k)) this.recByKey.set(k, []);
+        this.recByKey.get(k).push(r);
+      }
+      bm.userData.refs = refs; bm.userData.mat = matKey;
+      this.root.add(bm); this.pickables.push(bm); this.batches.push(bm);
+    }
+    let n = 0;
+    for (const c of edgeChunks) n += c.length;
+    const all = new Float32Array(n);
+    let at = 0;
+    for (const c of edgeChunks) { all.set(c, at); at += c.length; }
+    const eg = new THREE.BufferGeometry();
+    eg.setAttribute('position', new THREE.BufferAttribute(all, 3));
+    this.root.add(new THREE.LineSegments(eg, this.mats.edge));
   }
 
   /** Reference pictures (D8.15): a textured plane per picture, flat on its level, under everything else. */
@@ -448,6 +519,20 @@ export class View3D {
   applySelection() {
     const key = (r) => r && r.kind + ':' + r.id;
     const sel = new Set(this.selection.map(key));
+    if (this.recByKey) {   // batched parts: the picked ones leave their batch and are drawn, and picked, as meshes of their own
+      for (const r of this.batchHidden) r.bm.setVisibleAt(r.iid, true);
+      this.batchHidden = [];
+      for (const m of this.selMeshes) { this.root.remove(m); m.geometry.dispose(); }
+      this.pickables = this.pickables.filter((m) => !this.selMeshes.includes(m));
+      this.selMeshes = [];
+      for (const k of sel) for (const r of this.recByKey.get(k) || []) {
+        r.bm.setVisibleAt(r.iid, false); this.batchHidden.push(r);
+        const m = new THREE.Mesh(r.make ? r.make() : partGeometry(r.p), this.mats.pick);
+        m.applyMatrix4(r.basis);
+        m.userData.ref = r.ref; m.userData.mat = r.matKey;
+        this.root.add(m); this.pickables.push(m); this.selMeshes.push(m);
+      }
+    }
     for (const m of this.pickables) {
       if (!m.userData.ref) continue;
       const on = sel.has(key(m.userData.ref));
@@ -627,6 +712,7 @@ export class View3D {
     ray.setFromCamera(new THREE.Vector2(l.x / l.w * 2 - 1, -(l.y / l.h) * 2 + 1), this.camera);
     const planes = this.clipPlanes;
     const hits = ray.intersectObjects(this.pickables, false).filter((h) => h.object.visible && planes.every((pl) => pl.distanceToPoint(h.point) >= 0));
+    if (this.debugPick) this.lastHits = hits.map((h) => ({ mat: h.object.userData.mat, ref: h.object.userData.refs ? h.object.userData.refs[h.batchId] : h.object.userData.ref, batchId: h.batchId, d: h.distance, p: [h.point.x / MM, h.point.y / MM, h.point.z / MM] }));   // for tests
     // solid steel before see-through concrete, and a reference picture (under everything) last
     const rank = (o) => (o.userData.mat === 'picture' ? 2 : o.userData.mat === 'concrete' ? 1 : 0);
     hits.sort((a, b) => rank(a.object) - rank(b.object) || a.distance - b.distance);
@@ -634,6 +720,7 @@ export class View3D {
     if (!h) return { ref: null, point: null };
     let ref;
     if (h.object.userData.bolts) { const b = h.object.userData.bolts[h.instanceId]; ref = b && b.conn ? { kind: 'conn', id: b.conn } : null; }
+    else if (h.object.userData.refs) ref = h.object.userData.refs[h.batchId] || null;   // a batch of parts: the instance hit
     else ref = h.object.userData.ref;
     return { ref, point: [h.point.x / MM, h.point.y / MM, h.point.z / MM] };
   }
@@ -816,6 +903,16 @@ export class View3D {
 const v3 = (a) => new THREE.Vector3(a[0], a[1], a[2]);
 
 /** A part's solid in its own frame (u, v, x) — the profile extruded along +z, copes cut by splitting the length. */
+/** A copy of triangle-soup positions (x y z ...) moved by the matrix m. */
+function transformed(src, m) {
+  const e = m.elements, out = new Float32Array(src.length);
+  for (let i = 0; i < src.length; i += 3) {
+    const x = src[i], y = src[i + 1], z = src[i + 2];
+    out[i] = e[0] * x + e[4] * y + e[8] * z + e[12]; out[i + 1] = e[1] * x + e[5] * y + e[9] * z + e[13]; out[i + 2] = e[2] * x + e[6] * y + e[10] * z + e[14];
+  }
+  return out;
+}
+
 export function partGeometry(p) {
   const pr = p.profile, L = p.length;
   const copes = p.cuts.filter((c) => c.kind === 'cope');

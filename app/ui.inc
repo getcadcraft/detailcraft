@@ -151,6 +151,11 @@ $__tools = [
       <summary class="dc-h"><?= Lang::e('phase.title') ?></summary>
       <div data-phases></div>
     </details>
+    <?php /* 0.10 BK.48 issues and revisions (session bk-r3-stages-10): issues-detail.js fills it with the shared issue panel. */ ?>
+    <details class="dc-sec dc-fold" data-af-id="issuelog" data-issues-details>
+      <summary class="dc-h"><?= Lang::e('issues.title') ?></summary>
+      <div data-issues></div>
+    </details>
     <details class="dc-sec dc-fold" data-af-id="profile">
       <summary class="dc-h"><?= Lang::e('page.left.profile.title') ?></summary>
       <form class="dc-props" data-profile-form>
@@ -197,6 +202,7 @@ $__tools = [
         <li><strong><?= Lang::e('page.tool.footing') ?></strong> <?= Lang::e('page.hint.footing') ?></li>
         <li><?= Lang::e('page.hint.sample.a') ?> <strong><?= Lang::e('page.tool.sample') ?></strong> <?= Lang::e('page.hint.sample.b') ?></li>
       </ul>
+      <p><button type="button" class="btn-line btn-sm-cc" data-sample-open><i class="bi bi-lightning-charge" aria-hidden="true"></i> <?= Lang::e('ui.hint.trysample') ?></button></p>
       <div data-recent-files data-max="6"></div>
     </div>
     <div class="dc-drop" data-drop hidden><span><i class="bi bi-box-arrow-in-down-right" aria-hidden="true"></i> <?= Lang::e('page.stage.drop') ?></span></div>

@@ -37,3 +37,5 @@ Under each panel, give where it goes (x, y, z in millimetres and the angle) and 
 {{ui:PDF sheets}} saves one A3 page for each panel: the panel to scale with every piece marked, the overall dimensions, the cut list and a title strip.
 
 Problems in the {{ui:Problems}} panel: an opening too near the end of a wall or to another, a header that does not fit under the top plates, a piece longer than the longest stock.
+
+The {{ui:Problems}} panel also lists **Interfaces (LOD 350)** for wall panels and concrete walls: an opening that runs past the end or the top of its wall, two openings that overlap, and a concrete wall opening wider than 1000 mm with no trimmer bar. They are advice, the same rules BimCraft's audit runs; the width is CadCraft's starting value, not a standard.

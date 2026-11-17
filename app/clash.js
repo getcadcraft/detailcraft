@@ -56,6 +56,46 @@ export function solids(state, built, phases) {
   return out;
 }
 
+/**
+ * A grid over the solids' boxes (0.10 PERF.36 / FX.144): `near(p)` gives the solids whose box (grown by `margin`) can hold the point p, in the
+ * order of the list, so a loop over them finds the same first hit as a loop over every solid; `pairs()` gives every pair of indices whose
+ * boxes share a grid cell, i < j, sorted, a superset of the pairs whose boxes overlap. Cost is O(solids), not O(solids squared).
+ */
+export function solidIndex(S, { cell = 1000, margin = 3 } = {}) {
+  const grid = new Map(), key = (x, y, z) => x + ',' + y + ',' + z;
+  const lo = [], hi = [];
+  S.forEach((q, i) => {
+    const e = [0, 1, 2].map((k) => Math.abs(q.box.ax[0][k]) * q.box.h[0] + Math.abs(q.box.ax[1][k]) * q.box.h[1] + Math.abs(q.box.ax[2][k]) * q.box.h[2] + margin);
+    const a = [0, 1, 2].map((k) => Math.floor((q.box.c[k] - e[k]) / cell)), b = [0, 1, 2].map((k) => Math.floor((q.box.c[k] + e[k]) / cell));
+    lo[i] = a; hi[i] = b;
+    for (let x = a[0]; x <= b[0]; x++) for (let y = a[1]; y <= b[1]; y++) for (let z = a[2]; z <= b[2]; z++) {
+      const k = key(x, y, z);
+      const l = grid.get(k);
+      if (l) l.push(i); else grid.set(k, [i]);
+    }
+  });
+  const none = [], solidsOf = new Map();   // a cell's solids, mapped once
+  const inCell = (k) => { let m = solidsOf.get(k); if (!m) { const l = grid.get(k); m = l ? l.map((i) => S[i]) : none; solidsOf.set(k, m); } return m; };
+  return {
+    near(p) { return inCell(key(Math.floor(p[0] / cell), Math.floor(p[1] / cell), Math.floor(p[2] / cell))); },
+    /** The solids whose box can reach the axis-aligned box [lo, hi] (grown by `reach`), once each, in the list's order: what a check that looks `reach` away must see. */
+    within(lo, hi, reach = 0) {
+      const a = [0, 1, 2].map((k) => Math.floor((lo[k] - reach) / cell)), b = [0, 1, 2].map((k) => Math.floor((hi[k] + reach) / cell));
+      const ids = new Set();
+      for (let x = a[0]; x <= b[0]; x++) for (let y = a[1]; y <= b[1]; y++) for (let z = a[2]; z <= b[2]; z++) { const l = grid.get(key(x, y, z)); if (l) for (const i of l) ids.add(i); }
+      return [...ids].sort((p, q) => p - q).map((i) => S[i]);
+    },
+    pairs() {
+      const seen = new Set(), out = [];
+      for (const l of grid.values()) for (let a = 0; a < l.length; a++) for (let b = a + 1; b < l.length; b++) {
+        const i = l[a], j = l[b], k = i * S.length + j;   // l is ascending, so i < j
+        if (!seen.has(k)) { seen.add(k); out.push([i, j]); }
+      }
+      return out.sort((p, q) => p[0] - q[0] || p[1] - q[1]);
+    },
+  };
+}
+
 /** Oriented boxes overlap (separating-axis test, 15 axes), allowing `tol` of contact. */
 export function obbOverlap(A, B, tol = 0) {
   const T = sub(B.c, A.c);
@@ -184,7 +224,7 @@ export function clashCheck(state, built, { tol = 1, phases = null } = {}) {
   const skip = intended(state, built);
   const clashes = [];
   let pairs = 0;
-  for (let i = 0; i < S.length; i++) for (let j = i + 1; j < S.length; j++) {
+  for (const [i, j] of solidIndex(S, { margin: tol + 1 }).pairs()) {
     const A = S[i], B = S[j];
     if (A.kind === 'concrete' && B.kind === 'concrete') continue;
     if (skip.has(A.id + '|' + B.id)) continue;

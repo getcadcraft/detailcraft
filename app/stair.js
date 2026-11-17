@@ -23,6 +23,7 @@
  */
 
 import { t } from './i18n.js';
+import { clean as genClean, build as genBuild } from './steelstair/steelstair.js';   // 0.10 SU.1814c: the steel stair generator (lib/steelstair)
 
 export const STAIR_DEFAULTS = Object.freeze({ dir: 0, rise: 3000, going: 280, width: 1000, maxRiser: 178, stringer: 'C10x15.3', tread: { t: 6, nosing: 25 }, material: 'A36' });
 const R = Math.PI / 180;
@@ -30,6 +31,7 @@ const num = (v, lo, hi) => { const n = Number(v); return Number.isFinite(n) && n
 
 export function cleanStair(s) {
   if (!s || typeof s !== 'object') return { ok: false, error: 'stair' };
+  if (s.gen) { const g = genClean(s); return g ? { ok: true, stair: g } : { ok: false, error: 'stair' }; }   // a generator stair (gen: 1) is checked by the generator
   const d = STAIR_DEFAULTS;
   const out = {
     x: num(s.x ?? 0, -1e7, 1e7), y: num(s.y ?? 0, -1e7, 1e7), z: num(s.z ?? 0, -1e7, 1e7), dir: num(s.dir ?? d.dir, -3600, 3600),
@@ -50,6 +52,11 @@ export function cleanStair(s) {
  * profileOf(name) → the stringer's profile (profiles.js getProfile, passed in so this module needs no catalog).
  */
 export function stairGeometry(s, profileOf) {
+  if (s.gen) {   // 0.10 SU.1814c: flights, landings, treads, rails and balusters from lib/steelstair; the same shape of answer
+    const g = genBuild(s, { profileOf });
+    return { n: g.n, riser: g.riser, treads: g.stats.treadCount, going: g.going, run: g.run, pitch: g.pitch, blondel: g.blondel, parts: g.parts, welds: g.welds, gen: g,
+      problems: g.problems.map((p) => ({ code: p.code, text: 'stair.gen.prob.' + p.code, fills: p.fills })) };
+  }
   const problems = [];
   const n = Math.max(2, Math.ceil(s.rise / s.maxRiser - 1e-9));
   const r = s.rise / n, g = s.going, treads = n - 1, run = treads * g;

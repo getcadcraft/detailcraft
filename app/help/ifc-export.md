@@ -13,7 +13,7 @@ The IFC export writes the whole model as one IFC4 file that BIM software and IFC
 1. Choose {{ui:IFC}} in the {{ui:Output}} group.
 2. The browser downloads `<name>.ifc`. The status bar says what went in, for example "IFC4 exported: 25 parts, 88 fasteners, 7 footings, 132 bars."
 
-If the model has no parts and no footings, the status bar says "Nothing to export yet."
+If the model has no parts, footings or bars, the status bar says "Nothing to export yet."
 
 ## What is in the file
 

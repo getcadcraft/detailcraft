@@ -161,10 +161,27 @@ export const mainOf = (c) => membersOf(c)[0];
  * Where two members meet end to end in line: [{ a, aEnd, b, bEnd, gap }] — a's end within 50 mm of b's end, the two
  * parallel and on one line (within 1 mm), both I-shapes of one profile is not required here (buildSplice checks).
  */
+/** A hash of points in cubes of side `cell`: `add(i, p)`, then `near(p)` gives the indices added from the cube of p and its 26 neighbours (every point within `cell` of p, and a few more). */
+export function pointGrid(cell) {
+  const g = new Map(), k = (x, y, z) => x + ',' + y + ',' + z, c = (v) => Math.floor(v / cell);
+  return {
+    add(i, p) { const key = k(c(p[0]), c(p[1]), c(p[2])), l = g.get(key); if (l) l.push(i); else g.set(key, [i]); },
+    near(p) {
+      const out = [], x = c(p[0]), y = c(p[1]), z = c(p[2]);
+      for (let a = x - 1; a <= x + 1; a++) for (let b = y - 1; b <= y + 1; b++) for (let d = z - 1; d <= z + 1; d++) { const l = g.get(k(a, b, d)); if (l) for (const i of l) out.push(i); }
+      return out;
+    },
+  };
+}
 export function findSplices(state, ids = null) {
   const ms = state.members.filter((m) => !ids || ids.includes(m.id));
   const out = [];
-  for (let i = 0; i < ms.length; i++) for (let j = i + 1; j < ms.length; j++) {
+  // 0.10 PERF.36: only a pair with two ends within 50 mm can splice, so the pairs come from a grid of the ends, in the order the double loop gave them
+  const ends = pointGrid(50), pairs = [];
+  ms.forEach((m, i) => { ends.add(i, m.start); ends.add(i, m.end); });
+  ms.forEach((m, i) => { const js = new Set(); for (const e of [m.start, m.end]) for (const j of ends.near(e)) if (j > i) js.add(j); for (const j of js) pairs.push([i, j]); });
+  pairs.sort((p, q) => p[0] - q[0] || p[1] - q[1]);
+  for (const [i, j] of pairs) {
     const A = ms[i], B = ms[j];
     const da = norm(sub(A.end, A.start)), db = norm(sub(B.end, B.start));
     if (Math.abs(dot(da, db)) < 0.9999) continue;
@@ -187,11 +204,13 @@ const isVertical = (m) => Math.abs(m.start[0] - m.end[0]) < TOL && Math.abs(m.st
 export function findJoints(state) {
   const cols = state.members.filter((m) => m.type === 'column' && isVertical(m));
   const out = [];
+  const atXY = pointGrid(TOL * 2);   // columns by where they stand: a beam end meets only those within TOL across (0.10 PERF.36)
+  cols.forEach((c, i) => atXY.add(i, [c.start[0], c.start[1], 0]));
   for (const b of state.members) {
     if (b.type !== 'beam') continue;
     for (const end of ['start', 'end']) {
       const N = b[end], O = end === 'start' ? b.end : b.start;
-      for (const c of cols) {
+      for (const c of [...new Set(atXY.near([N[0], N[1], 0]))].sort((p, q) => p - q).map((i) => cols[i])) {
         const z0 = Math.min(c.start[2], c.end[2]), z1 = Math.max(c.start[2], c.end[2]);
         if (Math.abs(N[0] - c.start[0]) > TOL || Math.abs(N[1] - c.start[1]) > TOL || N[2] < z0 - TOL || N[2] > z1 + TOL) continue;
         const away = norm([O[0] - N[0], O[1] - N[1], 0]);

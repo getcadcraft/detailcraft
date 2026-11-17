@@ -332,6 +332,7 @@ export function validateProfile(obj, registry, builtins, opts) {
   const out = { format: FORMAT, version: VERSION, id: '', name: str(obj.name, LIMITS.name), base: base || undefined, layout, commandLine: obj.commandLine === true };
   const ids = (list, max) => {
     if (!Array.isArray(list)) return [];
+    if (list.length > max) problems.push('too-many:' + max);   // 0.9.1: a list cut to fit is said, never dropped silently
     const r = [];
     for (const x of list.slice(0, max)) {
       if (x === '-') { r.push(x); continue; }
@@ -341,6 +342,7 @@ export function validateProfile(obj, registry, builtins, opts) {
   };
   // menu, tab and panel labels: a built-in's text key when it is one, else the person's own text (shown as text)
   const label = (v) => str(v, LIMITS.label) || '?';
+  if (Array.isArray(obj.menus) && obj.menus.length > LIMITS.menus) problems.push('too-many:' + LIMITS.menus);
   if (Array.isArray(obj.menus)) out.menus = obj.menus.slice(0, LIMITS.menus).map((m) => ({ label: label(m && m.label), items: ids(m && m.items, LIMITS.items) }));
   if (Array.isArray(obj.bar)) out.bar = ids(obj.bar, LIMITS.items);
   if (Array.isArray(obj.quick)) out.quick = ids(obj.quick, 12).filter((x) => x !== '-');
@@ -348,12 +350,14 @@ export function validateProfile(obj, registry, builtins, opts) {
   const panelItems = (list) => {
     const r = [], seen = new Set();
     const sizeOf = (x) => { if (x.size === undefined) return undefined; if (SIZES.includes(x.size)) return x.size; problems.push('size'); return undefined; };
+    if (Array.isArray(list) && list.length > LIMITS.items) problems.push('too-many:' + LIMITS.items);
     for (const x of (Array.isArray(list) ? list : []).slice(0, LIMITS.items)) {
       if (typeof x === 'string') { if (x !== '-' && known.has(x) && !seen.has(x)) { seen.add(x); r.push(x); } else if (x !== '-' && !known.has(x)) problems.push('unknown:' + str(x, 40)); continue; }
       if (!x || typeof x !== 'object' || Array.isArray(x)) { problems.push('item'); continue; }
       const size = sizeOf(x), sz = size ? { size } : {};
       if (Array.isArray(x.split)) {
         const sp = [];
+        if (x.split.length > LIMITS.split) problems.push('split-too-long:' + x.split.length);   // 0.9.1: never drop a split's tools without saying so
         for (const y of x.split.slice(0, LIMITS.split)) { if (typeof y === 'string' && known.has(y)) { if (!seen.has(y) && !sp.includes(y)) sp.push(y); } else problems.push('unknown:' + str(String(y), 40)); }
         sp.forEach((y) => seen.add(y));
         if (sp.length >= 2) r.push({ split: sp, ...sz }); else if (sp.length === 1) r.push(size ? { id: sp[0], size } : sp[0]);
@@ -366,6 +370,8 @@ export function validateProfile(obj, registry, builtins, opts) {
     return r;
   };
   if (Array.isArray(obj.tabs)) {
+    if (obj.tabs.length > LIMITS.tabs) problems.push('too-many:' + LIMITS.tabs);
+    for (const tb of obj.tabs) if (tb && Array.isArray(tb.panels) && tb.panels.length > LIMITS.panels) problems.push('too-many:' + LIMITS.panels);
     out.tabs = obj.tabs.slice(0, LIMITS.tabs).map((tb) => ({
       label: label(tb && tb.label),
       panels: (Array.isArray(tb && tb.panels) ? tb.panels : []).slice(0, LIMITS.panels).map((pn) => {
@@ -420,6 +426,9 @@ export function exportProfile(p) {
 }
 
 /** A file's text → validateProfile, with the size limit and JSON errors as problems. */
+/** The problems that mean a layout held more than the engine keeps (a split, a menu, a list): the Settings panel alerts on these. */
+export const isLimitProblem = (p) => typeof p === 'string' && (p.startsWith('split-too-long:') || p.startsWith('too-many:'));
+
 export function importProfile(text, registry, builtins, opts) {
   if (typeof text !== 'string' || text.length > LIMITS.bytes) return { ok: false, problems: ['size'] };
   let obj;

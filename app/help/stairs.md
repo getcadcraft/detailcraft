@@ -28,5 +28,6 @@ The status bar says how many risers it made. Select the stair (click a stringer 
 
 - Move, rotate, mirror, copy, paste, delete and phases work on a stair as on a member. A rotation turns the climb; a mirror sends it the mirrored way.
 - Stringers export to IFC as IfcMember and treads as IfcPlate; both go to NC files and the bill of materials. The clash check leaves a stair's own parts alone (they are welded together).
-- The stringers are cut square: their end cuts against the floors, landings, handrails, a toe plate and grating treads are not made yet.
+- This plain stair is one flight with plate treads. For landings, handrails with balusters, folded-pan or grating treads, a rule set you choose, a cut list and the stringer hole drawings, tick {{ui:Use the steel stair generator}} in the Stair tool (see Steel stair generator).
+- The stringers are cut square: their end cuts against the floors are not made.
 - DetailCraft does not design the stair: the stringers and treads are not checked for strength or deflection.

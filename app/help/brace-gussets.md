@@ -10,8 +10,8 @@ A brace gusset is a plate shop-welded to the column (or beam) the brace lands on
 
 ## Where it works
 
-- The brace's end lies on the line of a column or a beam (within 1 mm), and the brace does not run along that line. A column is the support where there is one; otherwise the beam.
-- The gusset lies in the plane of the brace and the support's line. An **angle** must have one leg in that plane, and a **flat bar** its face: turn the brace (its {{ui:Rotation}}) until it does. With the angle's legs at 45° to the plane, DetailCraft says so and builds nothing.
+- The brace's end lies on the line of a column or a beam (within 1 mm), and the brace is not nearly parallel to that line. A column is the support where there is one; otherwise the beam.
+- The gusset lies in the plane of the brace and the support's line. An **angle** must have one leg in that plane, and a **flat bar** its face: turn the brace (its {{ui:Rotation (°)}}) until it does. With the angle's legs at 45° to the plane, DetailCraft says so and builds nothing.
 - I-shapes and channels as braces are not connected.
 
 ## Add gussets

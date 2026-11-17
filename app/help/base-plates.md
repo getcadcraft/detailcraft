@@ -39,7 +39,7 @@ Select the base plate (click the plate or a rod). Under {{ui:Plate, bolts and we
 | Fillet weld size | 8 | All around the column base |
 | Plate material | A36 | Text |
 | Grout gap | 0 | Space between the top of concrete and the plate underside |
-| Stiffeners | None | None, 2 or 4; see below |
+| Stiffeners | None | Pick None, 2 (in line with the web) or 4 (also square to it); see below |
 | Stiffener thickness, height | 12, 150 | |
 | Shear lug depth | 0 | How far the lug reaches below the plate; 0 = no lug |
 | Shear lug thickness, width | 25, 150 | |
