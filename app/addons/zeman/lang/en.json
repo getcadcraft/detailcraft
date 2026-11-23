@@ -1,0 +1,16 @@
+{
+  "zeman.name": "Zeman export",
+  "zeman.label": "Zeman (XML + NC)",
+  "zeman.done": "Zeman files written for {marks}: one XML and its NC files in a folder for each, saved as {file}.",
+  "zeman.none": "Zeman export: nothing was written.",
+  "zeman.empty": "Zeman export: there are no steel parts yet.",
+  "zeman.skipped": "Not written: {list}.",
+  "zeman.skipped.item": "{mark} ({why})",
+  "zeman.refuse.lead": "its main part {profile} is not an I-shape",
+  "zeman.refuse.attached": "it has an attached part that is not a plate: {profile}",
+  "zeman.refuse.nc": "{why}",
+  "zeman.loose": "Parts set on loose, not welded, were left out: {n}.",
+  "zeman.turned": "Identical plates share one NC file; a plate that is the same piece turned over has its own position in the XML.",
+  "zeman.misfit": "Check the plates that share a mark: one differs from the NC file it shares by {mm} mm.",
+  "zeman.check": "This export was built from one sample file set: check the first one in your machine's own software before production."
+}

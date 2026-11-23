@@ -27,11 +27,11 @@
  * holds; beyond the last row the crane cannot lift at all. The radius that counts is the larger of the pick-up and the set radius.
  */
 import { mainOf, membersOf } from './connections.js';
+import { dist2 } from './geom-vec.js';   // shared helpers (0.11 PERF.74; tools/perf/util-copies.mjs)
 
 const TYPE_RANK = { column: 0, stringer: 3, beam: 1, brace: 2, plate: 4 };
 const r1 = (v) => Math.round(v * 10) / 10;
 const r2 = (v) => Math.round(v * 100) / 100;
-const dist2 = (a, b) => Math.hypot(a[0] - b[0], a[1] - b[1]);
 
 export const SETUP_DEFAULTS = Object.freeze({ laydownGap: 6000, riggingPct: 5, headroom: 1500, limit: 0.85, clearance: 500 });
 export const CRANE_DEFAULTS = Object.freeze({ speed: 20, hookMin: 4, setMin: 8, releaseMin: 2, deductKg: 0 });

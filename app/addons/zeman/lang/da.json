@@ -1,0 +1,19 @@
+{
+  "@locale": "da",
+  "@name": "Dansk",
+  "@note": "Draft translation, not yet reviewed by a native speaker",
+  "zeman.name": "Zeman-eksport",
+  "zeman.label": "Zeman (XML + NC)",
+  "zeman.done": "Zeman-filer skrevet for {marks}: én XML og dens NC-filer i en mappe for hver, gemt som {file}.",
+  "zeman.none": "Zeman-eksport: intet er skrevet.",
+  "zeman.empty": "Zeman-eksport: der er endnu ingen stålprofiler.",
+  "zeman.skipped": "Ikke skrevet: {list}.",
+  "zeman.skipped.item": "{mark} ({why})",
+  "zeman.refuse.lead": "dens hovedprofil {profile} er ikke en I-profil",
+  "zeman.refuse.attached": "den har en tilsluttet del, der ikke er en plade: {profile}",
+  "zeman.refuse.nc": "{why}",
+  "zeman.loose": "Dele sat som løse, ikke svejsede, er udeladt: {n}.",
+  "zeman.turned": "Identiske plader deler én NC-fil; en plade, der er den samme del vendt om, har sin egen position i XML'en.",
+  "zeman.misfit": "Kontrollér de plader, der deler et positionsnummer: én afviger fra den NC-fil, den deler, med {mm} mm.",
+  "zeman.check": "Denne eksport er bygget på ét prøvesæt af filer: kontrollér den første i din egen maskines software før produktion."
+}

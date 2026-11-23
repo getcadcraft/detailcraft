@@ -84,6 +84,8 @@ function partSig(p, v, tol) {
 }
 function cmpArr(a, b) { for (let i = 0; i < Math.max(a.length, b.length); i++) { if (a[i] < b[i]) return -1; if (a[i] > b[i]) return 1; } return 0; }
 
+const PART_SIG = new WeakMap();   // a part object kept by build()'s cache keeps its form
+const SIG_CACHE = new Map(), SIG_CACHE_MAX = 200000;   // part fingerprint -> its own canonical form
 /**
  * Marks for a built model. Returns {
  *   partMark: Map(part id → mark), asmMark: Map(main part id → mark), asmOf: Map(part id → main part id),
@@ -98,9 +100,18 @@ export function markParts(built, { tol = 1, perPhase = false } = {}) {
   const pre0 = (p) => (phased ? (p.phase || 1) + '-' : '');
   const sigOf = new Map(), ownSig = new Map();          // ownSig: the part's own canonical form, without the phase
   for (const p of parts) {
-    const vs = variantsFor(p.profile);
-    let best = null;
-    for (const v of vs) { const s = partSig(p, v, tol); if (best === null || s < best) best = s; }
+    // 0.11 PERF.36: a part's own form depends on these fields only; found again by their text after an edit elsewhere
+    const had = PART_SIG.get(p);
+    if (had && had.tol === tol) { ownSig.set(p.id, had.best); sigOf.set(p.id, phased ? (p.phase || 1) + '|' + had.best : had.best); continue; }
+    const fp = JSON.stringify([p.type, p.profileName, p.profile.kind, p.profile.width, p.profile.depth, p.material, p.length, p.holes.map((h) => [h.face, h.x, h.y, h.d]), p.cuts, p.endCuts || 0, tol]);
+    let best = SIG_CACHE.get(fp);
+    if (best === undefined) {
+      best = null;
+      for (const v of variantsFor(p.profile)) { const s = partSig(p, v, tol); if (best === null || s < best) best = s; }
+      if (SIG_CACHE.size > SIG_CACHE_MAX) SIG_CACHE.clear();
+      SIG_CACHE.set(fp, best);
+    }
+    PART_SIG.set(p, { tol, best });
     ownSig.set(p.id, best);
     sigOf.set(p.id, phased ? (p.phase || 1) + '|' + best : best);
   }

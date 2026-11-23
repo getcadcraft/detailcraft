@@ -21,11 +21,11 @@
  */
 import { getProfile } from './profiles.js';
 import { SHEARTAB_DEFAULTS, ENDPLATE_DEFAULTS, BASEPLATE_DEFAULTS, GUSSET_DEFAULTS, SPLICE_DEFAULTS, MITRE_DEFAULTS, findJoints, pointGrid, freeSplices, freeBraceEnds, freeMitres, isBeamEnd, dg1Row } from './connections.js';
+import { dist3 as dist } from './geom-vec.js';   // shared helpers (0.11 PERF.74; tools/perf/util-copies.mjs)
 
 const FNV = { A325: 372, A490: 457 };   // MPa, threads in the shear plane (AISC 360-16 Table J3.2)
 const PHI = 0.75;
 const up = (v, step) => Math.ceil(v / step - 1e-9) * step;
-const dist = (a, b) => Math.hypot(a[0] - b[0], a[1] - b[1], a[2] - b[2]);
 
 /** One bolt's single-shear design strength in kN. */
 export function boltShearKN(boltD, grade = 'A325') {

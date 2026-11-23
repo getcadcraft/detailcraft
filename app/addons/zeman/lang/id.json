@@ -1,0 +1,19 @@
+{
+  "@locale": "id",
+  "@name": "Bahasa Indonesia",
+  "@note": "Draft translation, not yet reviewed by a native speaker",
+  "zeman.name": "Ekspor Zeman",
+  "zeman.label": "Zeman (XML + NC)",
+  "zeman.done": "File Zeman ditulis untuk {marks}: satu XML dan file NC-nya dalam satu folder untuk masing-masing, disimpan sebagai {file}.",
+  "zeman.none": "Ekspor Zeman: tidak ada yang ditulis.",
+  "zeman.empty": "Ekspor Zeman: belum ada part baja.",
+  "zeman.skipped": "Tidak ditulis: {list}.",
+  "zeman.skipped.item": "{mark} ({why})",
+  "zeman.refuse.lead": "part utamanya {profile} bukan profil I",
+  "zeman.refuse.attached": "ada part terlampir yang bukan pelat: {profile}",
+  "zeman.refuse.nc": "{why}",
+  "zeman.loose": "Part yang diatur lepas, tidak dilas, tidak disertakan: {n}.",
+  "zeman.turned": "Pelat yang identik berbagi satu file NC; pelat yang merupakan potongan sama tetapi dibalik memiliki posisinya sendiri di XML.",
+  "zeman.misfit": "Periksa pelat yang berbagi tanda yang sama: salah satunya berbeda {mm} mm dari file NC yang dibagi.",
+  "zeman.check": "Ekspor ini dibuat dari satu set file contoh: periksa yang pertama di perangkat lunak Anda sendiri sebelum produksi."
+}

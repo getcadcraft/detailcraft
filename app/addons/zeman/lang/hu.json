@@ -1,0 +1,19 @@
+{
+  "@locale": "hu",
+  "@name": "Magyar",
+  "@note": "Draft translation, not yet reviewed by a native speaker",
+  "zeman.name": "Zeman-export",
+  "zeman.label": "Zeman (XML + NC)",
+  "zeman.done": "Zeman-fájlok elkészültek a következőkhöz: {marks}. Mindegyikhez egy XML és a hozzá tartozó NC-fájlok egy mappában, a(z) {file} néven mentve.",
+  "zeman.none": "Zeman-export: nem készült fájl.",
+  "zeman.empty": "Zeman-export: még nincsenek acélalkatrészek.",
+  "zeman.skipped": "Nem készült el: {list}.",
+  "zeman.skipped.item": "{mark} ({why})",
+  "zeman.refuse.lead": "a főalkatrésze, {profile}, nem I-szelvény",
+  "zeman.refuse.attached": "van hozzá csatlakozó alkatrész, amely nem lemez: {profile}",
+  "zeman.refuse.nc": "{why}",
+  "zeman.loose": "A laza, nem hegesztett alkatrészek kimaradtak: {n}.",
+  "zeman.turned": "Az azonos lemezek egy NC-fájlt használnak; az ugyanaz a darab, de megfordítva, saját pozíciót kap az XML-ben.",
+  "zeman.misfit": "Ellenőrizze az azonos jelű lemezeket: az egyik {mm} mm-rel tér el a közös NC-fájltól.",
+  "zeman.check": "Ez az export egyetlen mintafájlkészletből készült: a gyártás előtt ellenőrizze az elsőt a saját gépének szoftverében."
+}

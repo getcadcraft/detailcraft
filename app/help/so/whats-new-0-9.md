@@ -1,104 +1,103 @@
 ---
-title: Waxa cusub ee 0.9
-summary: Cabbirrada birta UK ee Blue Book iyo xagalada aan isku mid ahayn, naqshadaha shaqada ee qayb kasta oo ku jira hal set PDF ah, My profiles oo loogu talagalay profile-yada gaarka ah, P-Delta iyo dhaqdhaqaaqyada dabiiciga ah, culeysyada dabaysha ee ASCE 7, goobta dhulgariirka iyo isku-darka, iyo kursar-yo nolol ah oo leh Raac.
-keywords: waxa cusub, nooca hore, sii-deynta, changelog, 0.9, birta UK, blue book, ub, uc, pfc, shs, rhs, chs, xagal aan isku mid ahayn, naqshadda shaqada, shop drawing, set-ka xaashiyaha, lambarka qaybta, pdf, My profiles, profile gaar ah, P-Delta, dhaqdhaqaaq labaad, dhaqdhaqaaqa dabiiciga ah, finite elements, modal mass, culeyska dabaysha, ASCE 7, dhulgariirka, site class, USGS, isku-darka culeysyada, LRFD, ASD, tooska, kursar, raac, dadka, tooltips, release notes, changelog, isbeddelo, 0.8, 0.8.1, nooca, astaamo cusub, rakibidda, cranes, load chart, movie, autopilot, isku-xidhka, rebar, xirmada birta, aasaas, qaab-dhismeed, timber, light-gauge, liis gooyo, constructability, weld access, bixiye, kaydka, waqtiga sugitaanka, waa maxay ugu horreeya ee jabta, tooska, kontaraydh, dhulgariirka, slab, luuqadaha, caawiye
-from: 4c95a2de
+title: Waxa cusub ee 0.9 (hore)
+summary: Cabbirrada birta UK ee Blue Book iyo angles aan isle'egin, naqshadaha shaqada ee qayb kasta hal PDF ah, My profiles ee qaabab gaar ah, P-Delta iyo dhaqdhaqaaqyada dabiiciga ah, culeysyada dabaysha ee ASCE 7, goobta dhulgariirka iyo isku-darka, iyo kursoriyada tooska ah oo leh Follow.
+keywords: waxa cusub 0.9, nuqul hore, waxa cusub, whats new, sii-deynta, changelog, 0.9, birta UK, blue book, ub, uc, pfc, shs, rhs, chs, angle aan isle'egin, naqshadda shaqada, xaashiyo, calaamadda qaybta, pdf, my profiles, qaab gaar ah, p-delta, dalab labaad, dhaqdhaqaaqa dabiiciga ah, finite elements, modal mass, culeyska dabaysha, asce 7, dhulgariir, goobta dhulgariirka, usgs, isku-darka culeysyada, lrfd, asd, tooska, kursoriyada, follow, dadka, tooltips, 0.8, 0.8.1, nooca, astaamaha cusub, rakibidda, crane, chart-ka culeyska, filim, autopilot, isku-xidhka, rebar, xirmada, aasaaska, footing, mat, settlement, qaab-dhismeed, timber, light-gauge, cut list, constructability, weld access, bixiye, stock, waqtiga sugitaanka, what breaks first, kaadhka, dhulgariir, slab, luqadaha, caawiye
+from: ab0c7f05
 ---
 
-Waa wixii isbedel ku yimid DetailCraft 0.9, marka la barbardhigo 0.8.1. 0.9 waxay keenaysaa cabbirrada birta UK, naqshad shaqo oo qayb kasta hal jeer, tab {{ui:Falanqayn}} oo weyn oo loogu talagalay qaab-dhismeedyada, iyo aragti ah isku-cursor-kooda markaad wada shaqeysaan.
+Tani waa waxa isbedelay DetailCraft 0.9, marka la barbardhigo 0.8.1. 0.9 wuxuu keenayaa cabbirrada birta UK, naqshad shaqo oo qayb kasta hal jeer, tab {{ui:Falanqayn}} oo weyn qaab-dhismeedka, iyo muuqaal ah kursoriyada kuwa kale marka aad wada shaqaynayso.
 
 ## Cusub
 
 ### Birta UK iyo naqshadaha shaqada
 
-- **Cabbirrada birta UK.** Liisaska profile-ka hadda waxay leeyihiin 976 cabbir oo ka yimid Steel for Life Blue Book: UB, UC, PFC, EA, UEA, CHS, SHS iyo RHS, iyadoo godadka birta ee la qaabeeyay qaboojinta ay kala go'an yihiin (magacyadooda waxay ku bilaabmaan CF). Magacyada waxaa lagu qoraa qoyska marka hore, sida UB305x165x40 ama SHS100x100x5.0, waxaana sidoo kale shaqeysa in la qoro sida naqshadaha ay u sheegaan: 305x165x40 UB, L100x100x10, SHS100x5. Eeg [Liiska profile-yada](topic:profile-catalog).
-- **Xagalada aan isku mid ahayn.** Xagalada UEA waxay ilaaliyaan labada lug ee IFC gelinta iyo ku baxa iyo faylasha NC, mirror-ku wuxuu qaybta rogaa darafkeeda.
-- **Dhammaan naqshadaha shaqada hal jeer.** Dooro {{ui:Naqshadda shaqada}} kooxda {{ui:Wax soo saar}} iyadoo aan wax la dooran. Daaqadu wuxuu liistaa calaamad kasta oo qayb ah, wuxuu hor-eegi karaa mid kasta, {{ui:Soo deji dhammaan}} wuxuu keydiyaa hal PDF oo bog kasta uu u yahay calaamad, oo cinwaankeedu yahay "Sheet 3 of 42". {{ui:Soo deji PDF}} wuxuu keydiyaa midka aad eegayso. Kanaalada, xagalada iyo tuubooyinka godan hadda waxay helaan xaashiyo. Eeg [Samee naqshadaha shaqada](topic:shop-drawings).
-- **My profiles.** Profile gaar ah hadda waa la kaydin karaa moodel kasta oo cusub. Foomka Custom profile, ka tag {{ui:Kaydi gudaha My profiles}} oo calaamad lagu sameeyay; liiska {{ui:My profiles}} ee hoosta ka taal wuxuu leeyahay {{ui:Kaydi}}, {{ui:Isticmaal halkan}} iyo {{ui:Ka saar}}. Liiska waxaa lagu kaydiyaa browser-kan (ilaa 200), ma aha akoonkaaga. Eeg [Plate-yada iyo profile-yada](topic:plates-and-profiles).
+- **Cabbirrada birta UK.** Liisaska profile-ka hadda waxay leeyihiin 976 cabbir oo laga soo qaatay Steel for Life Blue Book: UB, UC, PFC, EA, UEA, CHS, SHS iyo RHS, iyadoo qaybaha hollow ee birta qaboojisay la kala saaray (magacyadoodu waxay ku bilaabmaan CF). Magacyada waxaa lagu qoraa qoyska marka hore, sida UB305x165x40 ama SHS100x100x5.0, iyo sidoo kale waa shaqeysaa in aad u qortid sida naqshadaha ay u qoraan: 305x165x40 UB, L100x100x10, SHS100x5. Eeg [Liiska profile-yada](topic:profile-catalog).
+- **Angles aan isle'egin.** Angles-ka UEA waxay haystaan labada leg ilaa IFC soo-galinta iyo soo-saarka, iyo ilaa faylasha NC, muraayaddu waxay qaybta u rogtaa dhamaadkeeda ilaa dhamaadka kale.
+- **Dhammaan naqshadaha shaqada isku mar.** Dooro {{ui:Shop drawing}} koox {{ui:Output}} hoostiisa adigoo aan wax dooran. Daaqaddu waxay liisteeysaa calaamad qayb kasta, waxay hore u eegi kartaa mid kasta, {{ui:Soo deji dhammaan}} waxay kaydisaa hal PDF oo bog kasta calaamad u ah, oo cinwaan leh "Xaashi 3 ka 42" mid kastaba. {{ui:Soo deji PDF}} waxay kaydisaa midka aad eegeyso. Qaybaha kanaalyada, angles-ka iyo qaybaha hollow hadda waxay helaan xaashiyo sidoo kale. Eeg [Samee naqshadaha shaqada](topic:shop-drawings).
+- **Qaababka gaarka ah (My profiles).** Qaab gaar ah hadda waa la kaydin karaa moodeel kasta oo cusub. Foomka Custom profile, ka reeb **{{ui:Kaydi ku jira My profiles}}** oo la hubiyay; liiska {{ui:My profiles}} ee hoosta wuxuu leeyahay {{ui:Keep}}, {{ui:Use here}} iyo {{ui:Remove}}. Liiska waxaa lagu kaydiyaa browser-kan (ilaa 200), ma aha akoonkaaga. Eeg [Plates iyo profiles](topic:plates-and-profiles).
 
-### Falanqaynta
+### Falanqayn
 
-- **Dhaqdhaqaaqa labaad (P-Delta).** Calaamadee {{ui:Dhaqdhaqaaqa labaad (P-Delta)}} xagga {{ui:Socodsii}} ee tab-ka {{ui:Falanqayn}}, xoogagga toosan ee dhaqdhaqaaqa waxay ku shaqeeyaan qaab-dhismeedka la foororsaday. Saxanada iyo dabaqyada adag waxay ku sii jiraan tallaabada kowaad, iyadoo digniin la siinayo. Eeg [Xoogagga, dhimmadaha iyo foororsashada](topic:frame-analysis).
-- **Dhaqdhaqaaqyada dabiiciga ah.** Block-ga {{ui:Finite elements: natural frequencies}} ee hoosta natiijooyinka wuxuu helaa qaababka ugu hooseeya ee moodelkaas isku mid ah, oo leh muddada iyo effective modal mass, wuxuuna muujiyaa qaab moodelka dushiisa. Eeg [Xoogagga, dhimmadaha iyo foororsashada](topic:frame-analysis).
-- **Culeysyada dabaysha iyo goobta dhulgariirka.** Saddex block oo cusub oo ku jira tab-ka {{ui:Falanqayn}}: {{ui:Culeysyada dabaysha (habka jihada ASCE 7)}}, {{ui:Goobta dhulgariirka iyo nidaamka (ASCE 7)}} iyo {{ui:Isku-darka culeysyada ASCE 7}}. Eeg [Dabaysha, goobta dhulgariirka iyo isku-darka ASCE 7](topic:wind-seismic-combinations).
+- **Dalab labaad (P-Delta).** Calaamadee {{ui:Dalab labaad (P-Delta)}} oo ku xiga Run tab {{ui:Falanqayn}}, xoogagga axial-ka waxay ku shaqeeyaan frame-ka la foorarsaday. Saxanka iyo dabaqyada adag waxay sii joogaan heer-koowaad, digniin ayaa la muujiyaa. Eeg [Xoogagga, falcelinta iyo foorarsashada](topic:frame-analysis).
+- **Dhaqdhaqaaqyada dabiiciga ah.** Block-ka {{ui:Finite elements: natural frequencies}} ee hoosta natiijooyinka wuxuu helaa qaababka ugu hooseeya ee isla moodeelka, oo leh muddo iyo effective modal mass, wuxuuna muujiyaa qaab moodeelka ku jira. Eeg [Xoogagga, falcelinta iyo foorarsashada](topic:frame-analysis).
+- **Culeysyada dabaysha iyo goobta dhulgariirka.** Saddex block oo cusub tab {{ui:Falanqayn}}: {{ui:Wind loads (ASCE 7 directional procedure)}}, {{ui:Seismic site and system (ASCE 7)}} iyo {{ui:ASCE 7 load combinations}}. Eeg [Dabaysha, goobta dhulgariirka iyo isku-darka ASCE 7](topic:wind-seismic-combinations).
 
 ### Wada shaqaynta
 
-- **Kursarrada iyo magacyada.** Kulan Live ah, pointer-ka qof kasta waxaa lagu rinjiyeeyaa moodelka oo leh magaciisa iyo midabkiisa, wixii uu doortayna waxaa lagu hareeeyaa sanduuq.
-- **Raac qof.** Fur {{ui:Dadka}} kulanka oo dooro {{ui:Raac}} magac kasta; aragtaadu way raacaysaa tiisa. Martiqaadaha wuxuu dooran karaa {{ui:Ku dalbo dhammaan inay i raacaan}}. Eeg [Raac qof kulan Live ah](topic:follow-in-live).
+- **Kursoriyada iyo magacyada.** Session Live ah, saarka (pointer) mid kasta waxaa lagu rinjiyaa moodeelka magaciisa iyo midabkiisa, wixii uu doortayna waxaa lagu siiyaa sanduuq.
+- **Raac qof.** Fur {{ui:People}} session-ka oo dooro {{ui:Follow}} magac kasta; muuqaalkaaga wuxuu u socdaa kan kaaga. Martida ayaa dooran karta {{ui:Ask everyone to follow me}}. Eeg [Raacida qof session Live ah](topic:follow-in-live).
 
-### Dhammaan barnaamijyada
+### Dhammaan apps-ka
 
-- Tooltips waa Bootstrap tooltips, kaarka bilowga wuxuu leeyahay badhanka xirka, bararka tab-yada wuu ku dhex socdaa dhinac haddii aanay ku habboon, magaca tab-ka browser-ka wuxuu ku magacaabaa dokumentka furan oo ku xiga DetailCraft iyo CadCraft.
-- **Caawiyayaasha AI ee tusaalaha.** Toban codsi oo shaqeysan oo caawiyahaaga gaarka ah (nadiifi sawirka, qorsho ururi, hubi sawirrada, weydii moodeelka su'aalo, isku-geeyo takeoff, isku day variant-ka qaybta…), mid kasta oo leh qalabyada uu isticmaalo iyo ogolaanshaha uu u baahan yahay, oo mid kasta baadhitaankeenu dib u socodsiiyo. Barnaamijyadu ma leeyihiin AI. Eeg [Tusaalooyin caawiyayaasha AI](common:assistants-recipes).
+- Tooltips waa Bootstrap tooltips, kaadhka bilowga wuxuu leeyahay badhanka xidhista, safafka tab-ka way u jiifaan dhinacyada marka aanay ku habboon, magaca tab-ka browser-ka wuxuu muujiyaa dukumeentiga furan oo ku xiga DetailCraft iyo CadCraft.
 
-## La saxay
+## Waa la hagaajiyay
 
-- Profile gaar ah ayaa lumay markii aad bilowday moodel cusub.
-- Kanaalada, xagalada iyo tuubooyinka godan ayaa ka maqnaa set-ka naqshadaha shaqada.
+- Qaab gaar ah ayaa lumay markaad bilowdo moodeel cusub.
+- Qaybaha kanaalyada, angles-ka iyo qaybaha hollow ayaa ka maqnaa xaashiyaha naqshadaha shaqada.
 
-## Xadka run ahaanshaha
+## Xuduudaha runta ah
 
-- Block-yada dabaysha, dhulgariirka iyo finite element waa caawimo hubinta. Injineerkaagu wuu dib u eegaa natiijooyinka; ma aha hubinta code-ka. Raadinta USGS waxaa lagu tijaabiyay adeeg la mid ah, ma aha adeegga toosan.
-- Finite elements iyo P-Delta waxaa lagu hubiyay jawaabaha gacanta iyo kuwa closed-form, ma aha dhismo dhab ah. Falanqaynta isku-buckling-ka lama dhisin.
-- Ma jiro warshad birta UK ah oo weli isticmaashay cabbirrada UK, faylasha NC ee xagalada aan isku mid ahayn weli ma socon kombiyuutar.
-- Set-ka naqshadaha shaqada waa PDF keliya.
-- Luuqadaha ka sokow Ingiriisiga waa qabyo tarjumaad mashiin ah.
-- Installer-ada Windows lama saxeexin code-ka (More info, ka dibna Run anyway); sawirka diskka macOS lama ansixin (midig-riix, ka dibna Open).
+- Block-yada dabaysha, dhulgariirka iyo finite element waa caawimo hubin ah. Injineerkaaga ayaa dib u eegaya natiijooyinka; ma aha hubin code. Raadinta USGS waxaa lagu tijaabiyay adeeg beddel ah, ma aha adeegga toosan.
+- Finite elements iyo P-Delta waxaa lagu hubiyay jawaabo gacan iyo jawaabo xisaab xuruf ah, ma aha dhismo dhab ah. Falanqaynta buckling weli lama dhisin.
+- Ma jiro fabricator UK ah oo isticmaalay cabbirrada UK weli, faylasha NC ee angles aan isle'egin ma shaqeynin mashiin.
+- Xaashiyaha naqshadaha shaqada waa PDF oo keliya.
+- Luqadaha ka baxsan Ingiriisiga waa qabyo mashiin ah ilaa ay akhriyaan dad afka hooyo ku hadla.
+- Rakibayaasha Windows lama saxeexin code (Macluumaad dheeraad ah, ka dib Orod si kastaba); sawirka disk-ka macOS lama notarize gareyn (midig guji, ka dib Fur).
 
-Isbeddelada hore waxay ku jiraan xusuusta 0.8 iyo 0.8.1 ee bogaan hoose.
+Isbedelada hore waxay ku jiraan qoraalada 0.8 iyo 0.8.1 ee hoose bogaan.
 
 ## Hore: 0.8 iyo 0.8.1
 
-Waa wixii isbedel ku yimid DetailCraft 0.8 (1 Nofeembar 2026) iyo 0.8.1 (2 Nofeembar 2026), marka la barbardhigo 0.7. 0.7 wuxuu hubiyay xubnaha birta; 0.8 wuxuu qorsheeyaa kor-u-qaadista, wuxuu soo jeediyaa isku-xidhka, wuxuu hubiyaa aasaaska iyo rebar-ka, wuxuuna dhisaa derbiyada, dabaqyada iyo saqafyada alwaaxda iyo light-gauge.
+Tani waa waxa isbedelay DetailCraft 0.8 (1 November 2026) iyo 0.8.1 (2 November 2026), marka la barbardhigo 0.7. 0.7 wuxuu hubiyay xubnaha birta; 0.8 wuxuu qorsheeyaa qaadista, wuxuu soo jeediyaa isku-xidhka, wuxuu hubiyaa aasaaska iyo rebar-ka, wuxuuna dhisaa qaab-dhismeedka timber iyo darbiyada, dabaqyada iyo saqafyada light-gauge.
 
 ### Cusub
 
 **Rakibidda**
 
-- **Qorshaha rakibidda iyo filimka.** Tab-ka {{ui:Rakibidda}}, ku qor crane (meesha uu taagan yahay, jiidkiisa ugu sarreeya, rigging-ka aan ku jirin chart-ka), oo ku qor safafka load chart-kiisa. DetailCraft wuxuu kor u qaadaa moodelka hal assembly mar, siday u kala horreeyaan phase-ka iyo tier mar kasta, wuxuuna hubiyaa kor-u-qaadid kasta chart-ka radius-kiisa iyo margin-ka aad dejisay. {{ui:Kaydi filimka}} wuxuu qoraa hal fayl HTML ah oo ciyaara khadka-ka-baxsan browser kasta, xataa taleefanka. Kor-u-qaadista ka baxsan chart-ka, ka dhaafsan ama aad u sarreeya waxay ku jiraan {{ui:Dhibaatooyinka}}. Waa qorshe ku salaysan tirooyinkaaga, ma aha qorshe kor-u-qaad. Eeg [Qorshaha rakibidda iyo filimka](topic:erection-movie).
+- **Qorshaha rakibidda iyo filimka.** Tab-ka {{ui:Erection}}, sharax crane (meesha uu taagan yahay, hook-ka ugu sareeya, rigging-ka aan ku jirin chart-ka), oo qor safafka chart-ka culeyska crane-ka. DetailCraft wuxuu qaadaa moodeelka hal assembly mar, wax walba marka ay ku dhacaan phase-ka iyo tier kasta, oo wuxuu hubiyaa qaadista kasta chart-ka radius-kiisa iyo margin-ka aad dejisay. {{ui:Save movie}} wuxuu qoraa hal fayl HTML ah oo ciyaaraya offline browser kasta, xataa telefoon. Qaadista ka baxda chart-ka, ka dambaysa ama sarreysa waxay ku jiraan {{ui:Problems}}. Waa qorshe ka numberkaaga, ma aha lift plan. Eeg [Qorshaha rakibidda iyo filimka](topic:erection-movie).
 
-**Xiriirrada**
+**Isku-xidhka**
 
-- **Autopilot-ka isku-xidhka.** Tab-ka {{ui:Autopilot}} wuxuu eegaa isku-xidh kasta oo aan xidhiidh lahayn, wuxuuna soo jeedinayaa mid ku salaysan qaabka: saxanada saldhiga, shear tabs, saxanada dhammaadka biimaha aad u calaamadeeysay sida moment beams, jiidka iyo saxanka xidhka. Siiso culeys isku mid ah ama hal dhammaad shear, tirada boolt-ka ayaa raacaysa xoogga naqshadda boolt-ka. {{ui:Dhammaantood ku dar}} wuxuu ku daraa soo jeedinta hal tallaabo oo undo ah. Waa qiyamo bilow oo la eegi karo, ma aha naqshadda isku-xidhka.
-- **Hubinta suurtogalnimada dhismaha.** {{ui:Dhibaatooyinka}} waxay u sheegtaa boolt aan furaha gaadhi karin, boolt-yada oo ag dhow socket-ka, welds-ka fillet ee ka baxsan xadka cabbirkooda iyo godadka birta ee biyo haya. Weld access waa cusub: weld fillet oo wareega oo dhan oo mash-alka welder-ka aan gaadhin waxaa lagu liistaa qaybta ku jirta iyo qeybta alxanka ee saameysan. Eeg [Hubinta suurtogalnimada dhismaha](topic:constructability).
+- **Autopilot-ka isku-xidhka.** Tab-ka {{ui:Autopilot}} wuxuu eegaa isku-xidh kasta oo aan lahayn oo wuxuu soo jeediyaa mid ka soo baxa qaababka: base plates, shear tabs, end plates xubnaha aad calaamadiso sida moment beams, splices iyo gussets. Siiso culeys isku mid ah ama shear hal dhamaad, tirada boolt-ka waxay raacaysaa xoogga naqshadeynta boolt-ka. {{ui:Add them all}} wuxuu ku daraa soo jeedinta hal tallaabo oo undo ah. Waa qiyamaha bilowga ah ee la eego, ma aha naqshadeynta isku-xidhka.
+- **Hubinta dhismaha.** {{ui:Problems}} waxay u hubisaa boolt uu furaha gaari karin, boolt-yo u dhow socket-ka, laxaamado fillet ah oo ka baxsan xadka cabbirkooda, iyo qaybaha hollow ee biyo haysta. Weld access waa cusub: laxaamad fillet oo dhan ah oo ay gaari weydo meel-dabka welder-ka, waxaa lagu liisteeyaa qaybta ku jirta jidka iyo qaybta laxaamadda ee ay saamaysay. Eeg [Hubinta dhismaha](topic:constructability).
 
 **Aasaaska iyo rebar-ka**
 
-- **Hubinta aasaaska.** Tab-ka {{ui:Aasaaska}} wuxuu hubiyaa footings, combined footings iyo mats oo ku saleysan dhulka aad sharaxday: bearing, sliding iyo overturning culeysyada adeegga; flexure, shear, punching, development iyo ugu yar ee birta culeysyada factored (ACI 318-19). Column ku dhow geesha ama cidhifka waxaa lagu hubiyaa qaybta ka jarmay cidhifka footing-ka. Settlement wuxuu ka imanayaa modulus-ka dhulka, mat-ka dhuuban waxaa lagu xalliyaa springs ka subgrade modulus, pile groups iyo derbiyada xaqiijinta waxay leeyihiin panels gaar ah. Culeysyada column waa la qori karaa ama laga qaadan karaa {{ui:Falanqayn}}. Eeg [Hubinta aasaaska](topic:foundation-checks).
-- **Khariitada xirmada rebar.** Tab-ka {{ui:Xirmada birta}} wuxuu sawirayaa khariita kulaylka footing kasta sida laga arko sare: meelaha ay gadaashu wax yar oo meel u reebtaan kontaraydhka inuu hoos u galo, marka la barbardhigo xeerka farsamada ee ugu yar, iyo, haddii aad bixiso, aggregate-ka ugu weyn iyo madaxa vibrator-ka. Eeg [Khariitada xirmada rebar](topic:rebar-congestion).
+- **Hubinta aasaaska.** Tab-ka {{ui:Foundation}} wuxuu hubiyaa footings, footings isku-dhafan iyo mats ciidda aad sharaxday: bearing, sliding iyo overturning culeysyada adeegga; flexure, shear, punching, development iyo birta ugu yar culeysyada factored (ACI 318-19). Tiir ku dhow geesha ama xaga ayaa lagu hubiyaa qaybta ka jarmay xaga footing-ka. Settlement waxaa laga helaa modulus-ka ciidda, mat-ka dabacsan waxaa lagu xalliyaa springs oo ka yimid subgrade modulus, pile groups iyo retaining walls waxay leeyihiin panels gaar ah. Culeysyada tiirarka waa la qori karaa ama laga qaadi karaa {{ui:Analysis}}. Eeg [Hubinta aasaaska](topic:foundation-checks).
+- **Khariidada xirmada rebar-ka.** Tab-ka {{ui:Congestion}} wuxuu sawiraa khariidad kulul footing kasta sida laga arko sare: meelaha bararku ay uga tageen goob yar oo beton ah inuu hoos u galo, marka loo barbardhigo xeerka farqiga ugu yar, iyo haddii aad siiso, aggregate-ka ugu weyn iyo madaxa vibrator-ka. Eeg [Khariidada xirmada rebar-ka](topic:rebar-congestion).
 
-**Qaab-dhismeedka iyo bixinta**
+**Qaab-dhismeed iyo bixinta**
 
-- **Qaab-dhismeedka alwaaxda iyo light-gauge.** Tab-ka {{ui:Qaab-dhismeed}} wuxuu qaabeeyaa derbiyada, dabaqyada iyo saqafyada qayb kasta, liis gooyo, kaydka la iibsanayo iyo shop drawing-ka miisaan ku habboon. {{ui:Dhig sida xubno}} wuxuu geliyaa qaybaha moodelka, {{ui:Xaashiyaha PDF}} wuxuu keydiyaa hal xaashi panel kasta. Cabbirrada, masaafada iyo headers-ka waa kuwaaga; DetailCraft ma hubinayo inay qaadayaan culeyska. Eeg [Panels-ka qaab-dhismeedka alwaaxda iyo light-gauge](topic:framing-panels).
-- **Kaydka bixiyaha iyo waqtiga sugitaanka.** Tab-ka {{ui:Bixinta}} wuxuu akhrisaa liiska kaydka bixiyaha (CSV) wuxuuna muujiyaa, qaybta kasta oo liiska gooyo iibsanayo, in kaydka ku filan yahay iyo intee le'eg ayuu sugitaanku yahay. Qaybaha yaraanta iyo kuwa daahay waxay ku jiraan {{ui:Dhibaatooyinka}}. Waxba lama dalbo. Eeg [Kaydka bixiyaha iyo waqtiga sugitaanka](topic:supplier-stock).
+- **Qaab-dhismeedka timber iyo light-gauge.** Tab-ka {{ui:Framing}} wuxuu qaabeeyaa panels-ka darbiga, dabaqa iyo saqafka qayb kasta, cut list, stock-ka la iibsanayo iyo naqshad shaqo oo cabbir ku saabsan. {{ui:Place as members}} wuxuu qaybaha dhigaa moodeelka, {{ui:PDF sheets}} wuxuu kaydiyaa hal xaashi panel kasta. Cabbirrada, masaafada iyo headers-ka waa kuwaaga: DetailCraft ma hubiyo inay qaadayaan culeyska. Eeg [Panels-ka qaab-dhismeedka timber iyo light-gauge](topic:framing-panels).
+- **Stock-ka bixiyaha iyo waqtiga sugitaanka.** Tab-ka {{ui:Supply}} wuxuu akhrinayaa liiska stock-ka bixiyaha (CSV) wuxuuna muujiyaa, qaybta kasta oo cut list-ku iibsanayo, in uu ku filan yahay stock-ka iyo inta sugitaanku dheer tahay. Qaybaha yaraanta iyo kuwa daahay waxay ku jiraan {{ui:Problems}}. Wax la dalbo ma jiro. Eeg [Stock-ka bixiyaha iyo waqtiga sugitaanka](topic:supplier-stock).
 
-**Falanqaynta iyo naqshadda**
+**Falanqayn iyo naqshadeyn**
 
-- **Waa maxay ugu horreeya ee jabta?** Tab-ka {{ui:Falanqayn}}, badhanku wuxuu helaa isku-darka xoogga ee xukunta, xubinta ugu nugul, intee in le'eg culeysyadu koraan ka hor inta xubinta koowaad ay gaarto xaddigeeda, iyo saxanka isku-xidhka ama shear tab-ka ugu nugul marka xoogga shear-ka boolt-yadiisa la yaqaan. Waxay u baahan tahay isku-darka iyo code-ka naqshadda marka hore. Bearing, block shear, welds iyo prying lama hubiyo. Caawiyahaaga isku-xidhka ah ayaa weydiin kara isla markaana.
-- **Tooska.** Calaamadee {{ui:Live: solve again after each edit}} oo qaab-dhismeedka waa la xalliyaa mar kasta oo wax la beddelo.
-- **Kontaraydh, wax dheeraad ah.** Column dheer oo ku jira qaab-dhismeed aan socod lahayn waa la naqshadeeyaa muuqaalkeeda la weyneeyay (ACI 318-19 6.6.4.5). Xilliga dhulgariirka waxaa laga qaadan karaa falanqaynta habka Rayleigh. Slab ka samaysan plates waxay helaa birta ay dabaqa kasta u baahan tahay iyada oo ku salaysan momentsyadiisa, iyo one-way shear-ka. Eeg [Hubi qaybaha kontaraydhka iyo samee culeysyada dhulgariirka](topic:concrete-and-seismic).
-- **Injineer si uu u hubiyo.** Natiijooyinka aasaaska, kontaraydhka iyo Waa maxay ugu horreeya ee jabta waa caawimo. Culeysyada dabaysha lama dhisin.
+- **Maxay jabaysaa marka hore?** Tab-ka {{ui:Analysis}}, badhanku wuxuu helaa isku-darka xoogagga ee xukuma, xubinta ugu daciifsan, inta culeysyada ay kori karaan ka hor inta xubinta koowaad ay gaarto xadkeeda, iyo end plate-ka ama shear tab-ka ugu daciifsan halkaas oo xoogga shear-ka boolt-kiisa la yaqaan. Waxay u baahan tahay isku-darka iyo code-ka naqshadda marka hore. Bearing, block shear, laxaamadaha iyo prying lama hubin. Caawiyahaaga AI-ga ah ayaa weydiin kara isla wax.
+- **Live.** Calaamadee {{ui:Live: solve again after each edit}} frame-ka mar kasta oo wax la beddelo ayaa dib loo xalliyaa.
+- **Kaadhka, wax dheeraad ah.** Tiir slender ah oo frame aan sway lahayn waxaa loo naqshadeeyaa momentkiisa weyneeyay (ACI 318-19 6.6.4.5). Muddada dhulgariirka waxaa laga qaadi karaa falanqaynta iyada oo la adeegsanayo habka Rayleigh. Slab ka samaysan plates waxay helaa birta ay dabaqa kasta u baahan tahay momentsyadiisa, iyo one-way shear. Eeg [Hubi kaadhka oo samee culeyska dhulgariirka](topic:concrete-and-seismic).
+- **Injineer si uu u hubiyo.** Natiijooyinka aasaaska, kaadhka iyo What breaks first waa caawimo. Culeyska dabaysha lama dhisin.
 
-**Dhammaan barnaamijyada**
+### Dhammaan apps-ka
 
-- **Luuqadaha.** Caawintu waxay ku qoran tahay 54 luuqadood. Kuwa ka sokow Ingiriisiga waa qabyo tarjumaad mashiin ah ilaa ay akhriyaan dadka afka hooyo; toban waa cusub (Lithuanian, Latvian, Bosnian, Marathi, Telugu, Albanian, Afrikaans, Filipino, Swahili, Uzbek).
-- **Bararka qalabka.** {{ui:Dejinta}} › {{ui:Guud}} › {{ui:Safafka qalabka}} wuxuu dooranayaa wrap, 2 safar ama 1 safar. Bar hore u habboon ayuu sidiisa ku sii jiraa; kuwa kale waxay ku dhaqaaqaan dhinac.
-- **Miiska hantida.** Goobaha aasaaska waxay adeegsadaan miiska wadaagga ah: qaybaha la ruxi karo iyo heerka dhex-dhexaadka. Hawlaha xisaabta sida 2*450 wali way shaqeeyaan.
-- **Qalabka gacanta.** Trackpad, qalin, 3D mouse, controller iyo MIDI waxay wadi karaan barnaamijyada. Eeg [Ku soco 3D](topic:navigate-3d).
-- **Shaashadda dhibaatooyinka.** Digniinta hubinta cusub ee kor ku xusan waxay ku soo muuqanaysaa shaashadda {{ui:Dhibaatooyinka}} isla sidii hore.
-- **Ku xidh AI-gaaga.** Caawiyahaaga gaarka ah, oo lagu xidhay CadCraft Studio, wuxuu la shaqeeyaa dhammaan siddeed barnaamij, wuxuuna arkaa kaliya waxa aad ogolaatay. Xidhka hal-tallaabo, connector-ka martiqaadka iyo furaha API-gaaga ee Studio weli way imanayaan. Eeg [Isticmaal DetailCraft caawiye AI ah](topic:use-with-ai-assistants).
+- **Luqadaha.** Caawinta waxay ku jirtaa 54 luqadood. Kuwa ka baxsan Ingiriisiga waa qabyo mashiin ah ilaa ay akhriyaan dad afka hooyo ah; toban waa cusub (Lithuanian, Latvian, Bosnian, Marathi, Telugu, Albanian, Afrikaans, Filipino, Swahili, Uzbek).
+- **Safafka qalabka.** {{ui:Settings}} › {{ui:General}} › {{ui:Toolbar rows}} wuxuu doortaa wrap, 2 safaf ama 1 safaf. Bar-ka horeba ku habboon wuu sidiisa sii joogaa; kuwa kale waxay u jiifaan dhinacyada.
+- **Property grid.** Goobaha footing-ka waxay isticmaalaan grid-ka la wadaago: qaybo la xidhi karo iyo qaab dhow. Xisaabta qoran sida 2*450 weli way shaqeysaa.
+- **Qalabka gelinta.** Trackpad, pen, 3D mouse, controller iyo MIDI waxay wadi karaan apps-ka. Eeg [Ku dhaqaaq 3D](topic:navigate-3d).
+- **Panelka dhibaatooyinka.** Digniinta hubinta cusub ee kor ku xusan waxay ku dhex muuqdaan panelka {{ui:Problems}} sidii hore.
+- **Ku xidh AI-gaaga.** Caawiyahaaga gaarka ah, oo lagu xidhay CadCraft Studio, wuxuu la shaqeeyaa dhammaan siddeed apps-ka wuxuuna arkaa kaliya wixii aad oggolaatay. Isku-xidhka hal-riix, connector-ka martida iyo API key-gaaga ee Studio weli way iman doonaan. Eeg [Isticmaal DetailCraft AI assistant-ka](topic:use-with-ai-assistants).
 
-### Waa la saxay 0.8.1
+### Waa la hagaajiyay 0.8.1
 
-- **Luuqadaha Studio.** Studio iyo nooca xirmada ayaa bedeli kara luuqadda wakhtiga socodka; ka hor waxay ahaayeen Ingiriisi keliya. Weli lama tijaabin dhammaan madal-yada: naga soo sheeg haddii luuqadu ku ansixin.
-- **Doorashada daaqadda isgoysa.** Installer-ada 0.8.1 waxay sii hayaan habka doorashada daaqadda ee hore loogu saxay dhismaha web-ka 0.8; installer-ka duqowday ma lahayn.
-- **Tablet-yada toosan.** Dhererka grid-ka ee dhaafsan wuxuu u gudbaa canvas-ka, habaynta xaashiyaha waxay bilaabaa 760 px ama ka yar.
+- **Luqadaha Studio.** Studio iyo nooca lagu xirmay waxay bedeli karaan luqadda wakhtiga socodka; ka hor waxay ahaayeen Ingiriisi oo keliya. Weli lama tijaabin dhammaan platforms-ka: nagu sheeg haddii luqaddu ay ku kala bedelmin.
+- **Doorashada daaqadda isgoyska.** Installers-ka 0.8.1 waxay leeyihiin habka doorashada daaqadda ee sax ah ee web build-ka 0.8; installer-ka hore ma lahayn.
+- **Tablets ee toosan.** Meesha grid-ka ee dheeraadka ah waxay u gudubtaa canvas-ka, layout-ka xaashiga wuxuu bilaabmaa 760 px ama ka yar.
 
-### Ma jirto nooca hadda
+### Weli kuma jirin nooca tan
 
-- **Dirista NC ilaa mashiin** lama sii daayin.
-- **Culeysyada dabaysha** ee kaadiga lama dhisin, kontaraydhka iyo hubinta aasaaska waa kuwa injineer dib u eegi doono.
-- **Saxeexa code-ka.** Installer-ada Windows iyo .dmg-ga macOS lama saxeexin, sidaa darteed Windows waxay digi karta, macOS waxay weydiin doontaa midig-riix, ka dibna Open.
+- **Dir NC mashiin** lama sii daayay.
+- **Culeysyada dabaysha** ee beton lama dhisin, hubinta kaadhka iyo aasaaska waa in injineer dib u eego.
+- **Code signing.** Installers-ka Windows iyo .dmg-ga macOS lama saxeexin, sidaas darteed Windows waxay digi karta, macOS waxay weydiinaysaa midig guji, ka dib Fur.
 
-Isbeddelada hore waxay ku jiraan [Waxa cusub ee 0.7](topic:whats-new-0-7).
+Qoraalada isbedelada hore waxay ku jiraan [Waxa cusub ee 0.7](topic:whats-new-0-7).

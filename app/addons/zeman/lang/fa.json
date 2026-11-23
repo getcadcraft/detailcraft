@@ -1,0 +1,19 @@
+{
+  "@locale": "fa",
+  "@name": "فارسی",
+  "@note": "Draft translation, not yet reviewed by a native speaker",
+  "zeman.name": "خروجی Zeman",
+  "zeman.label": "Zeman (XML + NC)",
+  "zeman.done": "فایل‌های Zeman برای {marks} نوشته شد: برای هر کدام یک XML و فایل‌های NC آن در یک پوشه، با نام {file} ذخیره شد.",
+  "zeman.none": "خروجی Zeman: چیزی نوشته نشد.",
+  "zeman.empty": "خروجی Zeman: هنوز قطعه فولادی وجود ندارد.",
+  "zeman.skipped": "نوشته نشد: {list}.",
+  "zeman.skipped.item": "{mark} ({why})",
+  "zeman.refuse.lead": "قطعه اصلی آن {profile} است که مقطع I نیست",
+  "zeman.refuse.attached": "قطعه متصلی دارد که ورق نیست: {profile}",
+  "zeman.refuse.nc": "{why}",
+  "zeman.loose": "قطعه‌هایی که به‌صورت جدا و بدون جوش تنظیم شده‌اند، کنار گذاشته شدند: {n}.",
+  "zeman.turned": "ورق‌های یکسان یک فایل NC مشترک دارند؛ ورقی که همان قطعه است ولی برعکس شده، موقعیت جداگانه‌ای در XML دارد.",
+  "zeman.misfit": "ورق‌هایی را که علامت مشترک دارند بررسی کنید: یکی از آن‌ها با فایل NC مشترکش {mm} mm اختلاف دارد.",
+  "zeman.check": "این خروجی از یک مجموعه فایل نمونه ساخته شده است: پیش از تولید، اولین مورد را در نرم‌افزار خود دستگاه بررسی کنید."
+}

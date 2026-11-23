@@ -1,0 +1,19 @@
+{
+  "@locale": "hy",
+  "@name": "Հայերեն",
+  "@note": "Draft translation, not yet reviewed by a native speaker",
+  "zeman.name": "Zeman արտահանում",
+  "zeman.label": "Zeman (XML + NC)",
+  "zeman.done": "Zeman ֆայլերը գրված են {marks} համար՝ յուրաքանչյուրի համար առանձին թղթապանակում՝ մեկ XML և դրա NC ֆայլերը։ Պահված է որպես՝ {file}։",
+  "zeman.none": "Zeman արտահանում՝ ոչինչ չի գրվել։",
+  "zeman.empty": "Zeman արտահանում՝ դեռ պողպատե դետալներ չկան։",
+  "zeman.skipped": "Չի գրվել՝ {list}։",
+  "zeman.skipped.item": "{mark} ({why})",
+  "zeman.refuse.lead": "դրա հիմնական դետալը՝ {profile}, I-տիպի ձև չէ",
+  "zeman.refuse.attached": "ունի կցված դետալ, որ թիթեղ չէ՝ {profile}",
+  "zeman.refuse.nc": "{why}",
+  "zeman.loose": "Առանձին դրված, չեռակցված դետալները բաց են թողնվել՝ {n}։",
+  "zeman.turned": "Նույնական թիթեղները կիսում են մեկ NC ֆայլ. նույն կտորը, բայց շրջված թիթեղն ունի իր դիրքը XML-ում։",
+  "zeman.misfit": "Ստուգեք նույն նշանը կրող թիթեղները. մեկը տարբերվում է իր կիսած NC ֆայլից {mm} մմ-ով։",
+  "zeman.check": "Այս արտահանումը կառուցված է ֆայլերի մեկ նմուշային հավաքածուից. արտադրությունից առաջ ստուգեք առաջինը ձեր մեքենայի սեփական ծրագրում։"
+}

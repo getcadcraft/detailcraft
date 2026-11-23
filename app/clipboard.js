@@ -23,6 +23,7 @@ import { readModel } from './model.js';
 import { t } from './i18n.js';
 import { membersOf } from './connections.js';
 import { stairOutline } from './transform.js';
+import { add3 as add } from './geom-vec.js';   // shared helpers (0.11 PERF.74; tools/perf/util-copies.mjs)
 
 export const CLIP_FORMAT = 'detailcraft-clip';
 export const CLIP_VERSION = 1;
@@ -30,7 +31,6 @@ export const CLIP_KEY = 'detailcraft.clipboard';
 const MAX = { members: 20000, connections: 20000, footings: 5000, stairs: 2000, profiles: 500 };
 
 const copy = (o) => JSON.parse(JSON.stringify(o));
-const add = (p, o) => [p[0] + o[0], p[1] + o[1], p[2] + o[2]];
 
 export function copyClip(state, refs, { connections = true } = {}) {
   const want = (kind) => new Set(refs.filter((r) => r && r.kind === kind).map((r) => r.id));

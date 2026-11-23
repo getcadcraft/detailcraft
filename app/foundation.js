@@ -166,12 +166,12 @@ export function checkFooting(f, loads, soilIn = {}) {
   const moment = (key) => sv.reduce((s, l) => s + (l.service?.[key] || 0), 0);
   const Vx = moment('Vx'), Vy = moment('Vy');
   const ex = N > 0 ? (sv.reduce((s, l) => s + (l.service?.P || 0) * l.x / 1000, 0) + moment('My') + h * Vx) / N * 1000 : 0;
-  const ey = N > 0 ? (sv.reduce((s, l) => s + (l.service?.P || 0) * l.y / 1000, 0) - moment('Mx') - h * Vy) / N * 1000 : 0;
+  const ey = N > 0 ? (sv.reduce((s, l) => s + (l.service?.P || 0) * l.y / 1000, 0) - moment('Mx') + h * Vy) / N * 1000 : 0;
   const field = pressureField(N, ex, ey, L, B);
   const info = { N: r1(N), W: r1(W), ex: r1(ex), ey: r1(ey), qmax: field.ok ? r1(field.qmax) : null, partial: !!field.partial };
   if (!field.ok) checks.push({ id: 'bearing', clause: 'ACI 318-19 13.2.6.1', status: 'fail', unit: 'kPa', demand: Infinity, capacity: soil.qa, ratio: Infinity, vars: { reason: field.reason, N: r1(N), ex: r1(ex), ey: r1(ey) } });
   else if (soil.qa > 0) checks.push(mk('bearing', 'ACI 318-19 13.2.6.1', field.qmax, soil.qa, 'kPa', { q: r1(field.qmax), qa: soil.qa, partial: field.partial ? 1 : 0, ex: r1(ex), ey: r1(ey) }));
-  else checks.push(note('bearing', 'ACI 318-19 13.2.6.1', { q: r1(field.qmax), partial: field.partial ? 1 : 0 }));
+  else checks.push(note('bearing', 'ACI 318-19 13.2.6.1', { q: r1(field.qmax), partial: field.partial ? 1 : 0, ex: r1(ex), ey: r1(ey) }));
   if (field.partial) checks.push(note('liftoff', 'ACI 318-19 13.2.6.1', { pct: Math.round(100 * (1 - contactShare(field))) }));
   if (field.ok && N > 0) {
     if (soil.Es > 0) {
@@ -195,7 +195,7 @@ export function checkFooting(f, loads, soilIn = {}) {
   if (!st.some((l) => l.strength) || !(Nu > 0)) { checks.push(note('strength-loads', 'ACI 318-19 13.2.6.1')); return { checks, pressure: field.ok ? field : null, info, soil }; }
   const sumU = (k) => st.reduce((s, l) => s + (l.s[k] || 0), 0);
   const exu = (st.reduce((s, l) => s + (l.s.P || 0) * l.x / 1000, 0) + sumU('My') + h * sumU('Vx')) / Nu * 1000;
-  const eyu = (st.reduce((s, l) => s + (l.s.P || 0) * l.y / 1000, 0) - sumU('Mx') - h * sumU('Vy')) / Nu * 1000;
+  const eyu = (st.reduce((s, l) => s + (l.s.P || 0) * l.y / 1000, 0) - sumU('Mx') + h * sumU('Vy')) / Nu * 1000;
   const fu = pressureField(Nu, exu, eyu, L, B);
   if (!fu.ok) { checks.push({ id: 'strength-pressure', clause: 'ACI 318-19 13.2.6.1', status: 'fail', unit: '', demand: Infinity, capacity: 0, ratio: Infinity, vars: { reason: fu.reason } }); return { checks, pressure: field.ok ? field : null, info, soil }; }
   // moment per metre and one-way shear from statics on cuts across the full width, in each direction
@@ -209,7 +209,7 @@ export function checkFooting(f, loads, soilIn = {}) {
   const cutY = (yc) => {
     const s = strip(fu, 'y', yc);
     let V = s.V, M = s.M;
-    for (const k of cols) if (k.y > yc) { V -= k.P; M -= k.P * (k.y - yc) - k.Mx - h * k.Vy; }
+    for (const k of cols) if (k.y > yc) { V -= k.P; M -= k.P * (k.y - yc) - k.Mx + h * k.Vy; }
     return { V, M };
   };
   const insideX = (xc) => cols.some((k) => xc > k.x - k.cx / 2 + 1e-9 && xc < k.x + k.cx / 2 - 1e-9);

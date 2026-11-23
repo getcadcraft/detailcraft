@@ -1,0 +1,19 @@
+{
+  "@locale": "lo",
+  "@name": "ລາວ",
+  "@note": "Draft translation, not yet reviewed by a native speaker",
+  "zeman.name": "ສົ່ງອອກ Zeman",
+  "zeman.label": "Zeman (XML + NC)",
+  "zeman.done": "ໄຟລ໌ Zeman ສຳລັບ {marks} ຖືກບັນທຶກແລ້ວ: XML ໜຶ່ງໄຟລ໌ ແລະ ໄຟລ໌ NC ຂອງມັນ ໃນໂຟນເດີແຍກຕໍ່ລະອັນ, ບັນທຶກເປັນ {file}.",
+  "zeman.none": "ສົ່ງອອກ Zeman: ບໍ່ມີຫຍັງຖືກບັນທຶກ.",
+  "zeman.empty": "ສົ່ງອອກ Zeman: ຍັງບໍ່ມີຊິ້ນສ່ວນເຫຼັກ.",
+  "zeman.skipped": "ບໍ່ໄດ້ບັນທຶກ: {list}.",
+  "zeman.skipped.item": "{mark} ({why})",
+  "zeman.refuse.lead": "ຊິ້ນສ່ວນຫຼັກ {profile} ບໍ່ແມ່ນຮູບຕົວໄອ",
+  "zeman.refuse.attached": "ມີຊິ້ນສ່ວນຕິດມາທີ່ບໍ່ແມ່ນແຜ່ນເຫຼັກ: {profile}",
+  "zeman.refuse.nc": "{why}",
+  "zeman.loose": "ຊິ້ນສ່ວນທີ່ຕັ້ງເປັນບໍ່ເຊື່ອມ ຖືກຍົກເວັ້ນອອກ: {n} ອັນ.",
+  "zeman.turned": "ແຜ່ນເຫຼັກທີ່ຄືກັນ ໃຊ້ໄຟລ໌ NC ດຽວກັນ; ແຜ່ນທີ່ເປັນຊິ້ນດຽວກັນທີ່ພັບກັບ ມີຕຳແໜ່ງຂອງຕົນເອງໃນ XML.",
+  "zeman.misfit": "ກວດເບິ່ງແຜ່ນເຫຼັກທີ່ໃຊ້ເຄື່ອງໝາຍດຽວກັນ: ອັນໜຶ່ງແຕກຕ່າງຈາກໄຟລ໌ NC ທີ່ໃຊ້ຮ່ວມກັນ {mm} mm.",
+  "zeman.check": "ການສົ່ງອອກນີ້ສ້າງຈາກຊຸດໄຟລ໌ຕົວຢ່າງຊຸດດຽວ: ກວດອັນທຳອິດໃນຊອບແວຂອງເຄື່ອງທ່ານເອງກ່ອນນຳໄປຜະລິດ."
+}

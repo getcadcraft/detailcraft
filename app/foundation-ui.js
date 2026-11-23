@@ -7,7 +7,7 @@
  *   app = { getModel, edit(label, fn), print(text), rerender(), setProblems(list), label(id), select(ref), analysisResult() → { frame, sol } | null }
  */
 import { el } from './ui-util.js';
-import { t } from './i18n.js';
+import { t, has } from './i18n.js';
 import { readNum } from './numtext.js';
 import { SOIL_DEFAULTS, checkFooting, toFootingAxes, flexibleMat, pileGroup, retainingWall } from './foundation.js';
 
@@ -43,7 +43,7 @@ export function mountFoundation(app) {
   }
   const wallsOf = () => (fnd().walls || []).map((w) => ({ w, r: retainingWall(w, w.soil) }));
   const pilesOf = () => (fnd().piles || []).map((g) => ({ g, r: pileGroup(g.piles, g.load, g.cap) }));
-  const textOf = (c) => t('fnd.chk.' + base(c.id), { ...c.vars, dir: c.vars?.dir ? c.vars.dir.toUpperCase() : '', n: c.vars?.where && c.vars.where !== 'interior' ? c.vars.n + ' (' + t('fnd.where.' + c.vars.where) + ')' : c.vars?.n, status: t('fnd.status.' + c.status) });
+  const textOf = (c) => t(c.status === 'note' && has('fnd.chk.' + base(c.id) + '.note') ? 'fnd.chk.' + base(c.id) + '.note' : 'fnd.chk.' + base(c.id), { ...c.vars, dir: c.vars?.dir ? c.vars.dir.toUpperCase() : '', n: c.vars?.where && c.vars.where !== 'interior' ? c.vars.n + ' (' + t('fnd.where.' + c.vars.where) + ')' : c.vars?.n, status: t('fnd.status.' + c.status) });
   function problems() {
     const out = [];
     for (const f of model().state.footings) {

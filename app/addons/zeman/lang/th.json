@@ -1,0 +1,19 @@
+{
+  "@locale": "th",
+  "@name": "ไทย",
+  "@note": "Draft translation, not yet reviewed by a native speaker",
+  "zeman.name": "ส่งออก Zeman",
+  "zeman.label": "Zeman (XML + NC)",
+  "zeman.done": "บันทึกไฟล์ Zeman สำหรับ {marks} แล้ว: ไฟล์ XML 1 ไฟล์และไฟล์ NC ในโฟลเดอร์ของแต่ละรายการ บันทึกเป็น {file}",
+  "zeman.none": "ส่งออก Zeman: ไม่ได้บันทึกอะไร",
+  "zeman.empty": "ส่งออก Zeman: ยังไม่มีชิ้นส่วนเหล็ก",
+  "zeman.skipped": "ไม่ได้บันทึก: {list}",
+  "zeman.skipped.item": "{mark} ({why})",
+  "zeman.refuse.lead": "ชิ้นส่วนหลัก {profile} ไม่ใช่รูปตัว I",
+  "zeman.refuse.attached": "มีชิ้นส่วนที่แนบมาซึ่งไม่ใช่แผ่นเหล็ก: {profile}",
+  "zeman.refuse.nc": "{why}",
+  "zeman.loose": "ชิ้นส่วนที่ตั้งเป็นแบบหลวม (ไม่เชื่อม) ถูกละไว้: {n}",
+  "zeman.turned": "แผ่นเหล็กที่เหมือนกันใช้ไฟล์ NC ร่วมกัน ส่วนแผ่นที่เป็นชิ้นเดียวกันแต่พลิกกลับจะมีตำแหน่งของตัวเองใน XML",
+  "zeman.misfit": "ตรวจแผ่นเหล็กที่ใช้เครื่องหมายเดียวกัน: แผ่นหนึ่งต่างจากไฟล์ NC ที่ใช้ร่วมกันอยู่ {mm} mm",
+  "zeman.check": "การส่งออกนี้สร้างจากชุดไฟล์ตัวอย่างชุดเดียว ตรวจไฟล์แรกในซอฟต์แวร์ของเครื่องคุณเองก่อนนำไปผลิตจริง"
+}

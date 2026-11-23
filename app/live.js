@@ -222,19 +222,25 @@ export function createLive(getModel) {
     const see = (id) => { const n = num(id); if (n > lo && n < hi && n >= next) next = n + 1; };
     for (const k of ['members', 'connections', 'footings', 'stairs', 'bolts']) for (const x of s[k] || []) { see(x.id); for (const h of x.holes || []) see(h.id); for (const c of x.cuts || []) see(c.id); }
     s.seq = Math.max(next, s.seq > lo && s.seq < hi ? s.seq : 0);
+    adopt(['k:seq']);
   }
   function releaseIds() {
     const s = M().state;
     let top = s.seq || 1;
     for (const k of ['members', 'connections', 'footings', 'stairs', 'bolts']) for (const x of s[k] || []) { top = Math.max(top, num(x.id) + 1 || 0); for (const h of [...(x.holes || []), ...(x.cuts || [])]) top = Math.max(top, num(h.id) + 1 || 0); }
     s.seq = top;
+    adopt(['k:seq']);
   }
+  // 0.11 (live-fix-11): the model keeps its undo history as chunks (lib/history ChunkHistory, model.h); an edit that reaches the state
+  // from outside a step (others' ops, the client's own undo, a claimed counter) is adopted into that table without a step, or the
+  // next local step is cut against a stale table (its `before` names chunks that are gone, and others' edits look like this person's)
+  const adopt = (keys) => { const m = M(); if (m.h && typeof m.h.sync === 'function') m.h.sync(m.state, keys ? { keys } : {}); };
   const changed = () => { const m = M(); m.version++; if (!queued) { queued = true; Promise.resolve().then(() => { queued = false; M().emit('change'); }); } };
   const live = {
     app: 'detailcraft', schema: SCHEMA,
     get client() { return client; },
     onLocalChange(cb) { live.report = cb; },
-    apply(ops) { CORE.apply(M().state, ops); changed(); },
+    apply(ops) { CORE.apply(M().state, ops); adopt(); changed(); },
     invert(ops) { return CORE.invert(M().state, ops); },
     touched: (ops) => CORE.touched(ops),
     /** EG.41 (studio_PART_2; the adapter line from detail_PART_3): where a step landed. A DetailCraft model is one place, so the sheet is always ''

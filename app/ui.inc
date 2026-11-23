@@ -39,6 +39,7 @@ $__tools = [
         ['open', 'folder2-open', Lang::t('page.tool.open'), Lang::t('page.tool.open.title', ['key' => 'Ctrl+O'])],
         ['import', 'box-arrow-in-down', Lang::t('page.tool.import'), Lang::t('page.tool.import.title')],
         ['save', 'download', Lang::t('page.tool.save'), Lang::t('page.tool.save.title', ['key' => 'Ctrl+S'])],
+        ['save-older', 'clock-history', Lang::t('page.tool.save-older'), Lang::t('page.tool.save-older.title')],   // 0.11 DC.27: a copy for 0.10 and older (Save writes the large ids)
         ['sample', 'buildings', Lang::t('page.tool.sample'), Lang::t('page.tool.sample.title')],
     ]],
     'place' => [Lang::t('page.group.place'), [

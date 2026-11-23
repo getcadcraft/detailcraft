@@ -165,7 +165,7 @@ export async function mountDetailcraftWorkspace({ root, dc }) {
       if (e.shiftKey || e.ctrlKey || e.metaKey) {
         const ref = { kind, id: rest.join(':') }, cur = dc.selected, k = (r) => r.kind + ':' + r.id;
         dc.setSelection(cur.some((r) => k(r) === k(ref)) ? cur.filter((r) => k(r) !== k(ref)) : [...cur, ref]);
-      } else dc.select({ kind, id: rest.join(':') });
+      } else if (!window.ccState?.select([{ kind, id: rest.join(':') }])) dc.select({ kind, id: rest.join(':') });   // 0.11 UI.25: the row goes through the one state
       soon();
     } else if (b.dataset.brSheet !== undefined) {
       dc.act('drawings');
@@ -183,6 +183,15 @@ export async function mountDetailcraftWorkspace({ root, dc }) {
   const empty3d = el('button', { type: 'button', className: 'ws-tool', 'data-ws-dc-open3d': '' }, el('i', { className: 'bi bi-box ws-icon-bi', 'aria-hidden': 'true' }), el('span', {}, tr('ws.view.open3d')));
   empty3d.addEventListener('click', () => ctx?.open('3d'));
 
+  // 0.11 UI.25: a member's kind is its type (beam, column, brace, plate); a connection's its type (endplate, gusset …); footings and stairs as they are
+  const kindOf = (r) => (r.kind === 'member' ? S().members.find((x) => String(x.id) === String(r.id))?.type || 'member'
+    : r.kind === 'conn' ? S().connections.find((x) => String(x.id) === String(r.id))?.type || 'conn' : r.kind);
+  function pickRefs(ids) {
+    const P = window.ccPickers?.detailcraft, r = window.ccState?.refs(ids) || []; if (!P || !r.length) return false;
+    const got = P.apply(r.map((x) => ({ id: !x.kind || x.kind === 'member' ? x.id : x.kind + ':' + x.id })));
+    if (got) soon();
+    return !!got;
+  }
   const toolLabel = (t) => (t === 'select' ? '' : byId.has('place.' + t) ? label('place.' + t) : t === 'move' ? label('edit.move') : t === 'paste' ? label('edit.paste') : t);
   const adapter = {
     ...base,
@@ -202,8 +211,12 @@ export async function mountDetailcraftWorkspace({ root, dc }) {
     pressed: (id, block) => base.pressed(id, block),
     state() {
       const tool = dc.tool || 'select';
-      return { document: dc.model, name: S().name, dirty: dc.model.dirty, busy: !!window.ccInputHooks?.busy?.(), selection: dc.selected, tool, toolLabel: toolLabel(tool) };
+      return { document: dc.model, name: S().name, dirty: dc.model.dirty, busy: !!window.ccInputHooks?.busy?.(), selection: dc.selected, tool, toolLabel: toolLabel(tool),
+        kinds: dc.selected.map(kindOf), mode: dc.viewMode === 'plan' || dc.viewMode === 'elevation' ? dc.viewMode : '3d' };   // 0.11 UI.25: into ccState
     },
+    // 0.11 UI.25: ccState.select / reveal / highlight through the same pick SuperCad's panels use (window.ccPickers.detailcraft). Refs: { kind: 'member' | 'conn' |
+    // 'footing' | 'stair', id }, a bare member id, 'conn:<id>' …, or an IFC GlobalId of the built model
+    select: (ids) => pickRefs(ids), reveal: (ids) => pickRefs(ids), highlight: (ids) => pickRefs(ids),
     endTool() { if (dc.tool && dc.tool !== 'select') dc.setTool('select'); },
     options(s) {
       const running = s.tool && s.tool !== 'select';
@@ -215,7 +228,8 @@ export async function mountDetailcraftWorkspace({ root, dc }) {
     slots: {
       level: { label: tr('page.view.label'), nodes: () => [$('.dc-viewbar .dc-seg'), vlevel, vgrid].filter(Boolean) },
       document: { label: tr('page.left.model'), nodes: () => [$('[data-model-name]')?.closest('.dc-props')].filter(Boolean) },
-      layout: { label: '', nodes: fitSlot },
+      // 0.11 UI.17: no 'layout' slot (DetailCraft has no sheet layouts here); it drew the fit button a second time in every layout that asks
+      // for both 'fit' and 'layout' (toolbox, vector, pro-cad1/2/3)
       fit: { label: tr('page.view.fit'), nodes: fitSlot },
     },
     palettes: {
@@ -247,7 +261,7 @@ export async function mountDetailcraftWorkspace({ root, dc }) {
       }
     },
   };
-  engine = mountWorkspaces(adapter);
+  engine = mountWorkspaces(window.ccState?.adapt ? window.ccState.adapt(adapter) : adapter);   // 0.11 UI.25: kinds, mode, view, problems into ccState
   window.detailcraftWorkspace = Object.freeze({ engine, inspect: () => engine.inspect() });   // for tests and the console
   engine.refresh();
   return { refresh: soon };

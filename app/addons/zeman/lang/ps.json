@@ -1,0 +1,19 @@
+{
+  "@locale": "ps",
+  "@name": "پښتو",
+  "@note": "Draft translation, not yet reviewed by a native speaker",
+  "zeman.name": "Zeman صادرول",
+  "zeman.label": "Zeman (XML + NC)",
+  "zeman.done": "د {marks} لپاره Zeman فایلونه ولیکل شول: د هرې لپاره یو XML او د هغه NC فایلونه په یو فولډر کې، چې په نوم یې {file} خوندي شو.",
+  "zeman.none": "Zeman صادرول: هیڅ نه دی ولیکل شوي.",
+  "zeman.empty": "Zeman صادرول: تر اوسه هیڅ فولادي پرزه نشته.",
+  "zeman.skipped": "ونه ولیکل شول: {list}.",
+  "zeman.skipped.item": "{mark} ({why})",
+  "zeman.refuse.lead": "اصلي پرزه {profile} د I-شکل نه دی",
+  "zeman.refuse.attached": "یو ضمیمه شوی پرزه لري چې پلېټ نه دی: {profile}",
+  "zeman.refuse.nc": "{why}",
+  "zeman.loose": "ازاد ایښودل شوي، ویلډ نه شوي پرزې پریښودل شوي: {n}.",
+  "zeman.turned": "یو شان پلېټونه یو NC فایل شریکوي؛ هغه پلېټ چې همغه ټوټه ده خو شاته اړولی شوې، په XML کې خپله ځای لري.",
+  "zeman.misfit": "د یوې نښې شریک پلېټونه وګورئ: یو یې د شریک NC فایل څخه {mm} mm توپیر لري.",
+  "zeman.check": "دا صادرول د فایلونو له یوې نمونې ډلې جوړ شوی: د تولید مخکې د لومړي فایل په خپل ماشین کې خپل سافټویر کې وګورئ."
+}

@@ -1,0 +1,19 @@
+{
+  "@locale": "mn",
+  "@name": "Монгол",
+  "@note": "Draft translation, not yet reviewed by a native speaker",
+  "zeman.name": "Zeman экспорт",
+  "zeman.label": "Zeman (XML + NC)",
+  "zeman.done": "Zeman файлууд бичигдлээ: {marks}. Тус бүрд нэг XML ба түүний NC файлууд хавтсанд хадгалагдлаа: {file}.",
+  "zeman.none": "Zeman экспорт: юу ч бичигдсэнгүй.",
+  "zeman.empty": "Zeman экспорт: одоогоор ган эд анги байхгүй байна.",
+  "zeman.skipped": "Бичигдээгүй: {list}.",
+  "zeman.skipped.item": "{mark} ({why})",
+  "zeman.refuse.lead": "үндсэн эд анги {profile} нь I хэлбэртэй биш байна",
+  "zeman.refuse.attached": "хавсарсан эд анги нь ялтас биш байна: {profile}",
+  "zeman.refuse.nc": "{why}",
+  "zeman.loose": "Чөлөөт, гагнаагүй байрлуулсан эд анги хасагдлаа: {n}.",
+  "zeman.turned": "Адил ялтсууд нэг NC файлыг хуваалцана; эргүүлж тавьсан ижил ялтас XML-д өөрийн байрлалтай байна.",
+  "zeman.misfit": "Ижил тэмдэгтэй ялтсуудыг шалгана уу: нэг нь хуваалцдаг NC файлаасаа {mm} мм-ээр ялгаатай байна.",
+  "zeman.check": "Энэ экспортыг нэг жишээ файлын багцаас бүтээсэн тул үйлдвэрлэлд оруулахаас өмнө эхнийхийг өөрийн машины програмд шалгана уу."
+}

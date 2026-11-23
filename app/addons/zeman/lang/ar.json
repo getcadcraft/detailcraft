@@ -1,0 +1,19 @@
+{
+  "@locale": "ar",
+  "@name": "العربية",
+  "@note": "Draft translation, not yet reviewed by a native speaker",
+  "zeman.name": "تصدير Zeman",
+  "zeman.label": "Zeman (XML + NC)",
+  "zeman.done": "كُتبت ملفات Zeman للعلامات {marks}: ملف XML واحد وملفات NC له في مجلد لكل علامة، حُفظت باسم {file}.",
+  "zeman.none": "تصدير Zeman: لم يُكتب شيء.",
+  "zeman.empty": "تصدير Zeman: لا توجد قطع فولاذ بعد.",
+  "zeman.skipped": "لم تُكتب: {list}.",
+  "zeman.skipped.item": "{mark} ({why})",
+  "zeman.refuse.lead": "جزؤه الرئيسي {profile} ليس بشكل I",
+  "zeman.refuse.attached": "فيه جزء ملحق ليس صفيحة: {profile}",
+  "zeman.refuse.nc": "{why}",
+  "zeman.loose": "استُبعدت القطع المضبوطة على «غير ملحومة»: {n}.",
+  "zeman.turned": "الصفائح المتطابقة تشترك في ملف NC واحد، والصفيحة نفسها إذا قُلبت لها موضع خاص بها في ملف XML.",
+  "zeman.misfit": "تحقّق من الصفائح التي تشترك في العلامة نفسها: صفيحة تختلف عن ملف NC الذي تشترك فيه بمقدار {mm} مم.",
+  "zeman.check": "أُعدّ هذا التصدير من مجموعة ملفات عيّنة واحدة: تحقّق من الأول في البرنامج الخاص بجهازك قبل الإنتاج."
+}

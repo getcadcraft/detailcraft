@@ -1,0 +1,19 @@
+{
+  "@locale": "de",
+  "@name": "Deutsch",
+  "@note": "Draft translation, not yet reviewed by a native speaker",
+  "zeman.name": "Zeman-Export",
+  "zeman.label": "Zeman (XML + NC)",
+  "zeman.done": "Zeman-Dateien für {marks} geschrieben: je eine XML-Datei und ihre NC-Dateien in einem Ordner, gespeichert als {file}.",
+  "zeman.none": "Zeman-Export: Nichts geschrieben.",
+  "zeman.empty": "Zeman-Export: Noch keine Stahlteile vorhanden.",
+  "zeman.skipped": "Nicht geschrieben: {list}.",
+  "zeman.skipped.item": "{mark} ({why})",
+  "zeman.refuse.lead": "das Hauptteil {profile} ist kein I-Profil",
+  "zeman.refuse.attached": "es hat ein angesetztes Teil, das kein Blech ist: {profile}",
+  "zeman.refuse.nc": "{why}",
+  "zeman.loose": "Teile, die lose und nicht geschweißt gesetzt sind, wurden ausgelassen: {n}.",
+  "zeman.turned": "Identische Bleche teilen sich eine NC-Datei; ein Blech, das als gleiches Teil gewendet ist, erhält eine eigene Position in der XML.",
+  "zeman.misfit": "Prüfen Sie die Bleche mit gleicher Positionsnummer: Eines weicht von der gemeinsamen NC-Datei um {mm} mm ab.",
+  "zeman.check": "Dieser Export wurde aus einem Beispieldatensatz erstellt: Prüfen Sie den ersten in der eigenen Software Ihres Rechners, bevor Sie in die Produktion gehen."
+}

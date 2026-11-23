@@ -1,0 +1,19 @@
+{
+  "@locale": "sw",
+  "@name": "Kiswahili",
+  "@note": "Draft translation, not yet reviewed by a native speaker",
+  "zeman.name": "Usafirishaji wa Zeman",
+  "zeman.label": "Zeman (XML + NC)",
+  "zeman.done": "Faili za Zeman zimehifadhiwa kwa {marks}: XML moja na faili zake za NC kwenye folda kwa kila moja, zimehifadhiwa kama {file}.",
+  "zeman.none": "Usafirishaji wa Zeman: hakuna kilichohifadhiwa.",
+  "zeman.empty": "Usafirishaji wa Zeman: bado hakuna sehemu za chuma.",
+  "zeman.skipped": "Hazikuhifadhiwa: {list}.",
+  "zeman.skipped.item": "{mark} ({why})",
+  "zeman.refuse.lead": "sehemu yake kuu {profile} si umbo la I",
+  "zeman.refuse.attached": "ina sehemu iliyoambatishwa isiyo bamba: {profile}",
+  "zeman.refuse.nc": "{why}",
+  "zeman.loose": "Sehemu zilizowekwa bila kuunganishwa (si zilizochomeleshwa) ziliachwa: {n}.",
+  "zeman.turned": "Bamba zinazofanana hutumia faili moja ya NC; bamba ambayo ni kipande kile kile kilichogeuzwa ina nafasi yake yenyewe kwenye XML.",
+  "zeman.misfit": "Angalia bamba zinazoshiriki alama moja: moja inatofautiana na faili ya NC inayoshiriki kwa {mm} mm.",
+  "zeman.check": "Usafirishaji huu umejengwa kutoka seti moja ya faili za mfano: kagua ya kwanza kwenye programu yako mwenyewe kabla ya uzalishaji."
+}

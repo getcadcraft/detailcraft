@@ -1,0 +1,19 @@
+{
+  "@locale": "ne",
+  "@name": "नेपाली",
+  "@note": "Draft translation, not yet reviewed by a native speaker",
+  "zeman.name": "Zeman निर्यात",
+  "zeman.label": "Zeman (XML + NC)",
+  "zeman.done": "Zeman फाइलहरू लेखियो: {marks}। प्रत्येकका लागि एउटा XML र यसका NC फाइलहरू एउटा फोल्डरमा बचत गरियो; फोल्डर: {file}।",
+  "zeman.none": "Zeman निर्यात: केही लेखिएन।",
+  "zeman.empty": "Zeman निर्यात: अहिलेसम्म स्टिल भागहरू छैनन्।",
+  "zeman.skipped": "लेखिएन: {list}।",
+  "zeman.skipped.item": "{mark} ({why})",
+  "zeman.refuse.lead": "यसको मुख्य भाग {profile} आई-आकारको छैन",
+  "zeman.refuse.attached": "यसमा प्लेट नभएको संलग्न भाग छ: {profile}",
+  "zeman.refuse.nc": "{why}",
+  "zeman.loose": "लुज, वेल्ड नगरिएका भागहरू छाडियो: {n}।",
+  "zeman.turned": "एउटै प्लेटहरूले एउटै NC फाइल बाँड्छन्; उल्टाएर राखिएको उही टुक्राको XML मा आफ्नै स्थान हुन्छ।",
+  "zeman.misfit": "एउटै चिह्न भएका प्लेटहरू जाँच गर्नुहोस्: एउटा प्लेट यसले बाँडेको NC फाइलबाट {mm} mm फरक छ।",
+  "zeman.check": "यो निर्यात नमूना फाइल सेटबाट बनाइएको हो: उत्पादनअघि तपाईंको मेसिनको आफ्नै सफ्टवेयरमा पहिलोलाई जाँच गर्नुहोस्।"
+}

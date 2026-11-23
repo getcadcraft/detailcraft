@@ -1,0 +1,19 @@
+{
+  "@locale": "so",
+  "@name": "Soomaali",
+  "@note": "Draft translation, not yet reviewed by a native speaker",
+  "zeman.name": "Dhoofinta Zeman",
+  "zeman.label": "Zeman (XML + NC)",
+  "zeman.done": "Faylasha Zeman waa la qoray: {marks}. Calaamad kasta waxa ku jira hal XML iyo faylasha NC, waxaana loo kaydiyay sida {file}.",
+  "zeman.none": "Dhoofinta Zeman: wax lama qorin.",
+  "zeman.empty": "Dhoofinta Zeman: weli qayb bir ah ma jiro.",
+  "zeman.skipped": "Lama qorin: {list}.",
+  "zeman.skipped.item": "{mark} ({why})",
+  "zeman.refuse.lead": "qaybta weyn ee {profile} ma aha qaab I",
+  "zeman.refuse.attached": "waxaa ku xiran qayb aan ahayn saxan: {profile}",
+  "zeman.refuse.nc": "{why}",
+  "zeman.loose": "Qaybaha lagu dhigay xidh la'aan, aan la alxamin, waa la iska daayay: {n}.",
+  "zeman.turned": "Saxanno isku mid ah hal fayl NC ah ayey wadaagaan; saxanka isku qayb ah oo la rogay wuxuu booska gaarka ah ku leeyahay XML-ka.",
+  "zeman.misfit": "Hubi saxanada wadaaga calaamad isku mid ah: mid ka mid ah wuxuu ka duwan yahay faylka NC ee ay wadaagaan {mm} mm.",
+  "zeman.check": "Dhoofintan waxaa laga dhisay hal sample fayl oo keliya: hubi mid ka mid ah softiweerka aad ku leedahay kahor wax soo saarka."
+}

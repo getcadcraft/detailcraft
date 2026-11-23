@@ -1,0 +1,19 @@
+{
+  "@locale": "cs",
+  "@name": "Čeština",
+  "@note": "Draft translation, not yet reviewed by a native speaker",
+  "zeman.name": "Export Zeman",
+  "zeman.label": "Zeman (XML + NC)",
+  "zeman.done": "Soubory Zeman zapsány pro {marks}: pro každý jeden XML a jeho NC soubory ve složce, uloženo jako {file}.",
+  "zeman.none": "Export Zeman: nic nebylo zapsáno.",
+  "zeman.empty": "Export Zeman: zatím nejsou žádné ocelové díly.",
+  "zeman.skipped": "Nezapsáno: {list}.",
+  "zeman.skipped.item": "{mark} ({why})",
+  "zeman.refuse.lead": "jeho hlavní díl {profile} není I-profil",
+  "zeman.refuse.attached": "má připojený díl, který není plech: {profile}",
+  "zeman.refuse.nc": "{why}",
+  "zeman.loose": "Díly nastavené jako volné, nesvařené, byly vynechány: {n}.",
+  "zeman.turned": "Shodné plechy sdílejí jeden NC soubor; plech, který je týmž kusem otočeným, má vlastní pozici v XML.",
+  "zeman.misfit": "Zkontrolujte plechy se stejnou značkou: jeden se liší od sdíleného NC souboru o {mm} mm.",
+  "zeman.check": "Tento export byl vytvořen z jedné vzorové sady souborů: před výrobou zkontrolujte první z nich v programu na Vašem počítači."
+}

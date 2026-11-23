@@ -1,0 +1,19 @@
+{
+  "@locale": "lt",
+  "@name": "Lietuvių",
+  "@note": "Draft translation, not yet reviewed by a native speaker",
+  "zeman.name": "Zeman eksportas",
+  "zeman.label": "Zeman (XML + NC)",
+  "zeman.done": "Zeman failai įrašyti žymoms {marks}: kiekvienai po vieną XML ir jo NC failus aplanke. Įrašyta kaip {file}.",
+  "zeman.none": "Zeman eksportas: nieko neįrašyta.",
+  "zeman.empty": "Zeman eksportas: plieninių detalių dar nėra.",
+  "zeman.skipped": "Neįrašyta: {list}.",
+  "zeman.skipped.item": "{mark} ({why})",
+  "zeman.refuse.lead": "pagrindinė detalė {profile} nėra dvitavris",
+  "zeman.refuse.attached": "yra pridėta detalė, kuri nėra plokštė: {profile}",
+  "zeman.refuse.nc": "{why}",
+  "zeman.loose": "Detalės, pažymėtos kaip laisvos, o ne suvirintos, nebuvo įtrauktos: {n}.",
+  "zeman.turned": "Vienodos plokštės turi vieną NC failą; plokštė, kuri yra ta pati apversta detalė, turi savo poziciją XML faile.",
+  "zeman.misfit": "Patikrinkite plokštes, turinčias tą pačią žymą: viena skiriasi nuo jai bendro NC failo {mm} mm.",
+  "zeman.check": "Šis eksportas sukurtas pagal vieną bandomąjį failų rinkinį: prieš gamybą patikrinkite pirmąjį savo kompiuterio programinėje įrangoje."
+}

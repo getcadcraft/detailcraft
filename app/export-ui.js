@@ -67,11 +67,47 @@ export function mountExports(ctx) {
       else print(tr('ncsend.failed', { error: String((r && r.error) || '') }));
     } catch (err) { print(tr('ncsend.failed', { error: String(err && err.message || err) })); }
   }
-  function exportNc() {
+  /**
+   * What an add-on's exporter gets from DetailCraft (add-on API `api.files.exporter`, docs/ADDONS-SPEC.md § 5.3; the first one is the Zeman export, DC.133):
+   * { name (the file name stem), order (the model's name: the order line of the NC files), built, marks, selection: [ids of the selected parts],
+   *   ncRefusal(part), writeNc(part, { order, mark, count, phase }) (nc1.js), zip(files) }. Its write() returns the file's data, or
+   * { data, name?, message? } (data null = nothing to save; the message is said either way).
+   */
+  function exportInput() {
+    const ids = [];
+    for (const r of ctx.selection || []) {
+      if (r.kind === 'member') ids.push(r.id);
+      else if (r.kind === 'conn') for (const p of ctx.built.parts) if (p.conn === r.id) ids.push(p.id);
+    }
+    return { name: safeName(), order: ctx.model.state.name, built: ctx.built, marks: ctx.marks, selection: ids.filter((id) => ctx.built.byId.has(id)), ncRefusal, writeNc: writeNc1, zip };
+  }
+  async function exportWith(ex) {
+    try {
+      const out = await ex.write(exportInput());
+      const plain = out && typeof out === 'object' && !(out instanceof Uint8Array) && !(out instanceof ArrayBuffer) && !(out instanceof Blob);
+      const o = plain ? out : { data: out };
+      if (o.data === null || o.data === undefined) { print(o.message ? String(o.message) : tr('app.export.addon.nothing', { label: ex.label })); return; }
+      const name = String(o.name || safeName() + ex.extension);
+      download(name, o.data instanceof Blob ? o.data : new Blob([o.data], { type: ex.mime }));
+      print(o.message ? String(o.message) : tr('app.export.addon.done', { file: name }));
+    } catch (err) { print(tr('app.export.addon.failed', { label: ex.label, error: String(err && err.message || err) })); }
+  }
+  function exportNc1() {
     const { files, skipped } = ncFiles();
     if (!files.length) { print(tr(ctx.built.parts.length ? 'app.export.nc.none2' : 'app.export.nothing')); return; }
     download(safeName() + ' NC.zip', new Blob([zip(files)], { type: 'application/zip' }));
     print(tr('app.export.nc.done', { n: files.length }) + (skipped.length ? ' ' + tr('app.export.nc.skipped2', { marks: skipped.join(', ') }) : '') + ' ' + tr('app.export.nc.check'));
+  }
+  // NC files: with an add-on that writes another file set switched on (window.ccAddons.exporters()), ask which; with none, the DSTV files at once, as before
+  function exportNc() {
+    const extra = (window.ccAddons && typeof window.ccAddons.exporters === 'function' ? window.ccAddons.exporters() : []) || [];
+    if (!extra.length) return exportNc1();
+    return ask({ title: tr('app.export.nc.ask.title'), text: tr('app.export.nc.ask.text'),
+      buttons: [['cancel', tr('app.ask.cancel'), 'btn-line'], ...extra.map((x) => [x.id, x.label, 'btn-line']), ['nc1', tr('app.export.nc.ask.nc1'), 'btn-plot']] }).then((k) => {
+      if (k === 'nc1') return exportNc1();
+      const ex = extra.find((x) => x.id === k);
+      return ex ? exportWith(ex) : undefined;
+    });
   }
   function exportBom() {
     const t = bomTables(ctx.marks, ctx.built.bolts);

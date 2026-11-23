@@ -1,0 +1,19 @@
+{
+  "@locale": "si",
+  "@name": "සිංහල",
+  "@note": "Draft translation, not yet reviewed by a native speaker",
+  "zeman.name": "Zeman නිර්යාතය",
+  "zeman.label": "Zeman (XML + NC)",
+  "zeman.done": "{marks} සඳහා Zeman ගොනු ලියන ලදී: එක් XML එකක් සහ එහි NC ගොනු, එක් එකක් සඳහා ෆෝල්ඩරයක. ගොනුව: {file}.",
+  "zeman.none": "Zeman නිර්යාතය: කිසිවක් ලියැවුණේ නැත.",
+  "zeman.empty": "Zeman නිර්යාතය: තවම වානේ කොටස් නැත.",
+  "zeman.skipped": "ලියැවුණේ නැත: {list}.",
+  "zeman.skipped.item": "{mark} ({why})",
+  "zeman.refuse.lead": "එහි ප්‍රධාන කොටස {profile} I-හැඩයක් නොවේ",
+  "zeman.refuse.attached": "එයට තහඩුවක් නොවන අමුණන ලද කොටසක් ඇත: {profile}",
+  "zeman.refuse.nc": "{why}",
+  "zeman.loose": "ලිහිල්ව, පෑස්සීමකින් තොරව සකසන ලද කොටස් ඉවත් කරන ලදී: {n}.",
+  "zeman.turned": "එකම තහඩු එක NC ගොනුවක් බෙදා ගනී; එකම කොටස පෙරළා ඇති තහඩුවට XML හි තමන්ගේම ස්ථානය ඇත.",
+  "zeman.misfit": "එකම සලකුණ බෙදා ගන්නා තහඩු පරීක්ෂා කරන්න: එකක් ඒවා බෙදා ගන්නා NC ගොනුවෙන් {mm} mm කින් වෙනස් වේ.",
+  "zeman.check": "මෙම නිර්යාතය තනි නියැදි ගොනු කට්ටලයකින් සාදන ලදී: නිෂ්පාදනයට පෙර ඔබගේ යන්ත්‍රයේ මෘදුකාංගයෙන් පළමුවැන්න පරීක්ෂා කරන්න."
+}

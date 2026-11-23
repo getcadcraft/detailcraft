@@ -1,0 +1,19 @@
+{
+  "@locale": "he",
+  "@name": "עברית",
+  "@note": "Draft translation, not yet reviewed by a native speaker",
+  "zeman.name": "ייצוא Zeman",
+  "zeman.label": "Zeman (XML + NC)",
+  "zeman.done": "קובצי Zeman נכתבו עבור {marks}: קובץ XML אחד וקובצי NC שלו בתיקייה נפרדת לכל אחד, נשמרו בשם {file}.",
+  "zeman.none": "ייצוא Zeman: לא נכתב דבר.",
+  "zeman.empty": "ייצוא Zeman: טרם קיימים חלקי פלדה.",
+  "zeman.skipped": "לא נכתב: {list}.",
+  "zeman.skipped.item": "{mark} ({why})",
+  "zeman.refuse.lead": "החלק הראשי שלו {profile} אינו בצורת I",
+  "zeman.refuse.attached": "יש לו חלק מחובר שאינו פלטה: {profile}",
+  "zeman.refuse.nc": "{why}",
+  "zeman.loose": "חלקים שהוגדרו כחופשיים, לא מרותכים, לא נכללו: {n}.",
+  "zeman.turned": "פלטות זהות חולקות קובץ NC אחד; פלטה שהיא אותו חלק שהופך לצד השני מקבלת מיקום משלה ב-XML.",
+  "zeman.misfit": "בדקו את הפלטות שחולקות סימון: אחת מהן שונה מקובץ ה-NC שהיא חולקת ב-{mm} מ\"מ.",
+  "zeman.check": "ייצוא זה נבנה מקבוצת קבצי דוגמה אחת: בדקו את הראשון בתוכנה המקומית שלכם לפני ייצור."
+}

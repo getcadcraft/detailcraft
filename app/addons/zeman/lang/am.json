@@ -1,0 +1,19 @@
+{
+  "@locale": "am",
+  "@name": "አማርኛ",
+  "@note": "Draft translation, not yet reviewed by a native speaker",
+  "zeman.name": "Zeman ወደ ውጭ መላክ",
+  "zeman.label": "Zeman (XML + NC)",
+  "zeman.done": "Zeman ፋይሎች ተጽፈዋል: {marks}። ለእያንዳንዱ አንድ XML እና የNC ፋይሎቹ በአንድ አቃፊ ውስጥ ይገኛሉ፤ ፋይሉ እንደ {file} ተቀምጧል።",
+  "zeman.none": "Zeman ወደ ውጭ መላክ: ምንም ነገር አልተጻፈም።",
+  "zeman.empty": "Zeman ወደ ውጭ መላክ: እስካሁን የብረት ክፍሎች የሉም።",
+  "zeman.skipped": "አልተጻፈም: {list}።",
+  "zeman.skipped.item": "{mark} ({why})",
+  "zeman.refuse.lead": "ዋናው ክፍል {profile} የI ቅርጽ አይደለም",
+  "zeman.refuse.attached": "ተያያዘው ክፍል ፕሌት አይደለም: {profile}",
+  "zeman.refuse.nc": "{why}",
+  "zeman.loose": "ያለመገጣጠም በላላ ተቀምጠው የነበሩ ክፍሎች ተትተዋል: {n}።",
+  "zeman.turned": "ተመሳሳይ ፕሌቶች አንድ NC ፋይል ይጋራሉ፤ ተመሳሳዩ ክፍል ተገልብጦ የተቀመጠ ፕሌት በXML ውስጥ የራሱ ቦታ አለው።",
+  "zeman.misfit": "ምልክቱን የሚጋሩ ፕሌቶችን ያረጋግጡ: አንዱ ከሚጋራው NC ፋይል ልዩነቱ: {mm} mm።",
+  "zeman.check": "ይህ ወደ ውጭ መላክ ከአንድ የናሙና ፋይሎች ስብስብ የተሠራ ነው፤ ለምርት ከመጠቀምዎ በፊት በማሽንዎ ላይ ባለው የራሱ ሶፍትዌር የመጀመሪያውን ያረጋግጡ።"
+}

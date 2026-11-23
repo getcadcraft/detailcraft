@@ -1,0 +1,19 @@
+{
+  "@locale": "tr",
+  "@name": "Türkçe",
+  "@note": "Draft translation, not yet reviewed by a native speaker",
+  "zeman.name": "Zeman dışa aktarımı",
+  "zeman.label": "Zeman (XML + NC)",
+  "zeman.done": "{marks} için Zeman dosyaları yazıldı: her biri için bir klasörde bir XML ve bunun NC dosyaları; {file} olarak kaydedildi.",
+  "zeman.none": "Zeman dışa aktarımı: hiçbir şey yazılmadı.",
+  "zeman.empty": "Zeman dışa aktarımı: henüz çelik parça yok.",
+  "zeman.skipped": "Yazılmadı: {list}.",
+  "zeman.skipped.item": "{mark} ({why})",
+  "zeman.refuse.lead": "ana parçası {profile} bir I profil değil",
+  "zeman.refuse.attached": "levha olmayan bir bağlı parçası var: {profile}",
+  "zeman.refuse.nc": "{why}",
+  "zeman.loose": "Gevşek, kaynaksız ayarlanan parçalar dışarıda bırakıldı: {n}.",
+  "zeman.turned": "Aynı levhalar tek bir NC dosyasını paylaşır; aynı parçanın ters çevrilmiş hali XML içinde kendi konumuna sahiptir.",
+  "zeman.misfit": "Aynı işareti taşıyan levhaları kontrol edin: biri, paylaştığı NC dosyasından {mm} mm farklı.",
+  "zeman.check": "Bu dışa aktarım tek bir örnek dosya kümesinden oluşturuldu: üretimden önce ilkini makinenizdeki kendi yazılımınızda kontrol edin."
+}

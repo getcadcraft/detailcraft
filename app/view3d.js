@@ -209,8 +209,10 @@ export class View3D {
     g.clear();
   }
 
-  /** Rebuild everything from the model. */
+  /** Rebuild everything from the model; after an edit that changed only some parts, just those parts (0.11 PERF.36, see updateParts). */
   setModel(state, built, marks) {
+    if (this.updateParts(state, built, marks)) return;
+    this.inc = null;
     this.state = state; this.built = built; this.marks = marks;
     this.clearGroup(this.root);
     this.recByKey = null;
@@ -255,7 +257,7 @@ export class View3D {
     // 0.10 PERF.36: a scene of one Mesh + one edge object per part is 2 draw calls a part (1,925 for 948 parts). With BatchedMesh the parts are one draw call per
     // material and all the edges one object; a selected part is drawn by a mesh of its own (see applySelection), so every material and pick stays what it was.
     const batch = this.batchParts !== false && typeof THREE.BatchedMesh === 'function';
-    const recs = [], edgeChunks = [];
+    const recs = [], edgeChunks = [], partBox = new THREE.Box3();
     this.selMeshes = []; this.batches = [];
     for (const p of built.parts) {
       if (!shown(p.phase)) continue;
@@ -265,9 +267,12 @@ export class View3D {
       const basis = new THREE.Matrix4().makeBasis(v3(f.u), v3(f.v), v3(f.x));
       basis.setPosition(new THREE.Vector3(...f.o).addScaledVector(v3(f.v), p.voff));
       const ref = p.member ? { kind: 'member', id: p.member } : p.stair ? { kind: 'stair', id: p.stair } : { kind: 'conn', id: p.conn };
+      let rec = null;
       if (batch) {
-        edgeChunks.push(transformed(ent.edges, basis));
-        recs.push({ p, geo, basis, ref, matKey, shared: true });
+        const ch = transformed(ent.edges, basis);
+        edgeChunks.push(ch);
+        rec = { p, ent, geo, basis, ref, matKey, shared: true, edges: ch, holes: [], wbox: null };
+        recs.push(rec);
       } else {
         const m = new THREE.Mesh(geo, this.mats[matKey]);
         m.applyMatrix4(basis);
@@ -276,7 +281,9 @@ export class View3D {
         edges.applyMatrix4(basis);
         this.root.add(edges);
       }
-      this.box.union(ent.bbox.clone().applyMatrix4(basis));
+      const wbox = ent.bbox.clone().applyMatrix4(basis);
+      partBox.union(wbox);   // the parts' box is kept apart from the rest (grids, footings, pictures) so an update can work it again; joined below
+      if (rec) rec.wbox = wbox;
       const pr = p.profile;
       for (const h of p.holes) {
         // a dark plug through the face, a little proud of both sides
@@ -285,16 +292,23 @@ export class View3D {
         else if (h.face === 'plate') { c = [h.y, 0, h.x]; axis = [0, 1, 0]; len = pr.t + 2; }
         else { const s = h.face === 'top' ? 1 : -1, t = pr.kind === 'RHS' || pr.kind === 'L' ? pr.t : pr.tf; c = [h.y, s * (pr.depth / 2 - t / 2), h.x]; axis = [0, 1, 0]; len = t + 2; }
         const local = new THREE.Matrix4().compose(new THREE.Vector3(...c), new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0, 0, 1), new THREE.Vector3(...axis)), new THREE.Vector3(h.d, h.d, len));
-        holes.push(basis.clone().multiply(local));
+        const hm = basis.clone().multiply(local);
+        holes.push(hm);
+        if (rec) rec.holes.push(hm);
       }
     }
-    if (holes.length) {
-      const im = new THREE.InstancedMesh(holeGeo, this.mats.hole, holes.length);
-      holes.forEach((mx, i) => im.setMatrixAt(i, mx));
-      this.root.add(im);
+    // the holes: room for more (an edit that adds parts draws their holes in it; PERF.36)
+    let holeMesh = null;
+    if (holes.length || batch) {
+      holeMesh = new THREE.InstancedMesh(holeGeo, this.mats.hole, Math.max(1, batch ? holes.length + Math.max(256, Math.ceil(holes.length * 0.05)) : holes.length));
+      holes.forEach((mx, i) => holeMesh.setMatrixAt(i, mx));
+      holeMesh.count = holes.length;
+      if (batch) holeMesh.frustumCulled = false;   // it grows in place (updateParts): no box worked once
+      this.root.add(holeMesh);
     }
     // bolts and rods
     const bolts = built.bolts.filter((b) => shown(b.phase));
+    let boltMesh = null;
     if (bolts.length) {
       const g = new THREE.CylinderGeometry(0.5, 0.5, 1, 12);
       g.translate(0, 0.5, 0);               // from the head along +y
@@ -306,6 +320,7 @@ export class View3D {
       im.userData.bolts = bolts;
       im.visible = this.showBolts;
       addPick(im, null, 'bolt');
+      boltMesh = im;
     }
     // footings and bars
     for (const ft of built.footings) {
@@ -378,12 +393,180 @@ export class View3D {
         for (const pts of g.polys) for (const p of pts) this.box.expandByPoint(v3(p));
       }
     }
-    if (recs.length) this.addBatches(recs, edgeChunks);
+    const edgeLines = recs.length ? this.addBatches(recs, edgeChunks, batch) : null;
     this.addPictures(state.pictures || [], addPick);
+    const restBox = this.box.clone();
+    this.box.union(partBox);
+    if (batch && edgeLines) {
+      // what updateParts needs to change only the parts an edit touched: each shown part's record, the batches by material, the box of everything but the parts
+      const parts = new Map();
+      let h = 0;
+      for (const r of recs) if (r.p) { r.holeOff = h; h += r.holes.length; parts.set(r.p, r); }
+      this.inc = { key: this.staticKey(state), mats: this.mats, parts, edgeLines, holeMesh, holeUsed: holes.length, boltMesh, boltNums: boltMesh ? boltNumbers(bolts) : null,
+        byMat: new Map(this.batches.map((bm) => [bm.userData.mat, bm])), restBox, changes: 0 };
+    }
     this.applySelection();
     this.applyClipping();
     if (!this.fitted && !this.box.isEmpty()) { this.fit(); this.fitted = true; }
     this.render();
+  }
+
+  /** What a scene holds besides the steel parts and bolts: when this text is the same, an update may keep all of it (0.11 PERF.36). */
+  staticKey(state) {
+    return JSON.stringify([state.grids, state.levels, state.footings, state.rc || null, (state.pictures || []).map((p) => [p.id, p.hash, p.x, p.y, p.z, p.px, p.mmPerPx, p.opacity, !!this.pictureSrc?.(p.hash)]),
+      [...this.hiddenPhases].sort(), this.showBolts, this.mode]);
+  }
+
+  /**
+   * 0.11 PERF.36: after an edit, change only the parts that changed. build() hands back the same part object for a part an edit did not touch (its cache),
+   * so the parts that went are the old objects not in the new list and the new ones are those not in the old: their batch instances, edge lines and holes
+   * are taken out and put in; the rest of the scene (and every other instance) stays as it is. Bolts are compared number by number and only those that moved
+   * are set again. Returns false (and the caller rebuilds everything) when anything else changed (grids, levels, footings, concrete, pictures, phases shown,
+   * the theme, the bolts switch), when there is no room left, or when the edit touched more than a quarter of the parts.
+   * The picture is the same as a rebuild's: the same instances with the same matrices and geometry, the same edge segments and hole matrices; only their
+   * order in the buffers differs (a part that went leaves a gap: its instance is deleted, its edge segments are folded to one point, its holes to nothing).
+   */
+  updateParts(state, built, marks) {
+    const inc = this.inc;
+    if (!inc || this.batchParts === false || !built || inc.mats !== this.mats || inc.key !== this.staticKey(state)) return false;
+    const shown = (ph) => !this.hiddenPhases.has(ph || 1);
+    const now = [];
+    for (const p of built.parts) if (shown(p.phase)) now.push(p);
+    const keep = new Set();
+    const add = [];
+    for (const p of now) { if (inc.parts.has(p)) keep.add(p); else add.push(p); }
+    const gone = [];
+    for (const [p, r] of inc.parts) if (!keep.has(p)) gone.push(r);
+    if (add.length + gone.length > Math.max(64, now.length / 4)) return false;
+    // room: instances in each batch, vertices for geometries not in it yet, edge floats, hole matrices
+    const pos = inc.edgeLines.geometry.attributes.position, arr = pos.array;
+    const prepared = [];
+    let edgeNeed = 0, holeNeed = 0;
+    const needBy = new Map();
+    for (const p of add) {
+      const ent = this.partEntry(p);
+      const matKey = p.type === 'plate' ? 'plate' : p.type === 'stringer' ? 'beam' : p.type;
+      const bm = inc.byMat.get(matKey);
+      if (!bm) return false;
+      const nb = needBy.get(bm) || { inst: 0, v: 0, i: 0, geos: new Set() };
+      nb.inst++;
+      if (!bm.userData.gids.has(ent.geo) && !nb.geos.has(ent.geo)) { nb.geos.add(ent.geo); nb.v += ent.geo.attributes.position.count; nb.i += ent.geo.index ? ent.geo.index.count : 0; }
+      needBy.set(bm, nb);
+      edgeNeed += ent.edges.length;
+      holeNeed += p.holes.length;
+      prepared.push({ p, ent, matKey, bm });
+    }
+    for (const [bm, nb] of needBy) {
+      // a deleted instance's id is used again; a geometry needs fresh room at the end of the batch's buffers
+      if (bm.instanceCount + nb.inst > bm.maxInstanceCount) return false;
+      if (nb.v > bm.unusedVertexCount || (bm.geometry.index && nb.i > bm.unusedIndexCount)) return false;
+    }
+    const usedE = inc.edgeLines.geometry.userData.used;
+    if (usedE + edgeNeed > arr.length || inc.holeUsed + holeNeed > inc.holeMesh.instanceMatrix.count) return false;
+    const bolts = built.bolts.filter((b) => shown(b.phase));
+    if (!!inc.boltMesh !== !!bolts.length) return false;
+
+    // the selection's parts go back into their batches first (a deleted instance cannot be shown again)
+    for (const r of this.batchHidden || []) r.bm.setVisibleAt(r.iid, true);
+    this.batchHidden = [];
+    const zero = new THREE.Matrix4().makeScale(0, 0, 0);
+    // the bytes that go to the GPU: one range per part changed (a part that went sits anywhere in the buffer; one range from it to the end would send nearly all of it)
+    const eR = [], hR = [];
+    const touchE = (a, b) => eR.push([a, b - a]);
+    const touchH = (a, b) => hR.push([a * 16, (b - a) * 16]);
+    for (const r of gone) {
+      r.bm.deleteInstance(r.iid);
+      r.bm.userData.refs[r.iid] = undefined;
+      const len = r.edges.length;
+      if (len) { const x = arr[r.edgeOff], y = arr[r.edgeOff + 1], z = arr[r.edgeOff + 2]; for (let i = r.edgeOff; i < r.edgeOff + len; i += 3) { arr[i] = x; arr[i + 1] = y; arr[i + 2] = z; } touchE(r.edgeOff, r.edgeOff + len); }
+      for (let i = 0; i < r.holes.length; i++) inc.holeMesh.setMatrixAt(r.holeOff + i, zero);
+      if (r.holes.length) touchH(r.holeOff, r.holeOff + r.holes.length);
+      inc.parts.delete(r.p);
+      const k = r.ref.kind + ':' + r.ref.id, l = this.recByKey.get(k);
+      if (l) { const j = l.indexOf(r); if (j >= 0) l.splice(j, 1); if (!l.length) this.recByKey.delete(k); }
+    }
+    let at = usedE;
+    for (const { p, ent, matKey, bm } of prepared) {
+      const f = p.frame;
+      const basis = new THREE.Matrix4().makeBasis(v3(f.u), v3(f.v), v3(f.x));
+      basis.setPosition(new THREE.Vector3(...f.o).addScaledVector(v3(f.v), p.voff));
+      const ref = p.member ? { kind: 'member', id: p.member } : p.stair ? { kind: 'stair', id: p.stair } : { kind: 'conn', id: p.conn };
+      let gid = bm.userData.gids.get(ent.geo);
+      if (gid === undefined) { gid = bm.addGeometry(ent.geo); bm.userData.gids.set(ent.geo, gid); }
+      const iid = bm.addInstance(gid);
+      bm.setMatrixAt(iid, basis);
+      bm.userData.refs[iid] = ref;
+      const ch = transformed(ent.edges, basis);
+      arr.set(ch, at);
+      const r = { p, ent, geo: null, basis, ref, matKey, shared: true, edges: ch, edgeOff: at, holes: [], holeOff: inc.holeUsed, wbox: ent.bbox.clone().applyMatrix4(basis), bm, iid };
+      touchE(at, at + ch.length);
+      at += ch.length;
+      const pr = p.profile;
+      for (const h of p.holes) {   // as the rebuild draws them
+        let c, axis, len;
+        if (h.face === 'web') { c = [pr.kind === 'C' ? -pr.bf / 2 + pr.tw / 2 : pr.kind === 'L' ? -pr.b / 2 + pr.t / 2 : 0, h.y, h.x]; axis = [1, 0, 0]; len = (pr.kind === 'RHS' ? pr.b : pr.kind === 'L' ? pr.t : pr.tw) + 2; }
+        else if (h.face === 'plate') { c = [h.y, 0, h.x]; axis = [0, 1, 0]; len = pr.t + 2; }
+        else { const sg = h.face === 'top' ? 1 : -1, t = pr.kind === 'RHS' || pr.kind === 'L' ? pr.t : pr.tf; c = [h.y, sg * (pr.depth / 2 - t / 2), h.x]; axis = [0, 1, 0]; len = t + 2; }
+        const local = new THREE.Matrix4().compose(new THREE.Vector3(...c), new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0, 0, 1), new THREE.Vector3(...axis)), new THREE.Vector3(h.d, h.d, len));
+        const hm = basis.clone().multiply(local);
+        r.holes.push(hm);
+        inc.holeMesh.setMatrixAt(inc.holeUsed, hm);
+        inc.holeUsed++;
+      }
+      if (r.holes.length) touchH(r.holeOff, inc.holeUsed);
+      inc.parts.set(p, r);
+      const k = ref.kind + ':' + ref.id;
+      if (!this.recByKey.has(k)) this.recByKey.set(k, []);
+      this.recByKey.get(k).push(r);
+    }
+    inc.edgeLines.geometry.userData.used = at;
+    inc.edgeLines.geometry.setDrawRange(0, at / 3);
+    if (eR.length) { for (const [a, n] of eR) pos.addUpdateRange(a, n); pos.needsUpdate = true; }
+    inc.holeMesh.count = inc.holeUsed;
+    if (hR.length) { for (const [a, n] of hR) inc.holeMesh.instanceMatrix.addUpdateRange(a, n); inc.holeMesh.instanceMatrix.needsUpdate = true; }
+    // bolts: the ones whose head, axis, diameter or length moved are set again; a different count is a new bolt mesh
+    if (inc.boltMesh) {
+      const nums = boltNumbers(bolts), old = inc.boltNums, im = inc.boltMesh;
+      if (nums.length === old.length) {
+        const runs = [];   // runs of moved bolts, each sent on its own
+        for (let i = 0, n = bolts.length; i < n; i++) {
+          let same = true;
+          for (let k = i * 8; k < i * 8 + 8; k++) if (nums[k] !== old[k]) { same = false; break; }
+          if (same) continue;
+          const b = bolts[i], q = new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0, 1, 0), v3(b.axis));
+          im.setMatrixAt(i, new THREE.Matrix4().compose(v3(b.head), q, new THREE.Vector3(b.d, b.length, b.d)));
+          const last = runs[runs.length - 1];
+          if (last && last[1] === i) last[1] = i + 1; else runs.push([i, i + 1]);
+        }
+        if (runs.length) { for (const [a, b] of runs) im.instanceMatrix.addUpdateRange(a * 16, (b - a) * 16); im.instanceMatrix.needsUpdate = true; im.boundingSphere = null; im.boundingBox = null; }
+        im.userData.bolts = bolts;
+      } else {
+        const g = im.geometry;
+        const nm = new THREE.InstancedMesh(g, this.mats.bolt, bolts.length);
+        bolts.forEach((b, i) => {
+          const q = new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0, 1, 0), v3(b.axis));
+          nm.setMatrixAt(i, new THREE.Matrix4().compose(v3(b.head), q, new THREE.Vector3(b.d, b.length, b.d)));
+        });
+        nm.userData.bolts = bolts; nm.userData.ref = null; nm.userData.mat = 'bolt';
+        nm.visible = im.visible;
+        this.root.remove(im); im.dispose();
+        this.pickables[this.pickables.indexOf(im)] = nm;
+        this.root.add(nm);
+        inc.boltMesh = nm;
+      }
+      inc.boltNums = nums;
+    }
+    for (const bm of needBy.keys()) { bm.boundingBox = null; bm.boundingSphere = null; }
+    for (const r of gone) { r.bm.boundingBox = null; r.bm.boundingSphere = null; }
+    // the box: everything but the parts (kept from the rebuild) and every part shown now
+    this.box.copy(inc.restBox);
+    for (const r of inc.parts.values()) this.box.union(r.wbox);
+    inc.changes += add.length + gone.length;
+    this.state = state; this.built = built; this.marks = marks;
+    this.lastUpdate = { added: add.length, removed: gone.length, kept: keep.size };   // for tests
+    this.applySelection();
+    this.render();
+    return true;
   }
 
   /** The geometry of a part with its edge lines (local, 35 degrees) and box, made once per profile, length and cuts (PERF.36). Shared: never edited by a caller. */
@@ -406,20 +589,28 @@ export class View3D {
     return ent;
   }
 
-  /** The shown parts (and footing / RC bar tubes) as one BatchedMesh per material and one object for all the parts' edges (PERF.36). `recs`: [{ p | make, geo, basis, ref, matKey }]; `make()` builds a tube's geometry again for the picked copy. */
-  addBatches(recs, edgeChunks) {
+  /**
+   * The shown parts (and footing / RC bar tubes) as one BatchedMesh per material and one object for all the parts' edges (PERF.36). `recs`: [{ p | make, geo, basis, ref, matKey }]; `make()` builds a tube's geometry again for the picked copy.
+   * 0.11 PERF.36: parts that are alike share one geometry in their batch (an instance each), and every batch, the edge lines and the holes keep room for more,
+   * so an edit that changes a few parts changes those instances only (updateParts). `room` false: exactly sized, as before.
+   */
+  addBatches(recs, edgeChunks, room = true) {
     const byMat = new Map();
     for (const r of recs) { if (!byMat.has(r.matKey)) byMat.set(r.matKey, []); byMat.get(r.matKey).push(r); }
     this.recByKey = new Map();
     this.batchHidden = [];
     for (const [matKey, list] of byMat) {
       let nv = 0, ni = 0;
-      for (const r of list) { nv += r.geo.attributes.position.count; ni += r.geo.index ? r.geo.index.count : 0; }
-      const bm = new THREE.BatchedMesh(list.length, nv, ni, this.mats[matKey]);
+      const once = new Set();
+      for (const r of list) { if (r.shared) { if (once.has(r.geo)) continue; once.add(r.geo); } nv += r.geo.attributes.position.count; ni += r.geo.index ? r.geo.index.count : 0; }
+      const extra = room ? Math.max(64, Math.ceil(list.length * 0.05)) : 0, gx = (n) => (room ? n + Math.max(20000, Math.ceil(n * 0.05)) : n);
+      const bm = new THREE.BatchedMesh(list.length + extra, gx(nv), gx(ni), this.mats[matKey]);
       bm.sortObjects = false;
-      const refs = [];
+      const refs = [], gids = new Map();
       for (const r of list) {
-        const iid = bm.addInstance(bm.addGeometry(r.geo));
+        let gid = r.shared ? gids.get(r.geo) : undefined;
+        if (gid === undefined) { gid = bm.addGeometry(r.geo); if (r.shared) gids.set(r.geo, gid); }
+        const iid = bm.addInstance(gid);
         bm.setMatrixAt(iid, r.basis);
         refs[iid] = r.ref; r.bm = bm; r.iid = iid;
         if (!r.shared) r.geo.dispose();   // the batch holds the vertices (a shared part geometry stays in the cache)
@@ -428,17 +619,23 @@ export class View3D {
         if (!this.recByKey.has(k)) this.recByKey.set(k, []);
         this.recByKey.get(k).push(r);
       }
-      bm.userData.refs = refs; bm.userData.mat = matKey;
+      bm.userData.refs = refs; bm.userData.mat = matKey; bm.userData.gids = gids;
       this.root.add(bm); this.pickables.push(bm); this.batches.push(bm);
     }
     let n = 0;
     for (const c of edgeChunks) n += c.length;
-    const all = new Float32Array(n);
+    const all = new Float32Array(room ? n + Math.max(60000, Math.ceil(n * 0.05 / 6) * 6) : n);   // room in whole segments (6 floats): a part-vertex tail would read as NaN
     let at = 0;
-    for (const c of edgeChunks) { all.set(c, at); at += c.length; }
+    const withEdges = recs.filter((r) => r.edges);
+    for (let i = 0; i < edgeChunks.length; i++) { const c = edgeChunks[i]; all.set(c, at); if (withEdges[i]) { withEdges[i].edgeOff = at; } at += c.length; }
     const eg = new THREE.BufferGeometry();
     eg.setAttribute('position', new THREE.BufferAttribute(all, 3));
-    this.root.add(new THREE.LineSegments(eg, this.mats.edge));
+    eg.setDrawRange(0, at / 3);
+    eg.userData.used = at;
+    const lines = new THREE.LineSegments(eg, this.mats.edge);
+    if (room) lines.frustumCulled = false;   // it grows in place (updateParts): no sphere worked once
+    this.root.add(lines);
+    return lines;
   }
 
   /** Reference pictures (D8.15): a textured plane per picture, flat on its level, under everything else. */
@@ -901,6 +1098,12 @@ export class View3D {
 }
 
 const v3 = (a) => new THREE.Vector3(a[0], a[1], a[2]);
+/** A bolt's numbers that place it (head, axis, diameter, length), 8 a bolt: an update sets again only the bolts whose numbers moved (0.11 PERF.36). */
+function boltNumbers(bolts) {
+  const out = new Float64Array(bolts.length * 8);
+  bolts.forEach((b, i) => { const k = i * 8; out[k] = b.head[0]; out[k + 1] = b.head[1]; out[k + 2] = b.head[2]; out[k + 3] = b.axis[0]; out[k + 4] = b.axis[1]; out[k + 5] = b.axis[2]; out[k + 6] = b.d; out[k + 7] = b.length; });
+  return out;
+}
 
 /** A part's solid in its own frame (u, v, x) — the profile extruded along +z, copes cut by splitting the length. */
 /** A copy of triangle-soup positions (x y z ...) moved by the matrix m. */

@@ -1,0 +1,19 @@
+{
+  "@locale": "af",
+  "@name": "Afrikaans",
+  "@note": "Draft translation, not yet reviewed by a native speaker",
+  "zeman.name": "Zeman-uitvoer",
+  "zeman.label": "Zeman (XML + NC)",
+  "zeman.done": "Zeman-lêers geskryf vir {marks}: een XML en sy NC-lêers in 'n vouer vir elk, gestoor as {file}.",
+  "zeman.none": "Zeman-uitvoer: niks is geskryf nie.",
+  "zeman.empty": "Zeman-uitvoer: daar is nog geen staalonderdele nie.",
+  "zeman.skipped": "Nie geskryf nie: {list}.",
+  "zeman.skipped.item": "{mark} ({why})",
+  "zeman.refuse.lead": "sy hoofonderdeel {profile} is nie 'n I-vorm nie",
+  "zeman.refuse.attached": "dit het 'n aangehegte onderdeel wat nie 'n plaat is nie: {profile}",
+  "zeman.refuse.nc": "{why}",
+  "zeman.loose": "Onderdele wat los, nie gesweis nie, gestel is, is uitgelaat: {n}.",
+  "zeman.turned": "Identiese plate deel een NC-lêer; 'n plaat wat dieselfde stuk is wat omgedraai is, het sy eie posisie in die XML.",
+  "zeman.misfit": "Kontroleer die plate wat dieselfde merk deel: een verskil van die NC-lêer wat dit deel met {mm} mm.",
+  "zeman.check": "Hierdie uitvoer is uit een monsterlêerstel gebou: kontroleer die eerste een in jou masjien se eie sagteware voor produksie."
+}

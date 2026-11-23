@@ -1,46 +1,46 @@
 ---
-title: Athuga stálbita samkvæmt hönnunarstaðli
-summary: Búðu til álagssamsetningar samkvæmt ASCE 7 eða EN 1990, athugaðu hvern stálbita í I-lögun samkvæmt AISC 360 eða EN 1993-1-1, og sjáðu hversu stóran hluta burðargetu hans hver bita notar. Hjálpartæki þar til verkfræðingur hefur yfirfarið það.
-keywords: hönnun, hönnunarathugun, stálhönnun, nýting, burðargeta, AISC 360, ASCE 7, EN 1990, EN 1993-1-1, Eurocode, álagssamsetningar, LRFD, landsviðauki, hnjask, hliðarhnjask, skúrkraftur, beygja, víxlverkun, burðarvirki, nemendur, verkfræðingur
-from: 66b6d545
+title: Athuga stálstangir eftir hönnunarstaðli
+summary: Búa til álagssamsetningar úr ASCE 7 eða EN 1990, athuga hvert stál-I-snið gegn AISC 360 eða EN 1993-1-1 og sjá hversu stóran hluta burðargetu hverrar stangar hún nýtir. Hjálpartæki þar til verkfræðingur hefur yfirfarið það.
+keywords: hönnun, hönnunarathugun, stálhönnun, nýting, nýtingarhlutfall, burðargeta, AISC 360, ASCE 7, EN 1990, EN 1993-1-1, Eurocode, álagssamsetningar, LRFD, landsviðauki, knésbeyging, hliðar-snúningsbeyging, skurður, beyging, samspil, burðarvirki, nemendur, verkfræðingur
+from: 15685c4e
 ---
 
-Eftir að þú keyrir greininguna breytir reiturinn {{ui:Hönnunarathuganir}} í flipanum {{ui:Greining}} kröftunum í niðurstöðu fyrir hvern stálbita: hversu stóran hluta burðargetu hans versta samsetningin notar.
+Eftir að þú keyrir greininguna breytir reiturinn {{ui:Design checks}} í flipanum {{ui:Analysis}} kröftunum í niðurstöðu fyrir hverja stálstöng: hversu stóran hluta burðargetu hennar versta samsetningin nýtir.
 
 :::warning
-Það er **hjálpartæki þar til verkfræðingur hefur yfirfarið það**. Það notar aðeins fyrsta stigs krafta (engin annars stigs áhrif), athugar ekkert snúningsálag, engar grannar (flokkur 4) einingar, engar soðnar lögun og engar tengingar, og sleppir því sem það getur ekki athugað og segir frá því. Það kemur ekki í stað athugunar verkfræðings og niðurstöður þess eru ekki staðfesting.
+Þetta er **hjálpartæki þar til verkfræðingur hefur yfirfarið það**. Það notar eingöngu krafta fyrstu gráðu (engin áhrif annarrar gráðu), athugar ekki snúning, grannir hlutar (flokkur 4) eru ekki athugaðir, engin soðin snið og engar tengingar, og sleppir því sem það getur ekki athugað og segir frá því. Það kemur ekki í staðinn fyrir athugun verkfræðings og niðurstöður þess eru ekki stimpill.
 :::
 
 ## Veldu staðal
 
-{{ui:Hönnunarstaðall}} er vistaður með líkaninu; veldu eina af tveimur fjölskyldum:
+{{ui:Design code}} er vistaður með líkaninu; veldu aðra af tveimur fjölskyldum:
 
-- **ASCE 7 + AISC 360** (Bandaríkin, LRFD): álagssamsetningar ASCE 7-16 §2.3.1 og bitaathuganir ANSI/AISC 360-16.
-- **EN 1990 + EN 1993-1-1** (Eurocode): samsetningar EN 1990 (jafna 6.10, eða 6.10a og 6.10b) og bitaathuganir EN 1993-1-1.
+- **ASCE 7 + AISC 360** (US, LRFD): álagssamsetningar ASCE 7-16 §2.3.1 og stangaathuganir ANSI/AISC 360-16.
+- **EN 1990 + EN 1993-1-1** (Eurocode): samsetningarnar í EN 1990 (jafna 6.10, eða 6.10a og 6.10b) og stangaathuganir EN 1993-1-1.
 
-Veldu síðan {{ui:Stálgæði}} (A992, A36 og fleiri; eða S235 til S450, með lægri flæðimörk fyrir ofan 40 mm).
+Veldu síðan {{ui:Steel grade}} (A992, A36 og aðra; eða S235 til S450, með lægri flotmörk yfir 40 mm).
 
-## Búa til samsetningarnar
+## Búðu til samsetningarnar
 
-Gefðu hverju álagstilviki **tegund** (fast, lifandi, þakálag lifandi, snjór, vindur, jarðskjálfti) í listanum yfir tilvik, og ýttu síðan á {{ui:Búa til samsetningar}}. DetailCraft skrifar samsetningar staðalsins sem samsetningar af tilvikum þínum: allar burðarþolssamsetningar sem staðallinn gefur fyrir þær tegundir sem þú hefur, og notkunarsamsetningar fyrir durð. Þær sem þú slóst inn sjálfur haldast; þær eru ekki athugaðar gegn staðlinum. Tilvik af tegundinni {{ui:Annað}} er ekki sett saman.
+Gefðu hverju álagstilviki sína **gerð** (eiginþungi, breytilegt álag, breytilegt þakálag, snjóálag, vindálag, jarðskjálftaálag) í listanum yfir tilvik og ýttu síðan á {{ui:Make combinations}}. DetailCraft skrifar staðalsamsetningar sem samsetningar af tilvikum þínum: allar burðarsamsetningar sem staðallinn telur upp fyrir þær gerðir sem þú hefur, og nothæfissamsetningar fyrir durgun. Þær sem þú slóst inn sjálfur haldast; þær eru ekki athugaðar gegn staðlinum. Tilvik af gerðinni {{ui:Other}} er ekki sett saman.
 
-Fyrir Eurocode eru stuðlarnir **ráðlögð gildi** úr EN 1990 viðauka A1 (γG 1.35, γQ 1.5, ψ-gildin fyrir notaálag, snjóálag og vindálag) og EN 1993-1-1 (γM0 = γM1 = 1.0). Landsviðauki lands þíns breytir sumum þeirra: opnaðu {{ui:Gildi úr landsviðauka}}, sláðu inn þín og búðu til samsetningarnar aftur. Þau eru vistuð í líkaninu.
+Fyrir Eurocode eru stuðlarnir **ráðlögð gildi** úr viðauka A1 í EN 1990 (γG 1,35, γQ 1,5, ψ-gildi fyrir hagnýtt álag, snjó- og vindálag) og EN 1993-1-1 (γM0 = γM1 = 1,0). Landsviðauki landsins þíns breytir sumum þeirra: opnaðu {{ui:National Annex values}}, sláðu inn þín gildi og búðu til samsetningarnar aftur. Þau eru vistuð í líkaninu.
 
-## Athuga bitana
+## Athugaðu stangirnar
 
-Ýttu á {{ui:Athuga bita}}. Fyrir hvern stálbita í I-lögun sýnir taflan **nýtingu** hans (álag á móti burðargetu: 100 % eru mörkin), hvort hann stenst, hvaða athugun ræður, og hvaða samsetning. Bitar eru litaðir á líkaninu: blár lítið notaður, grænn um það bil hálfur, gulbrúnn nálægt mörkum, rauður yfir þeim, grár ekki athugaður. Smelltu á heiti bita til að velja hann.
+Ýttu á {{ui:Check members}}. Fyrir hvert stál-I-snið sýnir taflan **nýtingu** þess (álag yfir burðargetu: 100 % eru mörkin), hvort það stenst, hvaða athugun ræður og hvaða samsetning. Stangirnar eru litaðar í líkaninu: blátt lítið nýttar, grænt um helmingur, okurgult nálægt mörkum, rautt yfir þeim, grátt ekki athugað. Smelltu á heiti stangar til að velja hana.
 
-Athuganirnar, með þeirri grein sem hver fylgir (þær eru taldar upp í skýrslunni):
+Athuganirnar, ásamt grein sem hver þeirra fylgir (þær eru taldar upp í skýrslunni):
 
-- tog, þrýstingur með beygju- og snúningshnjaski, beygja um báða ása með hliðarhnjaski og snúningshnjaski, skúrkraftur, og beygja með ásþrýstingi;
-- durð notkunarsamsetninga miðað við {{ui:Durðarmörk}} sem þú stillir (L/360 til að byrja með; verkefnisgildi, ekki staðalsgildi).
+- tog, þrýstingur með beygju- og snúningsknésbeygju, beyging um báða ása með hliðar-snúningsbeygju, skurður og beyging með ásálagi;
+- durgun nothæfissamsetninga miðað við {{ui:Deflection limit}} sem þú stillir (L/360 sem upphafsgildi; verkefnisgildi, ekki staðalgildi).
 
-**Lengdir.** Hliðarstuddu lengdin er hlutdeild af hverjum greindum hluta (1 = óstudd); stuðningar eru teknir jafnt dreifðir frá upphafi. K-stuðlar margfalda lengdina fyrir hnjask. Samskeyti þar sem annar bita lendir skiptir bita, og hver hluti er athugaður á eigin lengd, eins og hann sé studdur þar.
+**Lengdir.** Stoðaða lengdin er hlutfall af hverjum greindum hluta (1 = óstoðað); stoðir eru taldar jafnt dreifðar frá upphafi. K-stuðlar margfalda lengdina fyrir knésbeygingu. Tengipunktur þar sem önnur stöng endar skiptir stönginni, og hver hluti er athugaður út frá eigin lengd, eins og hann sé stoðaður þar.
 
-## Það sem er ekki athugað
+## Hvað er ekki athugað
 
-Bita sýnir **ekki athugaður**, með ástæðunni, í stað tölu þegar hluti hans er ekki I-lögun sem athuganirnar þekkja (rör, hornjárn, rásir), þegar hann er sérsniðin (soðin) lögun, eða þegar hluti er grannur (AISC) eða flokkur 4 (Eurocode) í beygju. Grannur hluti í þrýstingi tekur þrýstiathuganirnar út og bitinn sýnir *stenst, að hluta athugaður*. Einnig er ekki smíðað: annars stigs áhrif, snúningur, skúrhnjask samhliða beygju, tengingar, þreyta, eldur og jarðskjálftafrágangur. Steypubitar og jarðskjálftaálag hafa [sínar eigin athuganir](topic:concrete-and-seismic). Sjá [Ekki smíðað enn](topic:not-built-yet).
+Stöng sýnir **ekki athugað**, ásamt ástæðu, í stað tölu þegar snið hennar er ekki lögun sem athuganirnar þekkja (hornjárn, rásjárn; rétthyrnd og kringlótt rör eru athuguð þegar veggir þeirra eru þéttir), þegar það er sérsmíðað (soðið) form, eða þegar hluti er grannur (AISC) eða flokkur 4 (Eurocode) í beygju. Grannur hluti í þrýstingi tekur þrýstiathuganirnar út og stöngin birtist sem *stenst, að hluta athugað*. Suðurnar í tengipunktunum hafa [sína eigin athugun](topic:weld-checks). Einnig er ekki smíðað: áhrif annarrar gráðu, snúningur, skurðknésbeyging ásamt beygju, boltaðar tengingar, þreyta, eldur og jarðskjálftaútfærsla. Steypustangir og jarðskjálftaálag hafa [sínar eigin athuganir](topic:concrete-and-seismic). Sjá [Ekki smíðað enn](topic:not-built-yet).
 
 ## Skýrslan
 
-{{ui:Skýrsla (PDF)}} og {{ui:Skýrsla (CSV)}} fá hönnunartöflurnar þegar þú hefur athugað: útgáfur staðlanna, stillingarnar og gildi landsviðauka, nýtingu eftir bita, allar greinar sem notaðar eru, og fyrir hvern bita eftirspurn, burðargetu og nýtingu hverrar athugunar í ráðandi samsetningu hans.
+{{ui:Report (PDF)}} og {{ui:Report (CSV)}} fá hönnunartöflurnar þegar þú hefur athugað: útgáfur staðlanna, stillingarnar og gildi landsviðauka, nýtingu eftir stöngum, allar greinar sem notaðar eru, og fyrir hverja stöng álag, burðargetu og nýtingu hverrar athugunar í ráðandi samsetningu hennar.

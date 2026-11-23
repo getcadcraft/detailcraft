@@ -1,0 +1,19 @@
+{
+  "@locale": "ky",
+  "@name": "Кыргызча",
+  "@note": "Draft translation, not yet reviewed by a native speaker",
+  "zeman.name": "Zeman экспорту",
+  "zeman.label": "Zeman (XML + NC)",
+  "zeman.done": "{marks} үчүн Zeman файлдары жазылды: ар бири үчүн бир XML жана анын NC файлдары папкада. Файлдын аты: {file}.",
+  "zeman.none": "Zeman экспорту: эч нерсе жазылган жок.",
+  "zeman.empty": "Zeman экспорту: болот детальдар али жок.",
+  "zeman.skipped": "Жазылган жок: {list}.",
+  "zeman.skipped.item": "{mark} ({why})",
+  "zeman.refuse.lead": "негизги детали {profile} I-формалуу эмес",
+  "zeman.refuse.attached": "тиркелген детали пластина эмес: {profile}",
+  "zeman.refuse.nc": "{why}",
+  "zeman.loose": "Бош, ширетилбеген коюлган детальдар калтырылды: {n}.",
+  "zeman.turned": "Бирдей пластиналар бир NC файлын бөлүшөт; бирдей, бирок аударылган пластинанын XMLде өз позициясы бар.",
+  "zeman.misfit": "Бир белгиси бар пластиналарды текшериңиз: бири бөлүшкөн NC файлынан {mm} mm айырмаланат.",
+  "zeman.check": "Бул экспорт үлгүлүк файл топтомунан түзүлгөн: өндүрүштөн мурун биринчисин машинаңыздагы программада текшериңиз."
+}

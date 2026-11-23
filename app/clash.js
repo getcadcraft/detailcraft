@@ -24,12 +24,9 @@
  */
 import { toLocal, toWorld, clipLoopV } from './geom.js';
 import { membersOf } from './connections.js';
+import { add3 as add, cross3 as cross, dot3 as dot, scale3 as mul, sub3 as sub } from './geom-vec.js';   // shared helpers (0.11 PERF.74; tools/perf/util-copies.mjs)
+import { pointInRing } from './geom2d.js';   // shared helpers (0.11 PERF.74)
 
-const add = (a, b) => [a[0] + b[0], a[1] + b[1], a[2] + b[2]];
-const sub = (a, b) => [a[0] - b[0], a[1] - b[1], a[2] - b[2]];
-const mul = (a, s) => [a[0] * s, a[1] * s, a[2] * s];
-const dot = (a, b) => a[0] * b[0] + a[1] * b[1] + a[2] * b[2];
-const cross = (a, b) => [a[1] * b[2] - a[2] * b[1], a[2] * b[0] - a[0] * b[2], a[0] * b[1] - a[1] * b[0]];
 
 /** A solid to check: { ref, id, kind, phase, frame {o, x, u, v}, L, loops (section, centered), voff, cuts, box (obb) }. */
 export function solids(state, built, phases) {
@@ -62,13 +59,18 @@ export function solids(state, built, phases) {
  * boxes share a grid cell, i < j, sorted, a superset of the pairs whose boxes overlap. Cost is O(solids), not O(solids squared).
  */
 export function solidIndex(S, { cell = 1000, margin = 3 } = {}) {
-  const grid = new Map(), key = (x, y, z) => x + ',' + y + ',' + z;
-  const lo = [], hi = [];
+  // 0.11 PERF.36: a cell's key is one number (16 bits a coordinate: +-32,768 cells, 32.7 km at 1 m cells; a model past that only aliases far cells, which adds candidates the box test drops), not a string, and the
+  // boxes' reach is worked without arrays: same cells, same lists, about a third of the time and far less garbage at 58,000 solids
+  const grid = new Map(), O = 32768, key = (x, y, z) => ((x + O) * 65536 + (y + O)) * 65536 + (z + O);
   S.forEach((q, i) => {
-    const e = [0, 1, 2].map((k) => Math.abs(q.box.ax[0][k]) * q.box.h[0] + Math.abs(q.box.ax[1][k]) * q.box.h[1] + Math.abs(q.box.ax[2][k]) * q.box.h[2] + margin);
-    const a = [0, 1, 2].map((k) => Math.floor((q.box.c[k] - e[k]) / cell)), b = [0, 1, 2].map((k) => Math.floor((q.box.c[k] + e[k]) / cell));
-    lo[i] = a; hi[i] = b;
-    for (let x = a[0]; x <= b[0]; x++) for (let y = a[1]; y <= b[1]; y++) for (let z = a[2]; z <= b[2]; z++) {
+    const A = q.box.ax, h = q.box.h, c = q.box.c;
+    const ex = Math.abs(A[0][0]) * h[0] + Math.abs(A[1][0]) * h[1] + Math.abs(A[2][0]) * h[2] + margin;
+    const ey = Math.abs(A[0][1]) * h[0] + Math.abs(A[1][1]) * h[1] + Math.abs(A[2][1]) * h[2] + margin;
+    const ez = Math.abs(A[0][2]) * h[0] + Math.abs(A[1][2]) * h[1] + Math.abs(A[2][2]) * h[2] + margin;
+    const x0 = Math.floor((c[0] - ex) / cell), x1 = Math.floor((c[0] + ex) / cell);
+    const y0 = Math.floor((c[1] - ey) / cell), y1 = Math.floor((c[1] + ey) / cell);
+    const z0 = Math.floor((c[2] - ez) / cell), z1 = Math.floor((c[2] + ez) / cell);
+    for (let x = x0; x <= x1; x++) for (let y = y0; y <= y1; y++) for (let z = z0; z <= z1; z++) {
       const k = key(x, y, z);
       const l = grid.get(k);
       if (l) l.push(i); else grid.set(k, [i]);
@@ -110,14 +112,8 @@ export function obbOverlap(A, B, tol = 0) {
   return true;
 }
 
-function inPoly(p, loop) {
-  let inside = false;
-  for (let i = 0, j = loop.length - 1; i < loop.length; j = i++) {
-    const a = loop[i], b = loop[j];
-    if ((a[1] > p[1]) !== (b[1] > p[1]) && p[0] < ((b[0] - a[0]) * (p[1] - a[1])) / (b[1] - a[1]) + a[0]) inside = !inside;
-  }
-  return inside;
-}
+/** [x, y] point in a loop: the shared ray cast (lib/geom2d pointInRing, the same arithmetic; 0.11 PERF.74). */
+function inPoly(p, loop) { return pointInRing(p[0], p[1], loop); }
 function edgeDist(p, loop) {
   let best = Infinity;
   for (let i = 0, j = loop.length - 1; i < loop.length; j = i++) {
@@ -137,15 +133,20 @@ function loopsAt(S, x) {
   }
   return loops;
 }
-/** How far a world point is inside solid S (≤ 0: outside). */
+/** How far a world point is inside solid S (≤ 0: outside). 0.11 PERF.36: the same sums as toLocal, inPoly and edgeDist, without the arrays. */
 export function depthIn(S, w) {
-  const l = toLocal(S.frame, w, S.voff);
-  if (l.x <= 0 || l.x >= S.L) return 0;
-  const loops = loopsAt(S, l.x);
+  const f = S.frame, o = f.o;
+  const d0 = w[0] - o[0], d1 = w[1] - o[1], d2 = w[2] - o[2];
+  const x = d0 * f.x[0] + d1 * f.x[1] + d2 * f.x[2];
+  if (x <= 0 || x >= S.L) return 0;
+  const loops = S.cuts.length ? loopsAt(S, x) : S.loops;
   if (!loops.length) return 0;
-  const p = [l.u, l.v];
-  if (!inPoly(p, loops[0]) || loops.slice(1).some((h) => inPoly(p, h))) return 0;
-  return Math.min(l.x, S.L - l.x, ...loops.map((lp) => edgeDist(p, lp)));
+  const p = [d0 * f.u[0] + d1 * f.u[1] + d2 * f.u[2], d0 * f.v[0] + d1 * f.v[1] + d2 * f.v[2] - S.voff];
+  if (!inPoly(p, loops[0])) return 0;
+  for (let k = 1; k < loops.length; k++) if (inPoly(p, loops[k])) return 0;
+  let best = Math.min(x, S.L - x);
+  for (let k = 0; k < loops.length; k++) { const e = edgeDist(p, loops[k]); if (e < best) best = e; }
+  return best;
 }
 /** How far a ray from p along d runs before it meets an edge of the loops (Infinity if never). */
 function rayExit(p, d, loops) {
@@ -162,7 +163,18 @@ function rayExit(p, d, loops) {
 }
 /** Points across A's section (corners, edge midpoints, an inner grid) at stations over [t0, t1]. */
 function samples(A, t0, t1, tol) {
+  const sec = sectionPoints(A, tol);
   const pts = [];
+  const n = Math.max(2, Math.min(40, Math.ceil((t1 - t0) / 10)));
+  for (let k = 0; k <= n; k++) {
+    const x = t0 + (t1 - t0) * k / n;
+    for (const [u, v] of sec) pts.push(toWorld(A.frame, x, u, v, A.voff));
+  }
+  return pts;
+}
+/** The points across A's section that samples() takes at each station; worked once per solid and tolerance (0.11 PERF.36: they were worked per pair). */
+function sectionPoints(A, tol) {
+  if (A._sec && A._secTol === tol) return A._sec;
   const sec = [];
   const inside = (q) => inPoly(q, A.loops[0]) && !A.loops.slice(1).some((h) => inPoly(q, h));
   const step = tol + 1;                                        // just inside each edge: thin webs and flanges are sampled too
@@ -188,12 +200,8 @@ function samples(A, t0, t1, tol) {
     const q = [x0 + (x1 - x0) * i / N, y0 + (y1 - y0) * j / N];
     if (inside(q)) sec.push(q);
   }
-  const n = Math.max(2, Math.min(40, Math.ceil((t1 - t0) / 10)));
-  for (let k = 0; k <= n; k++) {
-    const x = t0 + (t1 - t0) * k / n;
-    for (const [u, v] of sec) pts.push(toWorld(A.frame, x, u, v, A.voff));
-  }
-  return pts;
+  A._sec = sec; A._secTol = tol;
+  return sec;
 }
 /** The stretch of A (along its axis) whose box can reach B's box: [t0, t1] or null. */
 function reach(A, B) {
@@ -210,10 +218,13 @@ function reach(A, B) {
 function intended(state, built) {
   const ok = new Set();
   const pair = (a, b) => { ok.add(a + '|' + b); ok.add(b + '|' + a); };
+  // 0.11 PERF.36: the parts of each connection grouped once (it was a filter over every part per connection: connections x parts, 8 s at 28,500)
+  const byConn = new Map();
+  for (const p of built.parts) if (p.conn) { const l = byConn.get(p.conn); if (l) l.push(p); else byConn.set(p.conn, [p]); }
   for (const c of state.connections) {
     const ids = membersOf(c);
     if (ids.length === 2) pair(ids[0], ids[1]);
-    for (const p of built.parts.filter((x) => x.conn === c.id)) for (const id of ids) pair(p.id, id);
+    for (const p of byConn.get(c.id) || []) for (const id of ids) pair(p.id, id);
   }
   return ok;
 }

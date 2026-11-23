@@ -1,0 +1,19 @@
+{
+  "@locale": "te",
+  "@name": "తెలుగు",
+  "@note": "Draft translation, not yet reviewed by a native speaker",
+  "zeman.name": "Zeman ఎగుమతి",
+  "zeman.label": "Zeman (XML + NC)",
+  "zeman.done": "{marks} కోసం Zeman ఫైళ్లు రాయబడ్డాయి: ప్రతి దానికి ఒక ఫోల్డర్‌లో ఒక XML మరియు దాని NC ఫైళ్లు. ఫైల్ పేరు: {file}.",
+  "zeman.none": "Zeman ఎగుమతి: ఏదీ రాయబడలేదు.",
+  "zeman.empty": "Zeman ఎగుమతి: ఇంకా ఉక్కు భాగాలు లేవు.",
+  "zeman.skipped": "రాయబడలేదు: {list}.",
+  "zeman.skipped.item": "{mark} ({why})",
+  "zeman.refuse.lead": "దాని ప్రధాన భాగం {profile} I-ఆకారం కాదు",
+  "zeman.refuse.attached": "దానికి జతచేసిన భాగం ప్లేట్ కాదు: {profile}",
+  "zeman.refuse.nc": "{why}",
+  "zeman.loose": "లూజ్‌గా సెట్ చేసిన, వెల్డ్ చేయని భాగాలు వదిలివేయబడ్డాయి: {n}.",
+  "zeman.turned": "ఒకే విధమైన ప్లేట్లు ఒకే NC ఫైల్‌ను పంచుకుంటాయి; అదే ముక్క తిప్పబడిన ప్లేట్‌కు XMLలో దాని స్వంత స్థానం ఉంటుంది.",
+  "zeman.misfit": "ఒకే మార్క్ ఉన్న ప్లేట్లను తనిఖీ చేయండి: ఒకటి, అది పంచుకునే NC ఫైల్ నుండి {mm} mm తేడాగా ఉంది.",
+  "zeman.check": "ఈ ఎగుమతి ఒకే నమూనా ఫైల్ సెట్ నుండి తయారు చేయబడింది: ఉత్పత్తికి ముందు మీ మెషీన్‌లోని సాఫ్ట్‌వేర్‌లో మొదటిదాన్ని తనిఖీ చేయండి."
+}

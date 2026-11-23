@@ -1,0 +1,19 @@
+{
+  "@locale": "et",
+  "@name": "Eesti",
+  "@note": "Draft translation, not yet reviewed by a native speaker",
+  "zeman.name": "Zeman eksport",
+  "zeman.label": "Zeman (XML + NC)",
+  "zeman.done": "Zeman failid on kirjutatud: {marks}. Igaühe jaoks on üks XML ja selle NC-failid kaustas, salvestatud nimega {file}.",
+  "zeman.none": "Zeman eksport: midagi ei kirjutatud.",
+  "zeman.empty": "Zeman eksport: teraseosi pole veel.",
+  "zeman.skipped": "Ei kirjutatud: {list}.",
+  "zeman.skipped.item": "{mark} ({why})",
+  "zeman.refuse.lead": "peamine osa on {profile}, mis ei ole I-profiil",
+  "zeman.refuse.attached": "sellel on külgnev osa, mis ei ole plaat: {profile}",
+  "zeman.refuse.nc": "{why}",
+  "zeman.loose": "Vabalt seatud, mitte keevitatud osad jäeti välja: {n}.",
+  "zeman.turned": "Identsed plaadid jagavad ühte NC-faili; plaat, mis on sama tükk ümber pööratud, on XML-is oma asukohaga.",
+  "zeman.misfit": "Kontrolli sama märgisega plaate: üks erineb NC-failist, millega ta märgist jagab, {mm} mm võrra.",
+  "zeman.check": "See eksport on koostatud ühest proovifailide komplektist: kontrolli enne tootmist esimest oma masina tarkvaras."
+}

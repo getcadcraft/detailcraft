@@ -1,0 +1,19 @@
+{
+  "@locale": "nl",
+  "@name": "Nederlands",
+  "@note": "Draft translation, not yet reviewed by a native speaker",
+  "zeman.name": "Zeman-export",
+  "zeman.label": "Zeman (XML + NC)",
+  "zeman.done": "Zeman-bestanden geschreven voor {marks}: per onderdeel één XML en de bijbehorende NC-bestanden in een map, opgeslagen als {file}.",
+  "zeman.none": "Zeman-export: er is niets geschreven.",
+  "zeman.empty": "Zeman-export: er zijn nog geen staalonderdelen.",
+  "zeman.skipped": "Niet geschreven: {list}.",
+  "zeman.skipped.item": "{mark} ({why})",
+  "zeman.refuse.lead": "het hoofdonderdeel {profile} is geen I-profiel",
+  "zeman.refuse.attached": "het heeft een gekoppeld onderdeel dat geen plaat is: {profile}",
+  "zeman.refuse.nc": "{why}",
+  "zeman.loose": "Onderdelen die los en niet gelast zijn ingesteld, zijn weggelaten: {n}.",
+  "zeman.turned": "Identieke platen delen één NC-bestand; een plaat die hetzelfde stuk is maar omgekeerd, heeft een eigen positie in de XML.",
+  "zeman.misfit": "Controleer de platen met hetzelfde onderdeelmerk: één wijkt {mm} mm af van het NC-bestand dat het deelt.",
+  "zeman.check": "Deze export is gemaakt op basis van één voorbeeldbestandsset: controleer de eerste in de eigen software van uw machine voordat u in productie gaat."
+}

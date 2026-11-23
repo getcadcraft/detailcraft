@@ -1,0 +1,19 @@
+{
+  "@locale": "ja",
+  "@name": "日本語",
+  "@note": "Draft translation, not yet reviewed by a native speaker",
+  "zeman.name": "Zemanエクスポート",
+  "zeman.label": "Zeman (XML + NC)",
+  "zeman.done": "{marks}用のZemanファイルを書き出しました。それぞれ1つのXMLと、そのNCファイルをフォルダーに保存しました（{file}として保存）。",
+  "zeman.none": "Zemanエクスポート: 書き出されたファイルはありません。",
+  "zeman.empty": "Zemanエクスポート: 鉄骨部材がまだありません。",
+  "zeman.skipped": "書き出されなかったもの: {list}。",
+  "zeman.skipped.item": "{mark} ({why})",
+  "zeman.refuse.lead": "主部材{profile}がH形鋼ではありません",
+  "zeman.refuse.attached": "プレート以外の付属部材があります: {profile}",
+  "zeman.refuse.nc": "{why}",
+  "zeman.loose": "溶接されていない（ルース）部材は除外しました: {n}件。",
+  "zeman.turned": "同一のプレートは1つのNCファイルを共有します。同じプレートを裏返したものは、XML内にそれぞれ位置を持ちます。",
+  "zeman.misfit": "同じマークを持つプレートを確認してください。1枚は共有するNCファイルと{mm}mm異なります。",
+  "zeman.check": "この書き出しは1組のサンプルファイルから作成しました。量産の前に、お使いのマシンのソフトウェアで最初のファイルを確認してください。"
+}

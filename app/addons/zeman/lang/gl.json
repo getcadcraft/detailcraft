@@ -1,0 +1,17 @@
+{
+  "@locale": "gl",
+  "zeman.name": "Exportación Zeman",
+  "zeman.label": "Zeman (XML + NC)",
+  "zeman.done": "Ficheiros Zeman gardados para {marks}: un XML e os seus ficheiros NC nun cartafol para cada un, gardados como {file}.",
+  "zeman.none": "Exportación Zeman: non se gardou nada.",
+  "zeman.empty": "Exportación Zeman: aínda non hai pezas de aceiro.",
+  "zeman.skipped": "Non gardado: {list}.",
+  "zeman.skipped.item": "{mark} ({why})",
+  "zeman.refuse.lead": "a súa peza principal {profile} non é un perfil en I",
+  "zeman.refuse.attached": "ten unha peza unida que non é unha placa: {profile}",
+  "zeman.refuse.nc": "{why}",
+  "zeman.loose": "As pezas colocadas soltas, sen soldar, quedaron fóra: {n}.",
+  "zeman.turned": "As placas idénticas comparten un ficheiro NC; unha placa que é a mesma peza virada ten a súa propia posición no XML.",
+  "zeman.misfit": "Comprobe as placas que comparten marca: unha difire do ficheiro NC que comparte en {mm} mm.",
+  "zeman.check": "Esta exportación creouse a partir dun único conxunto de ficheiros de mostra: comprobe o primeiro no seu propio software antes da produción."
+}

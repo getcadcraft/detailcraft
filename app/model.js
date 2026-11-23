@@ -59,7 +59,8 @@ import { cleanIdsRecord, cleanIdsRef, idsHash, idsTextStore } from './ids/record
 import { cleanPicture, readPictures, MAX_PICTURES } from './picture.js';   // 0.8 D8.15: reference pictures (a copied area of a sheet)
 import { cleanRc, cleanOne, mergeInto, cleanSettingsRc, MAX_ELEMENTS } from './rc-detail.js';   // 0.9 RC.1: reinforced concrete detailing
 import { t } from './i18n.js';
-import { ChunkHistory, chunkJournal, recoverState, recoverExtras, join } from './history/index.js';   // 0.10 PERF.21 / PERF.24: undo by change records, autosave that writes what changed
+import { ChunkHistory, chunkJournal, recoverState, recoverExtras, join } from './history/index.js';
+import { openBlock, nextNumber, savedCounter, dropBlocks, idNumbers, narrowIds, maxOf, OLD_LIMIT, FILE_IDS } from './history/ids.js';   // 0.11 DC.27: each session's ids from its own random tag   // 0.10 PERF.21 / PERF.24: undo by change records, autosave that writes what changed
 
 export const FORMAT = 'detailcraft';
 export const VERSION = 2;              // 2: phases (0.4 D13)
@@ -175,6 +176,17 @@ export class Model {
   markSaved() { this.savedVersion = this.version; }
   on(fn) { this.listeners.add(fn); return () => this.listeners.delete(fn); }
   emit(why) { for (const fn of this.listeners) fn(why); }
+  /** 0.11 PERF.36: which chunks each version changed (the keys of `lib/history`: `e:members:<id>`, `o:members`, ...; null = unknown, everything). `dirtySince(v)` is what changed after version v,
+   *  or null when the log does not reach back to v without a gap (a version bumped from outside, a file opened): the caller then looks at everything. */
+  _note(keys) { const log = this._log || (this._log = []); log.push({ v: this.version, keys }); if (log.length > 64) log.shift(); }
+  dirtySince(v) {
+    if (v === this.version) return new Set();
+    const log = this._log || [], need = this.version - v;
+    if (!(need > 0) || log.length < need) return null;
+    const tail = log.slice(-need), out = new Set();
+    for (let i = 0; i < tail.length; i++) { if (tail[i].v !== v + 1 + i || !tail[i].keys) return null; for (const k of tail[i].keys) out.add(k); }
+    return out;
+  }
 
   /** One undo step. fn(tx) edits through tx (see Tx). Throws (and changes nothing) if fn throws. */
   change(label, fn) {
@@ -189,6 +201,7 @@ export class Model {
     if (this.idsTexts.size > 1) this.pruneIds();
     if (this.pictureSrcs.size > (this.state.pictures?.length || 0) + 4) this.prunePictures();   // a few deleted ones kept for undo without searching the snapshots each edit
     this.version++;
+    this._note([...step.undo.keys()]);
     this.emit('change');
     return result;
   }
@@ -201,16 +214,20 @@ export class Model {
   get canUndo() { return this.h.canUndo; }
   get canRedo() { return this.h.canRedo; }
   undo() {
+    const top = this.undoStack[this.undoStack.length - 1], keys = top && top.undo ? [...top.undo.keys()] : null;
     const label = this.h.undo(this.state);
     if (label === null) return null;
     this.version++;
+    this._note(keys);
     this.emit('undo');
     return label;
   }
   redo() {
+    const top = this.redoStack[this.redoStack.length - 1], keys = top && top.redo ? [...top.redo.keys()] : null;
     const label = this.h.redo(this.state);
     if (label === null) return null;
     this.version++;
+    this._note(keys);
     this.emit('redo');
     return label;
   }
@@ -251,6 +268,8 @@ export class Model {
   toJSON() {
     const text = this.idsText();   // the file carries the IDS text itself; the snapshots only its { name, hash }
     const out = text ? { ...this.state, ids: { ...this.state.ids, text } } : { ...this.state };
+    out.seq = savedCounter(this, this.state.seq);   // 0.11 DC.27: the file's own counter while this session handed out nothing from its block
+    out.formatVersion = FILE_IDS;                    // 0.11 DC.27 (b): ids from session blocks; older builds ignore it
     // the pictures carry their PNG in the file (0.8 D8.15); one whose PNG went missing is left out rather than saved blank
     if (this.state.pictures) out.pictures = this.state.pictures.filter((p) => this.pictureSrcs.has(p.hash)).map((p) => ({ ...p, src: this.pictureSrcs.get(p.hash) }));
     return JSON.stringify(out, null, 1);
@@ -261,19 +280,31 @@ export class Model {
   load(text) {
     const { state, warnings, idsText, pictureSrcs } = readModel(text);
     this.state = state;
+    dropBlocks(this);   // 0.11 DC.27: the opener takes a new block (takeIdBlock)
     this.idsTexts = idsTextStore();
     if (idsText) this.idsTexts.put(idsText);
     this.pictureSrcs = idsTextStore();
     for (const src of pictureSrcs || []) this.pictureSrcs.put(src);
     this.undoStack = []; this.redoStack = [];
     this.version++; this.savedVersion = this.version;
+    this._note(null);
     this.emit('load');
     return { warnings };
   }
+  /** 0.11 DC.27: a file was opened: this session hands out its new ids from a random tag of its own (history/ids.js), so two people
+   *  adding members to the same file do not make the same id. `seq` is the next number; the raise is not an undo step. */
+  takeIdBlock() {
+    const s = this.state;
+    s.seq = openBlock(this, s.seq || 1, idNumbers(s));
+    this.h.sync(s, { keys: ['k:seq'] });
+    return s.seq;
+  }
   reset(state) {
     this.state = state;
+    dropBlocks(this);
     this.undoStack = []; this.redoStack = [];
     this.version++; this.savedVersion = this.version;
+    this._note(null);
     this.emit('load');
   }
 
@@ -284,7 +315,7 @@ export class Model {
 }
 
 /** The Tx methods that say which chunks they touch (`keys`); a call to any other method, or to `tx.s`, makes the history look at everything. */
-const HINTED = new Set(['nextId', 'ensurePhase', 'addMember', 'updateMember', 'removeMembers', 'addConnection']);
+const HINTED = new Set(['nextId', 'ensurePhase', 'addMember', 'updateMember', 'removeMembers', 'addConnection', 'addHole', 'removeHole', 'addCut', 'removeCut']);
 function hintedTx(tx) {
   return new Proxy(tx, { get(target, k) {
     const v = target[k];
@@ -303,9 +334,31 @@ export function recoverText(rec) {
 /** The edit vocabulary; each checks its input so a bad edit throws before anything is kept. */
 class Tx {
   constructor(state) { this._s = state; this.keys = new Set(); this.full = false; }
+  /** 0.11 PERF.36: member and connection lookups by id, and the "is this end / column taken" checks, through tables made once per change instead of a scan of the list per call
+   *  (a 10x paste called addHole and addConnection 29,000 times each). A table is rebuilt when the list was replaced or changed length behind its back (tx.s). */
+  _mem(id) {
+    const a = this._s.members;
+    if (this._mi?.a !== a || this._mi.n !== a.length) { const m = new Map(); for (const x of a) m.set(x.id, x); this._mi = { a, n: a.length, m }; }
+    return this._mi.m.get(id);
+  }
+  _conTable() {
+    const a = this._s.connections;
+    if (this._ci?.a !== a || this._ci.n !== a.length) {
+      const ends = new Set(), bases = new Set();
+      for (const x of a) { if (isBeamEnd(x)) ends.add(x.beam + ':' + x.end); else if (x.type === 'baseplate') bases.add(x.column); }
+      this._ci = { a, n: a.length, ends, bases };
+    }
+    return this._ci;
+  }
+  _conPushed(c) {
+    const t = this._ci; if (!t) return;
+    t.n = this._s.connections.length;
+    if (isBeamEnd(c)) t.ends.add(c.beam + ':' + c.end); else if (c.type === 'baseplate') t.bases.add(c.column);
+  }
+  _memPushed(m) { const t = this._mi; if (t) { t.n = this._s.members.length; t.m.set(m.id, m); } }
   /** The raw state, for an edit that is not one of the hinted methods below: the history then looks at everything (0.10 PERF.21). */
   get s() { this.full = true; return this._s; }
-  nextId(prefix) { this.keys.add('k:seq'); return prefix + (this._s.seq++); }
+  nextId(prefix) { this.keys.add('k:seq'); const n = nextNumber(this._s.seq || 1); this._s.seq = n + 1; return prefix + n; }   // 0.11 DC.27: past its tag's last number, a new tag
 
   setName(name) { this._s.name = cleanText(name, 80) || t('model.name.untitled'); }
   setGrids(grids) { this._s.grids = { x: grids.x.map((g) => ({ ...g })), y: grids.y.map((g) => ({ ...g })) }; }
@@ -383,11 +436,12 @@ class Tx {
     checkMember(mem, this._s.profiles);
     this.ensurePhase(mem.phase);
     this._s.members.push(mem);
+    this._memPushed(mem);
     this.keys.add('o:members').add('e:members:' + mem.id);
     return mem.id;
   }
   updateMember(id, patch) {
-    const m = this._s.members.find((x) => x.id === id);
+    const m = this._mem(id);
     if (!m) throw new Error(t('model.err.member-gone'));
     const next = { ...m, ...patch };
     if (patch.start) next.start = vec(patch.start);
@@ -410,40 +464,44 @@ class Tx {
     for (const c of gone) this.keys.add('e:connections:' + c.id);
   }
   addHole(memberId, h) {
-    const m = this._s.members.find((x) => x.id === memberId);
+    const m = this._mem(memberId);
     if (!m) throw new Error(t('model.err.member-gone'));
     const hole = cleanHole(h);
     if (!hole) throw new Error(t('model.err.hole'));
     hole.id = this.nextId('h');
     m.holes.push(hole);
+    this.keys.add('e:members:' + memberId);
     return hole.id;
   }
   removeHole(memberId, holeId) {
-    const m = this._s.members.find((x) => x.id === memberId);
-    if (m) m.holes = m.holes.filter((h) => h.id !== holeId);
+    const m = this._mem(memberId);
+    if (m) { m.holes = m.holes.filter((h) => h.id !== holeId); this.keys.add('e:members:' + memberId); }
   }
   addCut(memberId, c) {
-    const m = this._s.members.find((x) => x.id === memberId);
+    const m = this._mem(memberId);
     if (!m) throw new Error(t('model.err.member-gone'));
     const cut = cleanCut(c);
     if (!cut) throw new Error(t('model.err.cope'));
     cut.id = this.nextId('k');
     m.cuts.push(cut);
+    this.keys.add('e:members:' + memberId);
     return cut.id;
   }
   removeCut(memberId, cutId) {
-    const m = this._s.members.find((x) => x.id === memberId);
-    if (m) m.cuts = m.cuts.filter((c) => c.id !== cutId);
+    const m = this._mem(memberId);
+    if (m) { m.cuts = m.cuts.filter((c) => c.id !== cutId); this.keys.add('e:members:' + memberId); }
   }
 
   addConnection(c) {
     const id = this.nextId('j');
     if (isBeamEnd(c)) {
-      if (this._s.connections.some((x) => isBeamEnd(x) && x.beam === c.beam && x.end === c.end)) throw new Error(t('model.err.end-taken'));
-      this._s.connections.push({ id, type: c.type, beam: c.beam, end: c.end === 'start' ? 'start' : 'end', column: c.column, params: { ...DEFAULTS_OF[c.type], ...(c.params || {}) } });
+      if (this._conTable().ends.has(c.beam + ':' + c.end)) throw new Error(t('model.err.end-taken'));
+      const row = { id, type: c.type, beam: c.beam, end: c.end === 'start' ? 'start' : 'end', column: c.column, params: { ...DEFAULTS_OF[c.type], ...(c.params || {}) } };
+      this._s.connections.push(row); this._conPushed(row);
     } else if (c.type === 'baseplate') {
-      if (this._s.connections.some((x) => x.type === 'baseplate' && x.column === c.column)) throw new Error(t('model.err.base-taken'));
-      this._s.connections.push({ id, type: 'baseplate', column: c.column, params: { ...BASEPLATE_DEFAULTS, ...(c.params || {}) } });
+      if (this._conTable().bases.has(c.column)) throw new Error(t('model.err.base-taken'));
+      const row = { id, type: 'baseplate', column: c.column, params: { ...BASEPLATE_DEFAULTS, ...(c.params || {}) } };
+      this._s.connections.push(row); this._conPushed(row);
     } else if (c.type === 'splice') {
       if (!this._s.members.some((m) => m.id === c.a) || !this._s.members.some((m) => m.id === c.b) || c.a === c.b) throw new Error(t('model.err.conn-gone'));
       const aEnd = c.aEnd === 'start' ? 'start' : 'end';
@@ -662,6 +720,18 @@ function cleanCut(c) {
 }
 
 /** Reads a saved model (untrusted). { state, warnings } or throws a plain message. */
+/**
+ * 0.11 DC.27: Save for an older version (0.10 and before): the model file (toJSON text) with every id above 2^31 - 1 numbered again
+ * from the lowest free number, every reference rewritten (history/ids.js narrowIds), seq after the highest id, no formatVersion.
+ * Throws when the ids do not fit. → the file's text.
+ */
+export function olderCopy(text) {
+  const file = JSON.parse(text);
+  const { obj } = narrowIds(file, { limit: OLD_LIMIT });
+  delete obj.formatVersion;
+  obj.seq = Math.max(Number.isInteger(file.seq) && file.seq <= OLD_LIMIT ? file.seq : 1, maxOf(idNumbers(obj)) + 1);
+  return JSON.stringify(obj, null, 1);
+}
 export function readModel(text) {
   let j;
   try { j = typeof text === 'string' ? JSON.parse(text) : text; } catch { throw new Error(t('model.err.not-json')); }

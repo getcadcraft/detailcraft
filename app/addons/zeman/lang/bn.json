@@ -1,0 +1,19 @@
+{
+  "@locale": "bn",
+  "@name": "বাংলা",
+  "@note": "Draft translation, not yet reviewed by a native speaker",
+  "zeman.name": "Zeman এক্সপোর্ট",
+  "zeman.label": "Zeman (XML + NC)",
+  "zeman.done": "{marks} এর জন্য Zeman ফাইল লেখা হয়েছে: প্রতিটির জন্য একটি ফোল্ডারে একটি XML এবং এর NC ফাইলগুলো, {file} নামে সংরক্ষিত।",
+  "zeman.none": "Zeman এক্সপোর্ট: কিছুই লেখা হয়নি।",
+  "zeman.empty": "Zeman এক্সপোর্ট: এখনও কোনো স্টিল পার্ট নেই।",
+  "zeman.skipped": "লেখা হয়নি: {list}।",
+  "zeman.skipped.item": "{mark} ({why})",
+  "zeman.refuse.lead": "এর মূল পার্ট {profile} একটি I-আকৃতি নয়",
+  "zeman.refuse.attached": "এতে একটি সংযুক্ত পার্ট আছে যা প্লেট নয়: {profile}",
+  "zeman.refuse.nc": "{why}",
+  "zeman.loose": "ঢিলা, ওয়েল্ড করা নয়, এমন সেট করা পার্ট বাদ দেওয়া হয়েছে: {n}।",
+  "zeman.turned": "একই প্লেটগুলো একটি NC ফাইল শেয়ার করে; উল্টে রাখা একই টুকরোর প্লেটের XML-এ নিজস্ব অবস্থান থাকে।",
+  "zeman.misfit": "একই মার্ক শেয়ারকারী প্লেটগুলো পরীক্ষা করুন: একটি যে NC ফাইল শেয়ার করে তার থেকে {mm} mm ভিন্ন।",
+  "zeman.check": "এই এক্সপোর্ট ফাইলের একটি নমুনা সেট থেকে তৈরি হয়েছে: উৎপাদনে যাওয়ার আগে আপনার মেশিনের নিজস্ব সফটওয়্যারে প্রথমটি পরীক্ষা করুন।"
+}

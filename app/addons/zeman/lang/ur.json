@@ -1,0 +1,19 @@
+{
+  "@locale": "ur",
+  "@name": "اردو",
+  "@note": "Draft translation, not yet reviewed by a native speaker",
+  "zeman.name": "Zeman ایکسپورٹ",
+  "zeman.label": "Zeman (XML + NC)",
+  "zeman.done": "{marks} کے لیے Zeman فائلیں محفوظ ہو گئیں: ہر ایک کے لیے ایک فولڈر میں ایک XML اور اس کی NC فائلیں، {file} کے نام سے محفوظ۔",
+  "zeman.none": "Zeman ایکسپورٹ: کچھ نہیں لکھا گیا۔",
+  "zeman.empty": "Zeman ایکسپورٹ: ابھی کوئی اسٹیل پرزہ نہیں ہے۔",
+  "zeman.skipped": "نہیں لکھا گیا: {list}۔",
+  "zeman.skipped.item": "{mark} ({why})",
+  "zeman.refuse.lead": "اس کا مرکزی پرزہ {profile} I شکل کا نہیں ہے",
+  "zeman.refuse.attached": "اس کے ساتھ ایک منسلک پرزہ ہے جو پلیٹ نہیں ہے: {profile}",
+  "zeman.refuse.nc": "{why}",
+  "zeman.loose": "ڈھیلے، غیر ویلڈ شدہ رکھے گئے پرزے چھوڑ دیے گئے: {n}۔",
+  "zeman.turned": "ایک جیسی پلیٹوں کی ایک NC فائل مشترک ہوتی ہے؛ وہ پلیٹ جو اسی ٹکڑے کو الٹا کر رکھا گیا ہو، XML میں اپنی الگ پوزیشن رکھتی ہے۔",
+  "zeman.misfit": "وہ پلیٹیں جن کا نشان ایک ہے جانچیں: ایک، اپنی مشترک NC فائل سے {mm} mm مختلف ہے۔",
+  "zeman.check": "یہ ایکسپورٹ فائلوں کے ایک نمونے سے بنایا گیا: پیداوار سے پہلے پہلی فائل کو اپنی مشین کے سافٹ ویئر میں جانچ لیں۔"
+}

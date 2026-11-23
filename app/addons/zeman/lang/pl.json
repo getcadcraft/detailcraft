@@ -1,0 +1,19 @@
+{
+  "@locale": "pl",
+  "@name": "Polski",
+  "@note": "Draft translation, not yet reviewed by a native speaker",
+  "zeman.name": "Eksport Zeman",
+  "zeman.label": "Zeman (XML + NC)",
+  "zeman.done": "Zapisano pliki Zeman dla {marks}: jeden XML i jego pliki NC w folderze dla każdego, zapisane jako {file}.",
+  "zeman.none": "Eksport Zeman: nic nie zapisano.",
+  "zeman.empty": "Eksport Zeman: nie ma jeszcze części stalowych.",
+  "zeman.skipped": "Nie zapisano: {list}.",
+  "zeman.skipped.item": "{mark} ({why})",
+  "zeman.refuse.lead": "część główna {profile} nie jest profilem dwuteowym",
+  "zeman.refuse.attached": "ma dołączoną część, która nie jest blachą: {profile}",
+  "zeman.refuse.nc": "{why}",
+  "zeman.loose": "Części ustawione jako luźne, nie spawane, pominięto: {n}.",
+  "zeman.turned": "Identyczne blachy współdzielą jeden plik NC; blacha będąca tym samym elementem obróconym ma własną pozycję w XML.",
+  "zeman.misfit": "Sprawdź blachy o tym samym oznaczeniu: jedna różni się od współdzielonego pliku NC o {mm} mm.",
+  "zeman.check": "Ten eksport zbudowano z jednego zestawu plików próbnych: przed produkcją sprawdź pierwszy w oprogramowaniu na swoim komputerze."
+}

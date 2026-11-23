@@ -1,0 +1,19 @@
+{
+  "@locale": "vi",
+  "@name": "Tiếng Việt",
+  "@note": "Draft translation, not yet reviewed by a native speaker",
+  "zeman.name": "Xuất Zeman",
+  "zeman.label": "Zeman (XML + NC)",
+  "zeman.done": "Đã ghi tệp Zeman cho {marks}: mỗi ký hiệu một tệp XML và các tệp NC của nó trong một thư mục, lưu thành {file}.",
+  "zeman.none": "Xuất Zeman: chưa ghi tệp nào.",
+  "zeman.empty": "Xuất Zeman: chưa có chi tiết thép nào.",
+  "zeman.skipped": "Chưa ghi: {list}.",
+  "zeman.skipped.item": "{mark} ({why})",
+  "zeman.refuse.lead": "chi tiết chính {profile} không phải thép hình chữ I",
+  "zeman.refuse.attached": "có chi tiết gắn kèm không phải bản thép: {profile}",
+  "zeman.refuse.nc": "{why}",
+  "zeman.loose": "Đã bỏ qua các chi tiết đặt rời, không hàn: {n}.",
+  "zeman.turned": "Các bản thép giống hệt nhau dùng chung một tệp NC; bản thép cùng một chi tiết nhưng lật ngược có vị trí riêng trong XML.",
+  "zeman.misfit": "Kiểm tra các bản thép cùng ký hiệu: một bản lệch {mm} mm so với tệp NC mà nó dùng chung.",
+  "zeman.check": "Bộ xuất này được tạo từ một bộ tệp mẫu: hãy kiểm tra tệp đầu tiên trong chính phần mềm của bạn trước khi sản xuất."
+}

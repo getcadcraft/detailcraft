@@ -1,0 +1,19 @@
+{
+  "@locale": "zh-Hans",
+  "@name": "简体中文",
+  "@note": "Draft translation, not yet reviewed by a native speaker",
+  "zeman.name": "Zeman导出",
+  "zeman.label": "Zeman (XML + NC)",
+  "zeman.done": "已为{marks}写入Zeman文件：每个编号一个XML及其NC文件，分别放在各自的文件夹中，保存为{file}。",
+  "zeman.none": "Zeman导出：未写入任何内容。",
+  "zeman.empty": "Zeman导出：尚无钢零件。",
+  "zeman.skipped": "未写入：{list}。",
+  "zeman.skipped.item": "{mark}（{why}）",
+  "zeman.refuse.lead": "其主零件{profile}不是工字形",
+  "zeman.refuse.attached": "其附属零件不是钢板：{profile}",
+  "zeman.refuse.nc": "{why}",
+  "zeman.loose": "设为散件而非焊接的零件已排除：{n}。",
+  "zeman.turned": "编号相同的钢板共用一个NC文件；若为同一块钢板翻转后的状态，则在XML中有各自的位置。",
+  "zeman.misfit": "请检查编号相同的钢板：其中一块与其共用的NC文件相差{mm} mm。",
+  "zeman.check": "本次导出基于一组示例文件生成：投入生产前，请先在本机软件中检查第一个文件。"
+}

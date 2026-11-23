@@ -1,0 +1,19 @@
+{
+  "@locale": "ca",
+  "@name": "Català",
+  "@note": "Draft translation, not yet reviewed by a native speaker",
+  "zeman.name": "Exportació Zeman",
+  "zeman.label": "Zeman (XML + NC)",
+  "zeman.done": "Fitxers Zeman escrits per a {marks}: un XML i els seus fitxers NC en una carpeta per a cadascun, desats com a {file}.",
+  "zeman.none": "Exportació Zeman: no s'ha escrit res.",
+  "zeman.empty": "Exportació Zeman: encara no hi ha peces d'acer.",
+  "zeman.skipped": "No escrit: {list}.",
+  "zeman.skipped.item": "{mark} ({why})",
+  "zeman.refuse.lead": "la seva peça principal {profile} no és un perfil en I",
+  "zeman.refuse.attached": "té una peça adjunta que no és una placa: {profile}",
+  "zeman.refuse.nc": "{why}",
+  "zeman.loose": "Peces col·locades soltes, no soldades, s'han deixat fora: {n}.",
+  "zeman.turned": "Les plaques idèntiques comparteixen un fitxer NC; una placa que és la mateixa peça girada té la seva pròpia posició al fitxer XML.",
+  "zeman.misfit": "Reviseu les plaques que comparteixen una marca: una es diferencia del fitxer NC que comparteix en {mm} mm.",
+  "zeman.check": "Aquesta exportació s'ha generat a partir d'un sol conjunt de fitxers de mostra: comproveu el primer amb el programari del vostre propi ordinador abans de la producció."
+}

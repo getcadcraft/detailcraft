@@ -44,6 +44,7 @@
     "adapter": "workspace-detailcraft.js"
   },
   "hardware": true,
+  "toolbarRows": "auto",
   "problems": true,
   "engines": true
 }

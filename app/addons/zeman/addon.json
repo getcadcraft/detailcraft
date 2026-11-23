@@ -1,0 +1,18 @@
+{
+  "id": "zeman",
+  "name": "Zeman export",
+  "version": "0.1.0",
+  "apps": [
+    "detailcraft"
+  ],
+  "api": "1.4",
+  "license": "Apache-2.0",
+  "entry": "./main.js",
+  "permissions": [
+    "files"
+  ],
+  "description": "Write an assembly for a Zeman welding and assembly machine: a folder named after the assembly mark with one XML file (the main part and each plate welded to it, with its position) and the DSTV NC files it names. Choose it under NC files. Built from one sample file set: I-shape main parts with plates, millimetres, no weld information. Check the first export on the machine before production.",
+  "author": "CadCraft",
+  "lang": "./lang/",
+  "default": "off"
+}

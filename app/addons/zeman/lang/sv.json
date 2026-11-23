@@ -1,0 +1,19 @@
+{
+  "@locale": "sv",
+  "@name": "Svenska",
+  "@note": "Draft translation, not yet reviewed by a native speaker",
+  "zeman.name": "Zeman-export",
+  "zeman.label": "Zeman (XML + NC)",
+  "zeman.done": "Zeman-filer skrevs för {marks}: en XML-fil och dess NC-filer i en mapp för varje, sparade som {file}.",
+  "zeman.none": "Zeman-export: inget skrevs.",
+  "zeman.empty": "Zeman-export: det finns ännu inga delar i stål.",
+  "zeman.skipped": "Inte skrivet: {list}.",
+  "zeman.skipped.item": "{mark} ({why})",
+  "zeman.refuse.lead": "dess huvuddel {profile} är inte en I-profil",
+  "zeman.refuse.attached": "den har en fäst del som inte är en plåt: {profile}",
+  "zeman.refuse.nc": "{why}",
+  "zeman.loose": "Delar som satts som lösa, inte svetsade, lämnades utanför: {n}.",
+  "zeman.turned": "Identiska plåtar delar en NC-fil; en plåt som är samma bit vänd har en egen position i XML-filen.",
+  "zeman.misfit": "Kontrollera plåtarna som delar märkning: en skiljer sig med {mm} mm från NC-filen den delar.",
+  "zeman.check": "Exporten byggdes från en exempelfilsats: kontrollera den första i din egen programvara innan produktion."
+}

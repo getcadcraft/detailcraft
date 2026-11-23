@@ -1,0 +1,19 @@
+{
+  "@locale": "hi",
+  "@name": "हिन्दी",
+  "@note": "Draft translation, not yet reviewed by a native speaker",
+  "zeman.name": "Zeman निर्यात",
+  "zeman.label": "Zeman (XML + NC)",
+  "zeman.done": "हर चिह्न के लिए Zeman फ़ाइलें लिखी गईं: {marks}। हर एक के लिए एक XML और उसकी NC फ़ाइलें एक फ़ोल्डर में हैं, {file} के रूप में सहेजी गईं।",
+  "zeman.none": "Zeman निर्यात: कुछ नहीं लिखा गया।",
+  "zeman.empty": "Zeman निर्यात: अभी कोई स्टील पार्ट नहीं है।",
+  "zeman.skipped": "नहीं लिखा गया: {list}।",
+  "zeman.skipped.item": "{mark} ({why})",
+  "zeman.refuse.lead": "इसका मुख्य पार्ट {profile} एक आई-आकार का नहीं है",
+  "zeman.refuse.attached": "इसमें एक जुड़ा हुआ पार्ट है जो प्लेट नहीं है: {profile}",
+  "zeman.refuse.nc": "{why}",
+  "zeman.loose": "लूज़ सेट किए गए, बिना वेल्ड वाले पार्ट छोड़े गए: {n}।",
+  "zeman.turned": "एक जैसी प्लेटें एक NC फ़ाइल साझा करती हैं; जो प्लेट वही टुकड़ा है पर पलटी हुई है, उसकी XML में अपनी अलग स्थिति है।",
+  "zeman.misfit": "एक ही चिह्न वाली प्लेटें जाँचें: एक, जिस NC फ़ाइल को वह साझा करती है, उससे {mm} mm अलग है।",
+  "zeman.check": "यह निर्यात नमूना फ़ाइल सेट से बना था: उत्पादन से पहले अपनी मशीन के अपने सॉफ़्टवेयर में पहली फ़ाइल जाँचें।"
+}

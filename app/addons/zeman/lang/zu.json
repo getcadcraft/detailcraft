@@ -1,0 +1,19 @@
+{
+  "@locale": "zu",
+  "@name": "isiZulu",
+  "@note": "Draft translation, not yet reviewed by a native speaker",
+  "zeman.name": "Ukuthumela kwe-Zeman",
+  "zeman.label": "Zeman (XML + NC)",
+  "zeman.done": "Amafayela e-Zeman abhalwe ku: {marks}. I-XML eyodwa kanye namafayela awo e-NC kufolda ngayinye, alondolozwe njenge: {file}.",
+  "zeman.none": "Ukuthumela kwe-Zeman: akukho okubhalwe.",
+  "zeman.empty": "Ukuthumela kwe-Zeman: azikho izingxenye zensimbi okwamanje.",
+  "zeman.skipped": "Akubhalwanga: {list}.",
+  "zeman.skipped.item": "{mark} ({why})",
+  "zeman.refuse.lead": "ingxenye yayo enkulu {profile} akuyona isakhiwo se-I",
+  "zeman.refuse.attached": "inengxenye ehlanganisiwe engeyona ipuleti: {profile}",
+  "zeman.refuse.nc": "{why}",
+  "zeman.loose": "Izingxenye ezibekwe njengezingahlanganisiwe, zishiywe ngaphandle: {n}.",
+  "zeman.turned": "Amapuleti afanayo asebenzisa ifayela elilodwa le-NC; ipuleti okuyingxenye efanayo ejikelezwe phansi linendawo yalo ku-XML.",
+  "zeman.misfit": "Hlola amapuleti anemaka efanayo: elilodwa lihlukile efayeleni le-NC ayabelana ngalo ngo-{mm} mm.",
+  "zeman.check": "Lokhu kuthunyelwa kwakhiwe kusuka kusethi eyodwa yamafayela esampula: hlola owokuqala ngohlelo lwakho lomshini ngaphambi kokukhiqiza."
+}

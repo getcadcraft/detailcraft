@@ -1,0 +1,19 @@
+{
+  "@locale": "ro",
+  "@name": "Română",
+  "@note": "Draft translation, not yet reviewed by a native speaker",
+  "zeman.name": "Export Zeman",
+  "zeman.label": "Zeman (XML + NC)",
+  "zeman.done": "Fișiere Zeman scrise pentru {marks}: un XML și fișierele NC ale acestuia, într-un dosar pentru fiecare, salvate ca {file}.",
+  "zeman.none": "Export Zeman: nu s-a scris nimic.",
+  "zeman.empty": "Export Zeman: nu există încă piese din oțel.",
+  "zeman.skipped": "Nescrise: {list}.",
+  "zeman.skipped.item": "{mark} ({why})",
+  "zeman.refuse.lead": "piesa principală {profile} nu este un profil I",
+  "zeman.refuse.attached": "are o piesă atașată care nu este o placă: {profile}",
+  "zeman.refuse.nc": "{why}",
+  "zeman.loose": "Piesele setate ca libere, nesudate, au fost lăsate afară: {n}.",
+  "zeman.turned": "Plăcile identice au un singur fișier NC; o placă care este aceeași piesă întoarsă are poziția ei proprie în XML.",
+  "zeman.misfit": "Verificați plăcile care au aceeași marcă: una diferă cu {mm} mm de fișierul NC pe care îl partajează.",
+  "zeman.check": "Acest export a fost construit dintr-un singur set de fișiere de probă: verificați primul în software-ul mașinii, înainte de producție."
+}

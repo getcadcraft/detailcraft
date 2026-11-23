@@ -1,0 +1,19 @@
+{
+  "@locale": "fr",
+  "@name": "Français",
+  "@note": "Draft translation, not yet reviewed by a native speaker",
+  "zeman.name": "Export Zeman",
+  "zeman.label": "Zeman (XML + NC)",
+  "zeman.done": "Fichiers Zeman écrits pour {marks} : un XML et ses fichiers NC dans un dossier pour chacun, enregistrés sous {file}.",
+  "zeman.none": "Export Zeman : rien n'a été écrit.",
+  "zeman.empty": "Export Zeman : il n'y a pas encore de pièces en acier.",
+  "zeman.skipped": "Non écrit : {list}.",
+  "zeman.skipped.item": "{mark} ({why})",
+  "zeman.refuse.lead": "sa pièce principale {profile} n'est pas un profilé en I",
+  "zeman.refuse.attached": "elle a une pièce attachée qui n'est pas une platine : {profile}",
+  "zeman.refuse.nc": "{why}",
+  "zeman.loose": "Les pièces placées en libre, non soudées, ont été exclues : {n}.",
+  "zeman.turned": "Les platines identiques partagent un seul fichier NC ; une platine identique retournée a sa propre position dans le XML.",
+  "zeman.misfit": "Vérifiez les platines qui partagent un même repère : l'une diffère du fichier NC qu'elle partage de {mm} mm.",
+  "zeman.check": "Cet export a été généré à partir d'un seul jeu de fichiers d'exemple : vérifiez le premier dans votre propre logiciel avant toute production."
+}

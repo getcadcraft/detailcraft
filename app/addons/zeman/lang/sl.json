@@ -1,0 +1,19 @@
+{
+  "@locale": "sl",
+  "@name": "Slovenščina",
+  "@note": "Draft translation, not yet reviewed by a native speaker",
+  "zeman.name": "Izvoz Zeman",
+  "zeman.label": "Zeman (XML + NC)",
+  "zeman.done": "Datoteke Zeman so zapisane za oznake: {marks}. Za vsako je en XML in njegove datoteke NC v mapi, shranjene kot {file}.",
+  "zeman.none": "Izvoz Zeman: nič ni bilo zapisano.",
+  "zeman.empty": "Izvoz Zeman: jeklenih delov še ni.",
+  "zeman.skipped": "Ni zapisano: {list}.",
+  "zeman.skipped.item": "{mark} ({why})",
+  "zeman.refuse.lead": "glavni del {profile} ni I-profil",
+  "zeman.refuse.attached": "ima priložen del, ki ni pločevina: {profile}",
+  "zeman.refuse.nc": "{why}",
+  "zeman.loose": "Izpuščeni so bili deli, nastavljeni kot ločeni (ne zavarjeni): {n}.",
+  "zeman.turned": "Enake pločevine delijo eno datoteko NC; pločevina, ki je isti kos, obrnjen, ima v XML svoj položaj.",
+  "zeman.misfit": "Preverite pločevine z isto oznako: ena se od datoteke NC, ki jo deli, razlikuje za {mm} mm.",
+  "zeman.check": "Ta izvoz je bil narejen iz enega vzorca datotek: pred proizvodnjo preverite prvo v programski opremi na svojem računalniku."
+}

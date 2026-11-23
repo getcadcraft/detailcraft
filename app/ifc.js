@@ -29,6 +29,7 @@ import { centerline2d, BARS } from './rebar.js';
 import { barOf as rcBarOf } from './rc-detail.js';   // 0.9 RC.1
 import { segments as rcSegments } from './rc/bars.js';
 import { t } from './i18n.js';
+import { stepString as S } from './ifc/step.js';   // 0.11 PERF.73: one copy of the string token
 
 const B64 = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz_$';
 
@@ -58,22 +59,7 @@ export function R(v) {
   else if (!s.includes('.')) s += '.';
   return s;
 }
-/** A STEP string: '' for a quote, \\ for a backslash, \X2\…\X0\ for anything outside printable ASCII. */
-export function S(str) {
-  let out = '';
-  for (const ch of String(str ?? '')) {
-    const c = ch.codePointAt(0);
-    if (c === 39) out += "''";
-    else if (c === 92) out += '\\\\';
-    else if (c >= 32 && c < 127) out += ch;
-    else {
-      const units = [];
-      for (let i = 0; i < ch.length; i++) units.push(ch.charCodeAt(i).toString(16).toUpperCase().padStart(4, '0'));
-      out += '\\X2\\' + units.join('') + '\\X0\\';
-    }
-  }
-  return "'" + out + "'";
-}
+export { S };
 const E = (v) => '.' + v + '.';
 
 class Step {

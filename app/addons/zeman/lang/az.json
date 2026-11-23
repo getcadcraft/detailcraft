@@ -1,0 +1,19 @@
+{
+  "@locale": "az",
+  "@name": "Azərbaycanca",
+  "@note": "Draft translation, not yet reviewed by a native speaker",
+  "zeman.name": "Zeman ixracı",
+  "zeman.label": "Zeman (XML + NC)",
+  "zeman.done": "Zeman faylları {marks} üçün yazıldı: hər biri üçün bir XML və onun NC faylları qovluqda. Fayl: {file}.",
+  "zeman.none": "Zeman ixracı: heç nə yazılmadı.",
+  "zeman.empty": "Zeman ixracı: hələ polad detal yoxdur.",
+  "zeman.skipped": "Yazılmadı: {list}.",
+  "zeman.skipped.item": "{mark} ({why})",
+  "zeman.refuse.lead": "əsas detalı {profile} I-formalı deyil",
+  "zeman.refuse.attached": "bağlı detal lövhə deyil: {profile}",
+  "zeman.refuse.nc": "{why}",
+  "zeman.loose": "Sərbəst qoyulmuş, qaynaqlanmamış detallar buraxıldı: {n}.",
+  "zeman.turned": "Eyni lövhələr bir NC faylını paylaşır; eyni detal çevrilib qoyulubsa, XML-də öz mövqeyi var.",
+  "zeman.misfit": "Eyni markanı daşıyan lövhələri yoxlayın: biri, paylaşdığı NC faylından {mm} mm fərqlənir.",
+  "zeman.check": "Bu ixrac bir nümunə fayl dəstindən qurulub: istehsalata keçməzdən əvvəl birincini öz maşınınızdakı proqramda yoxlayın."
+}

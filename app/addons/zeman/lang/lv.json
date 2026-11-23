@@ -1,0 +1,19 @@
+{
+  "@locale": "lv",
+  "@name": "Latviešu",
+  "@note": "Draft translation, not yet reviewed by a native speaker",
+  "zeman.name": "Zeman eksports",
+  "zeman.label": "Zeman (XML + NC)",
+  "zeman.done": "Zeman faili ierakstīti marķējumiem: {marks}. Katram ir viens XML un tā NC faili mapē, saglabāti kā {file}.",
+  "zeman.none": "Zeman eksports: nekas netika ierakstīts.",
+  "zeman.empty": "Zeman eksports: tērauda detaļu vēl nav.",
+  "zeman.skipped": "Nav ierakstīts: {list}.",
+  "zeman.skipped.item": "{mark} ({why})",
+  "zeman.refuse.lead": "tās galvenā detaļa {profile} nav I veida profils",
+  "zeman.refuse.attached": "tai ir pievienota detaļa, kas nav plāksne: {profile}",
+  "zeman.refuse.nc": "{why}",
+  "zeman.loose": "Detaļas, kas novietotas brīvi, nevis metinātas, netika iekļautas: {n}.",
+  "zeman.turned": "Identiskas plāksnes izmanto vienu NC failu; plāksne, kas ir tā pati detaļa, apgriezta otrādi, XML failā ir ar savu pozīciju.",
+  "zeman.misfit": "Pārbaudiet plāksnes, kam ir vienāds marķējums: viena atšķiras no NC faila, ar ko tā dalās, par {mm} mm.",
+  "zeman.check": "Šis eksports izveidots no viena parauga failu kopas: pirms ražošanas pārbaudiet pirmo failu savas mašīnas programmatūrā."
+}

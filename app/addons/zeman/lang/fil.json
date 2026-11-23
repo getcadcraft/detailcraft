@@ -1,0 +1,19 @@
+{
+  "@locale": "fil",
+  "@name": "Filipino",
+  "@note": "Draft translation, not yet reviewed by a native speaker",
+  "zeman.name": "Export ng Zeman",
+  "zeman.label": "Zeman (XML + NC)",
+  "zeman.done": "Naisulat ang mga file ng Zeman para sa {marks}: isang XML at mga NC file nito sa isang folder para sa bawat isa, na na-save bilang {file}.",
+  "zeman.none": "Export ng Zeman: walang naisulat.",
+  "zeman.empty": "Export ng Zeman: wala pang steel part.",
+  "zeman.skipped": "Hindi naisulat: {list}.",
+  "zeman.skipped.item": "{mark} ({why})",
+  "zeman.refuse.lead": "ang pangunahing part: {profile}, hindi I-shape",
+  "zeman.refuse.attached": "may nakakabit na part na hindi plate: {profile}",
+  "zeman.refuse.nc": "{why}",
+  "zeman.loose": "Mga part na nakalagay sa loose, hindi welded, ay hindi isinama: {n}.",
+  "zeman.turned": "Ang magkakaparehong plate ay may iisang NC file; ang plate na parehong piyesa pero nakabaligtad ay may sariling posisyon sa XML.",
+  "zeman.misfit": "Suriin ang mga plate na may parehong mark: may isa na nagkakaiba ng {mm} mm sa NC file na pinagsasaluhan nito.",
+  "zeman.check": "Ang export na ito ay ginawa mula sa iisang sample na set ng file: suriin muna ang una sa sarili mong software bago ang production."
+}

@@ -1,0 +1,19 @@
+{
+  "@locale": "ms",
+  "@name": "Bahasa Melayu",
+  "@note": "Draft translation, not yet reviewed by a native speaker",
+  "zeman.name": "Eksport Zeman",
+  "zeman.label": "Zeman (XML + NC)",
+  "zeman.done": "Fail Zeman ditulis untuk {marks}: satu XML dan fail NC-nya dalam folder bagi setiap satu, disimpan sebagai {file}.",
+  "zeman.none": "Eksport Zeman: tiada apa-apa ditulis.",
+  "zeman.empty": "Eksport Zeman: belum ada bahagian keluli.",
+  "zeman.skipped": "Tidak ditulis: {list}.",
+  "zeman.skipped.item": "{mark} ({why})",
+  "zeman.refuse.lead": "bahagian utamanya {profile} bukan bentuk I",
+  "zeman.refuse.attached": "ia mempunyai bahagian bersambung yang bukan plat: {profile}",
+  "zeman.refuse.nc": "{why}",
+  "zeman.loose": "Bahagian yang diletakkan secara longgar, tidak dikimpal, telah ditinggalkan: {n}.",
+  "zeman.turned": "Plat yang serupa berkongsi satu fail NC; plat yang merupakan kepingan sama tetapi dipusingkan mempunyai kedudukannya sendiri dalam XML.",
+  "zeman.misfit": "Semak plat yang berkongsi tanda yang sama: satu berbeza daripada fail NC yang dikongsinya sebanyak {mm} mm.",
+  "zeman.check": "Eksport ini dibina daripada satu set fail sampel: semak yang pertama dalam perisian mesin anda sendiri sebelum pengeluaran."
+}

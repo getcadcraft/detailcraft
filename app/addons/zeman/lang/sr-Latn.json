@@ -1,0 +1,19 @@
+{
+  "@locale": "sr-Latn",
+  "@name": "Srpski (latinica)",
+  "@note": "Draft translation, not yet reviewed by a native speaker",
+  "zeman.name": "Zeman izvoz",
+  "zeman.label": "Zeman (XML + NC)",
+  "zeman.done": "Zeman datoteke su upisane za {marks}: jedan XML i njegove NC datoteke u fascikli za svaku, sačuvane kao {file}.",
+  "zeman.none": "Zeman izvoz: ništa nije upisano.",
+  "zeman.empty": "Zeman izvoz: još nema čeličnih delova.",
+  "zeman.skipped": "Nije upisano: {list}.",
+  "zeman.skipped.item": "{mark} ({why})",
+  "zeman.refuse.lead": "njegov glavni deo {profile} nije I-profil",
+  "zeman.refuse.attached": "ima pridruženi deo koji nije lim: {profile}",
+  "zeman.refuse.nc": "{why}",
+  "zeman.loose": "Delovi postavljeni kao slobodni, nezavareni, izostavljeni su: {n}.",
+  "zeman.turned": "Identični limovi dele jednu NC datoteku; lim koji je isti komad okrenut naopako ima sopstveni položaj u XML-u.",
+  "zeman.misfit": "Proverite limove koji dele oznaku: jedan se razlikuje od NC datoteke koju deli za {mm} mm.",
+  "zeman.check": "Ovaj izvoz je napravljen iz jednog uzornog skupa datoteka: proverite prvu u sopstvenom softveru na vašem računaru pre proizvodnje."
+}

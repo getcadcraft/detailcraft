@@ -1,0 +1,19 @@
+{
+  "@locale": "is",
+  "@name": "Íslenska",
+  "@note": "Draft translation, not yet reviewed by a native speaker",
+  "zeman.name": "Zeman-útflutningur",
+  "zeman.label": "Zeman (XML + NC)",
+  "zeman.done": "Zeman-skrár vistaðar fyrir {marks}: ein XML-skrá og NC-skrár hennar í möppu fyrir hverja, vistaðar sem {file}.",
+  "zeman.none": "Zeman-útflutningur: ekkert var vistað.",
+  "zeman.empty": "Zeman-útflutningur: engir stálhlutar eru til ennþá.",
+  "zeman.skipped": "Ekki vistað: {list}.",
+  "zeman.skipped.item": "{mark} ({why})",
+  "zeman.refuse.lead": "aðalhlutinn {profile} er ekki I-laga",
+  "zeman.refuse.attached": "hann er með áfastan hluta sem er ekki plata: {profile}",
+  "zeman.refuse.nc": "{why}",
+  "zeman.loose": "Hlutum sem eru settir lausir, ekki soðnir, var sleppt: {n}.",
+  "zeman.turned": "Eins plötur deila einni NC-skrá; plata sem er sama stykkið snúið við fær sína eigin staðsetningu í XML.",
+  "zeman.misfit": "Athugaðu plöturnar sem deila merkingu: ein er frábrugðin NC-skránni sem hún deilir um {mm} mm.",
+  "zeman.check": "Þessi útflutningur var gerður úr einu sýnishornasafni skráa: athugaðu fyrstu skrána í þínum eigin hugbúnaði áður en framleiðsla hefst."
+}

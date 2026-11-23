@@ -1,0 +1,19 @@
+{
+  "@locale": "zh-Hant",
+  "@name": "繁體中文",
+  "@note": "Draft translation, not yet reviewed by a native speaker",
+  "zeman.name": "Zeman 匯出",
+  "zeman.label": "Zeman（XML + NC）",
+  "zeman.done": "已為 {marks} 寫入 Zeman 檔案：每個各在一個資料夾中，含一個 XML 及其 NC 檔，已儲存為 {file}。",
+  "zeman.none": "Zeman 匯出：未寫入任何內容。",
+  "zeman.empty": "Zeman 匯出：尚無鋼構件。",
+  "zeman.skipped": "未寫入：{list}。",
+  "zeman.skipped.item": "{mark}（{why}）",
+  "zeman.refuse.lead": "其主要構件 {profile} 不是工字形",
+  "zeman.refuse.attached": "其附加的構件不是鋼板：{profile}",
+  "zeman.refuse.nc": "{why}",
+  "zeman.loose": "設為鬆散、未銲接的構件已排除：{n}。",
+  "zeman.turned": "相同的鋼板共用一個 NC 檔；同一片鋼板翻轉後，在 XML 中有其自己的位置。",
+  "zeman.misfit": "請檢查共用同一編號的鋼板：其中一片與其共用的 NC 檔相差 {mm} mm。",
+  "zeman.check": "此匯出由一組範例檔案產生：投入生產前，請先在本機的軟體中檢查第一個檔案。"
+}

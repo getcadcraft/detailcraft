@@ -28,6 +28,7 @@ export const COMMANDS = [
   C('file.open', 'file', 'bi-folder2-open', T('open'), { defKeys: ['Ctrl+O'] }),
   C('file.import', 'file', 'bi-box-arrow-in-down', T('import')),
   C('file.save', 'file', 'bi-download', T('save'), { defKeys: ['Ctrl+S'] }),
+  C('file.save-older', 'file', 'bi-clock-history', T('save-older')),   // 0.11 DC.27
   C('file.sample', 'file', 'bi-buildings', T('sample')),
 
   C('place.select', 'place', 'bi-cursor', T('tool:select'), { defKeys: ['V'] }),
@@ -93,7 +94,7 @@ const m = (label, items) => ({ label: 'input.m.' + label, items });
 const tab = (label, panels) => ({ label: 'input.m.' + label, panels: panels.map(([l, items, more]) => ({ label: 'input.m.' + l, items, ...(more ? { more } : {}) })) });
 const sm = (id) => ({ id, size: 'sm' });
 
-const FILE_MENU = ['file.new', 'file.open', 'file.import', 'file.sample', '-', 'file.save', '-', 'app.settings', 'app.palette', 'app.help'];
+const FILE_MENU = ['file.new', 'file.open', 'file.import', 'file.sample', '-', 'file.save', 'file.save-older', '-', 'app.settings', 'app.palette', 'app.help'];
 
 export const STYLES = {
   detailcraft: {

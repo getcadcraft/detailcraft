@@ -1,0 +1,19 @@
+{
+  "@locale": "pt-PT",
+  "@name": "Português (Portugal)",
+  "@note": "Draft translation, not yet reviewed by a native speaker",
+  "zeman.name": "Exportação Zeman",
+  "zeman.label": "Zeman (XML + NC)",
+  "zeman.done": "Ficheiros Zeman escritos para {marks}: um XML e os respetivos ficheiros NC numa pasta para cada um, guardados como {file}.",
+  "zeman.none": "Exportação Zeman: nada foi escrito.",
+  "zeman.empty": "Exportação Zeman: ainda não há peças de aço.",
+  "zeman.skipped": "Não escrito: {list}.",
+  "zeman.skipped.item": "{mark} ({why})",
+  "zeman.refuse.lead": "a peça principal {profile} não é um perfil em I",
+  "zeman.refuse.attached": "tem uma peça anexada que não é uma chapa: {profile}",
+  "zeman.refuse.nc": "{why}",
+  "zeman.loose": "Peças definidas como soltas, não soldadas, foram deixadas de fora: {n}.",
+  "zeman.turned": "Chapas idênticas partilham um ficheiro NC; uma chapa que é a mesma peça virada ao contrário tem a sua própria posição no XML.",
+  "zeman.misfit": "Verifique as chapas que partilham uma marca: uma difere do ficheiro NC que partilha em {mm} mm.",
+  "zeman.check": "Esta exportação foi criada a partir de um conjunto de ficheiros de exemplo: verifique o primeiro no software da sua própria máquina antes da produção."
+}

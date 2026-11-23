@@ -1,103 +1,103 @@
 ---
-title: Újdonságok a 0.9 verzióban
-summary: Brit acélszelvény-méretek és egyenlőtlen szögacélok, gyártmányrajzok minden alkatrészhez egy PDF-készletben, Saját profilok egyedi szelvényekhez, P-Delta és sajátfrekvenciák, ASCE 7 szélterhek, szeizmikus helyszín és kombinációk, valamint élő kurzorok és követés.
-keywords: újdonságok, mi újdonság, kiadási megjegyzések, változásnapló, 0.9, brit acél, blue book, ub, uc, pfc, shs, rhs, chs, egyenlőtlen szögacél, gyártmányrajz, gyártmányrajzok, rajzlapkészlet, alkatrészjel, pdf, saját profilok, egyedi profil, p-delta, másodrendű, sajátfrekvencia, véges elemek, modális tömeg, szélteher, asce 7, szeizmikus, talajosztály, usgs, teherkombinációk, lrfd, asd, élő, kurzorok, követés, személyek, eszköztippek, 0.8, 0.8.1, verzió, új funkciók, szerelés, daru, teherdiagram, film, automata, kapcsolatok, betonvas, zsúfoltság, alapozás, süllyedés, keretezés, fa, könnyűszerkezet, vágási lista, kivitelezhetőség, hegesztési hozzáférés, beszállító, készlet, szállítási idő, mi törik el először, beton, födém, nyelvek, asszisztens
-from: 4c95a2de
+title: Újdonságok a 0.9 verzióban (korábbi)
+summary: UK Blue Book acélméretek és egyenlőtlen szögacélok, gyártmányrajzok minden alkatrészhez egy PDF-készletben, Saját profilok egyedi szelvényekhez, P-Delta és sajátfrekvenciák, ASCE 7 szélterhek, földrengési helyszín és kombinációk, valamint élő kurzorok a Követés funkcióval.
+keywords: újdonságok 0.9, korábbi kiadás, újdonságok, kiadási jegyzetek, változásnapló, 0.9, UK acél, Blue Book, ub, uc, pfc, shs, rhs, chs, egyenlőtlen szögacél, gyártmányrajz, gyártmányrajzok, rajzlapkészlet, alkatrészjel, pdf, saját profilok, egyedi profil, P-Delta, másodrendű, sajátfrekvencia, véges elemek, modális tömeg, szélteher, ASCE 7, földrengés, helyszín, talajosztály, USGS, teherkombinációk, LRFD, ASD, élő, kurzorok, követés, személyek, súgócímkék, változások, 0.8, 0.8.1, verzió, új funkciók, szerelés, daru, teherdiagram, videó, automata, kapcsolatok, betonacél, földrengés, födém, nyelvek, asszisztens
+from: ab0c7f05
 ---
 
-Az alábbiakban a DetailCraft 0.8.1-hez képest a 0.9 verzióban történt változások szerepelnek. A 0.9 hozza a brit acélméreteket, egy lépésben készülő gyártmányrajzokat minden alkatrészhez, a keretekhez szánt nagyobb {{ui:Analízis}} lapot, valamint az együttműködéskor egymás kurzorainak megtekintését.
+Ez változott a DetailCraft 0.9 verzióban, a 0.8.1 verzióhoz képest. A 0.9 hozza az UK acélméreteket, a gyártmányrajzot minden alkatrészhez egy lépésben, egy nagyobb {{ui:Analysis}} lapot kereteknek, és az egymás kurzorainak megtekintését, amikor együtt dolgoznak.
 
-## Újdonságok
+## Új
 
-### Brit acél és gyártmányrajzok
+### UK acélméretek és gyártmányrajzok
 
-- **Brit acélméretek.** A profillisták mostantól 976 méretet tartalmaznak a Steel for Life Blue Book kiadványból: UB, UC, PFC, EA, UEA, CHS, SHS és RHS, a hidegen hajlított üreges szelvényeket külön tartva (nevük CF-fel kezdődik). A nevek a szelvénycsalád nevével kezdődnek, például UB305x165x40 vagy SHS100x100x5.0, de úgy is beírhatja, ahogy a rajzokon szerepel: 305x165x40 UB, L100x100x10, SHS100x5 is működik. Lásd: [Profilkatalógus](topic:profile-catalog).
-- **Egyenlőtlen szögacélok.** Az UEA szögacélok mindkét szárát megtartják az IFC be- és kimenetben, valamint az NC-fájlokban, a tükrözés pedig a darabot végétől végéig megfordítja.
-- **Minden gyártmányrajz egyszerre.** Semmi sincs kijelölve, és úgy válassza a {{ui:Kimenet}} csoport {{ui:Gyártmányrajz}} parancsát. Az ablak felsorolja az összes alkatrészjelet, bármelyiket előnézetben megnézheti, és az {{ui:Összes letöltése}} egy PDF-fájlba menti mindet, alkatrészjelenként egy oldallal, mindegyik címe „3/42. lap” formában. A {{ui:PDF letöltése}} a jelenleg látott lapot menti. A csatornák, szögacélok és üreges szelvények is kapnak most lapot. Lásd: [Gyártmányrajzok készítése](topic:shop-drawings).
-- **Saját profilok.** Egyedi profil mostantól minden új modellhez megőrizhető. Az Egyedi profil űrlapban hagyja bejelölve a {{ui:Megtartás a Saját profilokban}} jelölőnégyzetet; az alatta lévő {{ui:Saját profilok}} listán van a {{ui:Megtartás}}, a {{ui:Használat itt}} és az {{ui:Eltávolítás}} gomb. A lista ebben a böngészőben tárolódik (legfeljebb 200), nem a fiókjában. Lásd: [Lemezek és profilok](topic:plates-and-profiles).
+- **UK acélméretek.** A profillisták most 976 méretet tartalmaznak a Steel for Life Blue Book-ból: UB, UC, PFC, EA, UEA, CHS, SHS és RHS, a hidegen hajlított üreges szelvényeket külön tartva (a nevük CF-fel kezdődik). A neveket a család neve áll elöl, például UB305x165x40 vagy SHS100x100x5.0, és az is működik, ahogy a rajzokon szerepel: 305x165x40 UB, L100x100x10, SHS100x5. Lásd: [Profilkatalógus](topic:profile-catalog).
+- **Egyenlőtlen szögacélok.** Az UEA szögacélok mindkét szárukat megtartják IFC be- és kimenetnél, valamint NC fájloknál, a tükrözés pedig a darabot a végeivel felcseréli.
+- **Minden gyártmányrajz egyszerre.** Válassza a {{ui:Shop drawing}} lehetőséget az {{ui:Output}} csoportban, semmi kijelölése nélkül. Az ablak felsorolja az összes alkatrészjelet, bármelyiket megelőnézheti, és az Összes letöltése gomb egyetlen PDF-be menti mindet, jelölésenként egy oldallal; minden oldal címe „3. rajzlap, összesen 42”. A {{ui:Download this sheet}} a most megnézett lapot menti. A csatornák, szögacélok és üreges szelvények most már kapnak lapot is. Lásd: [Gyártmányrajzok készítése](topic:shop-drawings).
+- **Saját profilok.** Egyedi profil mostantól minden új modellhez megtartható. Az Egyedi profil űrlapban hagyja bejelölve a Megtartás a Saját profilok között jelölőnégyzetet; az alatta lévő {{ui:My profiles}} listán van {{ui:Keep}}, {{ui:Use here}} és {{ui:Remove}}. A lista ebben a böngészőben tárolódik (legfeljebb 200), nem a fiókjában. Lásd: [Lemezek és profilok](topic:plates-and-profiles).
 
 ### Analízis
 
-- **Másodrendű hatás (P-Delta).** Jelölje be a {{ui:Másodrendű (P-Delta)}} jelölőnégyzetet a {{ui:Futtatás}} mellett az {{ui:Analízis}} lapon, és a normálerők a lehajlott kereten hatnak. A lemezek és a merev födémek elsőrendűek maradnak, figyelmeztetéssel. Lásd: [Erők, támaszreakciók és lehajlások](topic:frame-analysis).
-- **Sajátfrekvenciák.** Az eredmények alatti {{ui:Véges elemek: sajátfrekvenciák}} blokk ugyanazon modell legalacsonyabb sajátalakjait keresi meg a periódussal és a hatásos modális tömeggel együtt, és az egyik sajátalakot megjeleníti a modellen. Lásd: [Erők, támaszreakciók és lehajlások](topic:frame-analysis).
-- **Szélterhek és szeizmikus helyszín.** Három új blokk az {{ui:Analízis}} lapon: {{ui:Szélterhek (ASCE 7 irányított eljárás)}}, {{ui:Szeizmikus helyszín és rendszer (ASCE 7)}} és {{ui:ASCE 7 teherkombinációk}}. Lásd: [Szél, szeizmikus helyszín és ASCE 7 kombinációk](topic:wind-seismic-combinations).
+- **Másodrendű (P-Delta).** Jelölje be a {{ui:Second order (P-Delta)}} jelölőnégyzetet a Futtatás mellett az {{ui:Analysis}} lapon, és a normálerők a deformált kereten hatnak. A lemezek és merev födémek elsőrendűek maradnak, figyelmeztetéssel. Lásd: [Erők, reakciók és lehajlások](topic:frame-analysis).
+- **Sajátfrekvenciák.** Az eredmények alatti {{ui:Finite elements: natural frequencies}} blokk ugyanazon modell legalacsonyabb módusait keresi meg, periódussal és hatékony modális tömeggel, és a modellen mutatja meg az egyes módusokat. Lásd: [Erők, reakciók és lehajlások](topic:frame-analysis).
+- **Szélterhek és földrengési helyszín.** Három új blokk az {{ui:Analysis}} lapon: {{ui:Wind loads (ASCE 7 directional procedure)}}, {{ui:Seismic site and system (ASCE 7)}} és {{ui:ASCE 7 load combinations}}. Lásd: [Szél, földrengési helyszín és ASCE 7 kombinációk](topic:wind-seismic-combinations).
 
-### Együttes munka
+### Együttműködés
 
-- **Kurzorok és nevek.** Egy Live-munkamenetben minden résztvevő mutatója a modellben jelenik meg a nevével és színével, a kijelölt elemek pedig keretet kapnak.
-- **Egy személy követése.** Nyissa meg a munkamenetben a {{ui:Személyek}} részt, és válassza valamelyik nevénél a {{ui:Követés}} lehetőséget; a nézete az övével együtt mozog. A munkamenet vezetője választhatja a {{ui:Mindenkitől követés kérése}} lehetőséget. Lásd: [Egy személy követése Live-munkamenetben](topic:follow-in-live).
+- **Kurzorok és nevek.** Élő munkamenetben minden személy mutatója a nevével és a színével jelenik meg a modellen, a kijelölése pedig dobozt kap.
+- **Személy követése.** Nyissa meg a munkamenet {{ui:People}} panelját, és válassza a {{ui:Follow}} lehetőséget egy név mellett; a nézete követi az övét. A házigazda választhatja a {{ui:Ask everyone to follow me}} lehetőséget. Lásd: [Személy követése élő munkamenetben](topic:follow-in-live).
 
 ### Minden alkalmazásban
 
-- Az eszköztippek Bootstrap-tippek, a kezdő tippkártyán van bezárógomb, a lapsávok oldalirányban görgethetők, ha nem férnek ki, a böngészőlap pedig a megnyitott dokumentum nevét mutatja, mögötte a DetailCraft és a CadCraft nevével.
+- A súgócímkék Bootstrap-súgócímkék, az indítási tippkártyán van bezáró gomb, a lapsorok vízszintesen görgethetők, ha nem férnek ki, a böngészőlap neve pedig a megnyitott dokumentumot mutatja, mögötte DetailCraft és CadCraft.
 
 ## Javítva
 
-- Egyedi profil elveszett új modell indításakor.
+- Az egyedi profil elveszett, amikor új modellt kezdett.
 - A csatornák, szögacélok és üreges szelvények hiányoztak a gyártmányrajz-készletből.
 
-## Őszinte korlátok
+## Ismert korlátok
 
-- A szél-, szeizmikus és véges elem blokkok ellenőrzési segédeszközök. Az eredményeket mérnöknek kell átnéznie; nem tervezési előírás szerinti ellenőrzések. Az USGS-keresést helyettesítő szolgáltatáson tesztelték, nem az élő szolgáltatáson.
-- A véges elemeket és a P-Delta-t kézi és zárt képletű eredményekkel ellenőrizték, nem valódi épületen. A kihajlásvizsgálat még nincs elkészítve.
-- Még egyetlen brit gyártó sem próbálta ki a brit méreteket, és az egyenlőtlen szögacélok NC-fájljait még nem futtatták gépen.
-- A gyártmányrajz-készlet csak PDF-formátumú.
+- A szél-, földrengési és véges elemes blokkok ellenőrzési segédeszközök. Mérnöke átnézi az eredményeket; nem előírás szerinti ellenőrzések. Az USGS-keresést egy helyettesítő szolgáltatáson tesztelték, nem az élő szolgáltatáson.
+- A véges elemeket és a P-Delta-t kézi és zárt alakú megoldásokkal ellenőrizték, nem valódi épületen. A kihajlás-analízis nincs elkészítve.
+- Még egyetlen UK acélgyártó sem próbálta ki az UK méreteket, és az egyenlőtlen szögacélok NC fájljai még nem futottak géppel.
+- A gyártmányrajz-készlet csak PDF.
 - Az angolon kívüli nyelvek gépi piszkozatok.
-- A Windows-telepítők nincsenek kódaláírva (További információ, majd Mégis futtatás); a macOS lemezkép nincs notarizálva (jobb gombbal kattintás, majd Megnyitás).
+- A Windows telepítők nincsenek kódaláírva (További információ, majd Futtatás mégis); a macOS lemezkép nincs notarizálva (jobb klikk, majd Megnyitás).
 
-A korábbi változások a 0.8 és 0.8.1 jegyzeteiben, az oldal alsó részén találhatók.
+A korábbi változások a 0.8 és 0.8.1 jegyzeteiben vannak, az oldal lejjebb.
 
 ## Korábbi: 0.8 és 0.8.1
 
-Az alábbiakban a DetailCraft 0.7-hez képest a 0.8 (2026. november 1.) és a 0.8.1 (2026. november 2.) verzió változásai szerepelnek. A 0.7 acélrudakat ellenőrzött; a 0.8 tervezi az emeléseket, javasolja a kapcsolatokat, ellenőrzi az alapozásokat és a betonvasalást, valamint fa- és könnyűszerkezetű falak, födémek és tetők keretezését végzi.
+Ez változott a DetailCraft 0.8 (2026. november 1.) és 0.8.1 (2026. november 2.) verziójában, a 0.7-hez képest. A 0.7 acélrúdelemeket ellenőrzött; a 0.8 tervezi az emeléseket, javasol kapcsolatokat, ellenőrzi az alapozásokat és a betonacélt, valamint faszerkezetű és könnyűacél falakat, födémeket és tetőket keretez.
 
-### Újdonságok
+### Új
 
 **Szerelés**
 
-- **Szerelési terv és film.** A {{ui:Szerelés}} lapon írja le a darut (hol áll, legmagasabb horgát, a teherdiagramban nem szereplő kötélzetet), és írja be a teherdiagramja sorait. A DetailCraft a modellt egyenként emeli, fázissorrendben és szintenként, és minden emelést a teherdiagramhoz ellenőriz a sugárnál, valamint a megadott tartalékkal szemben. A {{ui:Videó mentése}} egy HTML-fájlt ír, amely bármely böngészőben működik, telefonon is, internetkapcsolat nélkül. A diagramot túllépő, a sugarat meghaladó vagy túl magas emelések a {{ui:Problémák}} között vannak. Ez a megadott számok alapján készült terv, nem emelési terv. Lásd: [Szerelési terv és film](topic:erection-movie).
+- **Emelési terv és videó.** A {{ui:Erection}} lapon írja le a darut (hol áll, a legmagasabb horgát, az emelőfelszerelést, amely nincs benne a diagramban), és írja be a teherdiagramja sorait. A DetailCraft egyesével, a szerelési sorrend és a szintek szerint emeli a modellt, és minden emelést ellenőriz a diagram szerint a hozzá tartozó sugárnál, valamint az Ön által megadott tartalékkal. A {{ui:Save movie}} egy HTML-fájlt ír, amely offline, bármely böngészőben lejátszható, telefonon is. A diagramon kívüli, azon túli vagy túl magas emelések a {{ui:Problems}} listában vannak. Ez az Ön számaiból készült terv, nem emelési terv. Lásd: [Emelési terv és videó](topic:erection-movie).
 
 **Kapcsolatok**
 
-- **Kapcsolat-automata.** Az {{ui:Automata}} lap minden olyan csomópontot megnéz, amelynek nincs kapcsolata, és az alakzatokból javasol egyet: talplemezek, nyírólemezek, homloklemezek a nyomatéki gerendaként megjelölt gerendákhoz, toldások és csomólemezek. Adjon meg egyenletes terhelést vagy az egyik végén nyíróerőt, és a csavarszám a csavar tervezési szilárdságát követi. A {{ui:Mind hozzáadása}} gomb a javaslatokat egyetlen visszavonási lépésként adja hozzá. Ezek átnézendő kiindulási értékek, nem kapcsolattervezés.
-- **Kivitelezhetőségi ellenőrzések.** A {{ui:Problémák}} listában szerepelnek: a csavar, amelyet villáskulcs nem ér el; a csavarok, amelyek túl közel vannak a dugókulcshoz; a sarokvarratok, amelyek méretkorlátjukon kívül esnek; és a vizet megtartó üreges szelvények. A hegesztési hozzáférés új: a körbefutó sarokvarrat, amelyet a hegesztő égője nem ér el, az útban álló alkatrésszel és a varrat érintett hányadával együtt kerül felsorolásra. Lásd: [Kivitelezhetőségi ellenőrzések](topic:constructability).
+- **Kapcsolat-automata.** Az {{ui:Autopilot}} lap minden olyan csomópontot megvizsgál, amelyhez nincs kapcsolat, és az alakzatok alapján javasol egyet: talplemezeket, nyírólemezeket, véglemezeket azokhoz a gerendákhoz, amelyeket nyomatéki gerendaként jelöl, továbbá toldásokat és bordákat. Adjon meg egyenletes terhelést vagy egy végi nyíróerőt, és a csavarok száma a csavar tervezési szilárdságát követi. A {{ui:Add them all}} az összes javaslatot egyetlen visszavonható lépésként adja hozzá. Ezek ellenőrizendő kiindulási értékek, nem kapcsolattervezés.
+- **Kivitelezhetőségi ellenőrzések.** A {{ui:Problems}} listában megjelennek azok a csavarok, amelyekhez a kulcs nem fér hozzá, azok, amelyek túl közel vannak a dugókulcshoz, a sarokvarratok, amelyek méretkorlátjukon kívül esnek, és a vizet tartó üreges szelvények. A varratelérés új: az a körbefutó sarokvarrat, amelyet a hegesztő égője nem ér el, az útban lévő alkatrésszel és az érintett varratrész arányával együtt jelenik meg. Lásd: [Kivitelezhetőségi ellenőrzések](topic:constructability).
 
-**Alapozás és betonvas**
+**Alapozás és betonacél**
 
-- **Alapozási ellenőrzések.** Az {{ui:Alapozás}} lap a megadott talajon ellenőrzi a talpakat, összevont talpakat és lemezalapokat: teherbírás, csúszás és felborulás használati terhekből; hajlítás, nyírás, átszúrás, lehorgonyzás és minimális vasalás tényezett terhekből (ACI 318-19). A szélhez vagy sarokhoz közeli oszlopot a talp széle által levágott metszettel ellenőrzi. A süllyedés a talaj rugalmassági modulusából adódik, a rugalmas lemezalapot egy ágymodulus alapján rugókon oldja meg, a cölöpcsoportoknak és a támfalaknak pedig saját paneljük van. Az oszlopterhek beírhatók, vagy az {{ui:Analízis}} lapról vehetők át. Lásd: [Alapozási ellenőrzések](topic:foundation-checks).
-- **Betonvas-zsúfoltsági térkép.** A {{ui:Zsúfoltság}} lap minden talpról felülnézeti hőtérképet rajzol: ott, ahol a vasak túl kevés helyet hagynak a betonnak a lejutáshoz, a szabad távolság szabálya szerint, és ha megadja, a legnagyobb adalékanyag-szemcse és a vibrátorfej méretének függvényében. Lásd: [Betonvas-zsúfoltsági térkép](topic:rebar-congestion).
+- **Alapozási ellenőrzések.** Az {{ui:Foundation}} lap talpalapokat, összetett talpalapokat és lemezalapokat ellenőriz az Ön által leírt talajon: teherbírás, csúszás és felborulás használati terhekből; hajlítás, nyírás, átszúrás, kifejtési hossz és minimális acél tényezett terhekből (ACI 318-19). A szélhez vagy sarokhoz közeli oszlopot a talpalap szélével levágott keresztmetszettel ellenőrzi. A süllyedés a talaj rugalmassági moduluszából számítódik, a rugalmas lemezalapot pedig rugókon oldja meg egy alágyazási modulusból; a cölöpcsoportoknak és támfalaknak saját paneljük van. Az oszlopterhek beírhatók, vagy átvehetők az {{ui:Analysis}} lapról. Lásd: [Alapozási ellenőrzések](topic:foundation-checks).
+- **Betonacél-zsúfoltság térkép.** A {{ui:Congestion}} lap minden talpalapot hőtérképen ábrázol felülnézetből: hol hagynak a rudak túl kevés helyet a betonnak, hogy lejusson, a tiszta távolság szabályához mérve, és ha megadja, a legnagyobb adalékanyag és a vibrátorfej méretéhez. Lásd: [Betonacél-zsúfoltság térkép](topic:rebar-congestion).
 
 **Keretezés és beszerzés**
 
-- **Fa- és könnyűszerkezetes keretezés.** A {{ui:Keretezés}} lap a fal-, födém- és tetőpanelek minden darabját kiszámítja, vágási listával, a megvásárolandó készlettel és méretarányos gyártmányrajzzal. Az {{ui:Elhelyezés rúdelemekként}} a darabokat a modellbe helyezi, a {{ui:PDF rajzlapok}} pedig panelenként egy lapot ment. A méretek, a távolságok és a fejgerendák a megadottak: a DetailCraft nem ellenőrzi, hogy elbírják-e a terhet. Lásd: [Fa- és könnyűszerkezetes keretezési panelek](topic:framing-panels).
-- **Beszállítói készlet és szállítási idők.** A {{ui:Beszerzés}} lap beolvassa a beszállító készletlistáját (CSV), és minden olyan szelvénynél, amelyet a vágási lista megvásárol, megmutatja, van-e elég készleten, és mennyit kell várni. A hiányok és a későn érkező szelvények a {{ui:Problémák}} között vannak. Semmi nem rendelődik meg. Lásd: [Beszállítói készlet és szállítási idők](topic:supplier-stock).
+- **Faszerkezeti és könnyűacél keretezés.** A {{ui:Framing}} lap falpaneleket, födém- és tetőpaneleket keretez minden darabbal, vágólistával, a megvásárolandó készlettel és méretarányos gyártmányrajzzal. A {{ui:Place as members}} a darabokat a modellbe helyezi, a {{ui:PDF sheets}} pedig panelenként egy lapot ment. A méretek, távolságok és fejgerendák az Ön döntése: a DetailCraft nem ellenőrzi, hogy teherbírók-e. Lásd: [Faszerkezeti és könnyűacél keretezési panelek](topic:framing-panels).
+- **Beszállítói készlet és szállítási idők.** A {{ui:Supply}} lap beolvassa a beszállító készletlistáját (CSV), és minden olyan szelvényhez, amelyet a vágólista vásárol, megmutatja, van-e elég készlet, és mennyi a várakozási idő. A hiányok és a késő szelvények a {{ui:Problems}} listában vannak. Semmi nem rendelődik meg. Lásd: [Beszállítói készlet és szállítási idők](topic:supplier-stock).
 
 **Analízis és tervezés**
 
-- **Mi törik el először?** Az {{ui:Analízis}} lapon a gomb megkeresi a mérvadó teherbírási kombinációt, a leggyengébb rudat, azt, hogy meddig nőhetnek a terhek, mielőtt az első rúd eléri a határát, valamint a leggyengébb homloklemezt vagy nyírólemezt, ha a csavarjainak nyírószilárdsága ismert. Előbb kombinációk és tervezési előírás szükséges. A felfekvés, a blokknyírás, a varratok és a kiemelődés nincs ellenőrizve. A csatlakoztatott asszisztens ugyanezt kérheti.
-- **Élő.** Jelölje be az {{ui:Élő: újraszámolás minden szerkesztés után}} jelölőnégyzetet, és a keret minden szerkesztés után újra megoldódik.
-- **Beton, további.** Egy karcsú oszlop nem oldalirányban elmozduló keretben a megnövelt nyomatékára méreteződik (ACI 318-19 6.6.4.5). A szeizmikus periódus a Rayleigh-módszerrel vehető az analízisből. Lemezekből készült födém minden rétegéhez a nyomatékaiból kapja meg a szükséges acélt, valamint az egyirányú nyírást. Lásd: [Betonelemek ellenőrzése és szeizmikus terhek készítése](topic:concrete-and-seismic).
-- **Mérnöki átnézésre.** Az alapozási, beton- és a Mi törik el először eredmények segédeszközök. A betonhoz tartozó szélterhek még nincsenek elkészítve.
+- **Mi törik el először?** Az {{ui:Analysis}} lapon ez a gomb megkeresi az irányadó teherbírási kombinációt, a leggyengébb rúdelemet, azt, hogy a terhek mennyire nőhetnek, mielőtt az első rúdelem eléri a határát, és a leggyengébb véglemezt vagy nyírólemezt, ha csavarjainak nyírószilárdsága ismert. Ehhez előbb kombinációk és tervezési előírás kellenek. A palástnyomás, a blokknyírás, a varratok és a kinyílás nincsenek ellenőrizve. A csatlakoztatott asszisztense ugyanezt kérheti.
+- **Élő.** Jelölje be a {{ui:Live: solve again after each edit}} jelölőnégyzetet, és a keret minden szerkesztés után újra megoldódik.
+- **Beton, továbbiak.** Egy nem oldalirányban elmozduló keret karcsú oszlopát a felnagyított nyomatékára tervezi a rendszer (ACI 318-19 6.6.4.5). A földrengési periódus Rayleigh-módszerrel vehető az analízisből. A lemezekből készült födém minden réteghez szükséges acélt a nyomatékaiból kapja, valamint az egyirányú nyírást. Lásd: [Betonelemek ellenőrzése és földrengési terhek](topic:concrete-and-seismic).
+- **Mérnöki átnézésre.** Az alapozási, a beton- és a Mi törik el először eredmények segédeszközök. A szélterhek nincsenek elkészítve.
 
 **Minden alkalmazásban**
 
-- **Nyelvek.** A súgó 54 nyelven érhető el. Az angolon kívüli nyelvek gépi piszkozatok, amíg anyanyelvi szakember át nem olvassa; tíz új: litván, lett, bosnyák, maráthi, telugu, albán, afrikaans, filippínó, szuahéli, üzbég.
-- **Eszköztársorok.** A {{ui:Beállítások}} › {{ui:Általános}} › {{ui:Eszköztársorok}} résznél választható a tördelés, 2 sor vagy 1 sor. Az a sáv, amelyik már elfér, marad úgy, ahogy van; a többi oldalirányban görgethető.
-- **Tulajdonságrács.** A talp mezői a közös rácsot használják: összecsukható kategóriákkal és kompakt sűrűséggel. A beírt számtani műveletek, például 2*450, továbbra is működnek.
-- **Beviteli eszközök.** Érintőpad, toll, 3D-egér, kontroller és MIDI is vezérelheti az alkalmazásokat. Lásd: [Navigálás 3D-ben](topic:navigate-3d).
-- **Problémák panel.** A fenti új ellenőrzések figyelmeztetései ugyanabban a {{ui:Problémák}} panelben jelennek meg, mint korábban.
-- **Asszisztens csatlakoztatása.** A saját asszisztens, a CadCraft Studion át csatlakoztatva, mind a nyolc alkalmazással működik, és csak azt látja, amit engedélyezett. Az egykattintásos csatlakoztatás, a tárolt csatlakozó és a saját API-kulcs a Studióban még hátravan. Lásd: [A DetailCraft használata AI-asszisztenssel](topic:use-with-ai-assistants).
+- **Nyelvek.** A súgó 54 nyelven érhető el. Az angolon kívüliek gépi piszkozatok, amíg anyanyelvi beszélő át nem nézi; tíz új: litván, lett, bosnyák, maráthi, telugu, albán, afrikaans, filippínó, szuahéli és üzbég.
+- **Eszköztársorok.** A {{ui:Settings}} › {{ui:General}} › {{ui:Toolbar rows}} menüpontban választható: tördelés, 2 sor vagy 1 sor. Az, ami már elfér, marad úgy, ahogy van; a többi vízszintesen görgethető.
+- **Tulajdonságrács.** A talpalap mezői a közös rácsot használják: összecsukható kategóriák és tömör sűrűség. A beírt számtani műveletek, például 2*450, továbbra is működnek.
+- **Beviteli eszközök.** Érintőpad, toll, 3D-egér, vezérlő és MIDI is vezérelheti az alkalmazásokat. Lásd: [Navigálás 3D-ben](topic:navigate-3d).
+- **Problémák panel.** A fenti új ellenőrzések figyelmeztetései ugyanabban a {{ui:Problems}} panelben jelennek meg, mint korábban.
+- **Asszisztens csatlakoztatása.** Saját asszisztense, amelyet a CadCraft Studión keresztül csatlakoztat, mind a nyolc alkalmazással működik, és csak azt látja, amit Ön engedélyez. Az egykattintásos csatlakozás, az üzemeltetett csatlakozó és a Studióban megadható saját API-kulcs még hátravan. Lásd: [DetailCraft használata AI-asszisztenssel](topic:use-with-ai-assistants).
 
 ### Javítva a 0.8.1 verzióban
 
-- **Nyelvek a Studióban.** A Studio és a csomagolt kiadások futás közben tudnak nyelvet váltani; korábban csak angolul voltak. Még nem minden platformon tesztelték: jelezze, ha a nyelv nem változik.
-- **Keresztező ablakos kijelölés.** A 0.8.1 telepítői már tartalmazzák a 0.8 webes verziójának helyes ablakos kijelölési viselkedését; egy régebbi telepítő nem.
-- **Táblagépek álló helyzetben.** A rács szabad magassága a rajzvászonra kerül, a lapelrendezés pedig 760 px-es vagy kisebb szélességnél kezdődik.
+- **Nyelvek a Studióban.** A Studio és a csomagolt kiadások futás közben válthatnak nyelvet; korábban csak angol volt. Még nincs minden platformon tesztelve: jelezze, ha a nyelv nem változik.
+- **Keresztező ablakos kijelölés.** A 0.8.1 telepítői már tartalmazzák a helyesen működő ablakos kijelölést a 0.8 webes verzióból; egy régebbi telepítő nem.
+- **Táblagépek álló helyzetben.** A szabad rácsmagasság a vászonra kerül, a lapelrendezés 760 px vagy kevesebb esetén kezdődik.
 
 ### Ebben a verzióban még nincs
 
-- Az **NC-fájl küldése gépre** nem jelent meg.
-- A **szélterhek** betonhoz még nincsenek elkészítve, a beton- és alapozási ellenőrzéseket pedig mérnöknek kell átnéznie.
-- **Kódaláírás.** A Windows-telepítők és a macOS .dmg fájl nincs aláírva, ezért a Windows figyelmeztethet, a macOS pedig jobb gombos kattintást kér, majd Megnyitás.
+- **NC küldése gépre** nincs kiadva.
+- **Szélterhek** betonhoz nincsenek elkészítve; a beton- és alapozási ellenőrzések mérnöki átnézésre valók.
+- **Kódaláírás.** A Windows telepítők és a macOS .dmg nincsenek aláírva: a Windows figyelmeztethet, a macOS jobb klikket és Megnyitást kér.
 
-A korábbi változások az [Újdonságok a 0.7 verzióban](topic:whats-new-0-7) részben találhatók.
+A korábbi változások itt olvashatók: [Újdonságok a 0.7 verzióban](topic:whats-new-0-7).

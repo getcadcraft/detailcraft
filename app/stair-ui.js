@@ -51,6 +51,12 @@ export function genForm(app, x, set, placing) {
   const out = [p];
   const tick = el('label', { className: 'dc-tick' }, check(x.landingPosts, (v) => set({ landingPosts: v })), ' ' + tr('app.stair.gen.landing-posts'));
   out.push(tick);
+  // 0.11 SU.1814c: the stringers' ends cut level on the lower floor and plumb at the upper floor's edge; a base plate and four anchor holes under each landing post
+  out.push(el('label', { className: 'dc-tick' }, check(x.endCuts === 'floor', (v) => set({ endCuts: v ? 'floor' : 'square' })), ' ' + tr('app.stair.gen.end-cuts')));
+  if (x.landingPosts) {
+    out.push(el('label', { className: 'dc-tick' }, check(x.postBase, (v) => set({ postBase: v })), ' ' + tr('app.stair.gen.post-base')));
+    if (x.postBase) { const q = el('div', { className: 'dc-props' }); q.append(...field(tr('app.stair.gen.base-t'), numIn(x.baseT, (v) => set({ baseT: v }), { min: 6 })), ...field(tr('app.stair.gen.anchor'), numIn(x.anchor, (v) => set({ anchor: v }), { min: 8 }))); out.push(q); }
+  }
   out.push(el('p', { className: 'dc-note' }, tr('app.stair.gen.note')));
   return out;
 }

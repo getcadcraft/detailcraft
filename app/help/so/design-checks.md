@@ -1,46 +1,46 @@
 ---
-title: Hubi xubnaha birta ee code-ka naqshadda
-summary: Samee isku-darka culeyska ee ASCE 7 ama EN 1990, hubi profile kasta oo birta ah oo I ah AISC 360 ama EN 1993-1-1, oo arag inta awoodda kasta xubin isticmaasho. Caawin ilaa injineer uu eegay.
-keywords: naqshad, hubinta naqshadda, naqshadda birta, isticmaal, awood, AISC 360, ASCE 7, EN 1990, EN 1993-1-1, Eurocode, isku-darka culeyska, LRFD, Annex-ka qaranka, buckling, gooyn, bending, isdhexgal, qaab-dhismeed, ardayda, injineer
-from: 66b6d545
+title: Hubi xubnaha birta sida code-ka naqshadda
+summary: Samee isku-darka culeysyada ASCE 7 ama EN 1990, hubi tiir kasta oo I-shape birta ah oo AISC 360 ama EN 1993-1-1, oo eeg inta awoodda ah ee xubin kasta isticmaasho. Caawiye ilaa injineer uu dib u eego.
+keywords: naqshadda, hubinta naqshadda, naqshadda birta, utilisation, utilization, awood, AISC 360, ASCE 7, EN 1990, EN 1993-1-1, Eurocode, isku-darka culeysyada, LRFD, National Annex, buckling, lateral-torsional buckling, shear, bending, interaction, qaab-dhismeed, ardayda, injineer
+from: 15685c4e
 ---
 
-Ka dib markii aad socodsiiso falanqaynta, bloogga {{ui:Hubinta naqshadda}} ee tabka {{ui:Falanqayn}} wuxuu qiimo ka dhigaa xubin kasta oo birta ah: inta awoodda ay isticmaasho isku-darka ugu xun.
+Marka aad orodsiiso falanqaynta, block-ka {{ui:Hubinta naqshadda}} ee tab-ka {{ui:Falanqayn}} xoogagiisa wuxuu u beddelaa go'aan xubin kasta oo birta ah: inta awoodda ah ee ugu xun isku-darku isticmaalo.
 
 :::warning
-Waa **caawin ilaa injineer uu eegay**. Wuxuu isticmaalaa xoogagga heerka koowaad oo keliya (ma jiro saameyn heerka labaad), ma eego jiifka, qaybaha dhuuban (heerka 4), shakhsiyada la alxanay, ama isku xirka, wuxuuna ka tagaa waxa uusan hubin karin oo sheegaa. Ma beddelo hubinta injineerka, natiijooyinkana ma aha shati ansax.
+Waa **caawiye ilaa injineer uu dib u eego**. Waxay isticmaashaa xoogag heer-koowaad oo keliya (aan saamayn dalab labaad lahayn), ma hubiso wareegga, ma hubiso qaybaha slender (class 4), ma hubiso qaybaha la alxaamay ama xidhiidhka, wixii aan hubin karin waa ka sheegtaa. Ma beddelayo hubinta injineerka, natiijooyinkeeduna ma aha ansax rasmi ah.
 :::
 
 ## Dooro code
 
-{{ui:Code-ka naqshadda}} waa la kaydiyaa moodeelka; dooro mid ka mid ah laba qoys:
+{{ui:Code-ka naqshadda}} waa la kaydiyaa moodeelka; dooro mid ka mid ah labo qoys:
 
-- **ASCE 7 + AISC 360** (Mareykanka, LRFD): isku-darka culeyska ee ASCE 7-16 §2.3.1 iyo hubinta xubnaha ANSI/AISC 360-16.
+- **ASCE 7 + AISC 360** (US, LRFD): isku-darka culeysyada ASCE 7-16 §2.3.1 iyo hubinta xubnaha ANSI/AISC 360-16.
 - **EN 1990 + EN 1993-1-1** (Eurocode): isku-darka EN 1990 (Eq. 6.10, ama 6.10a iyo 6.10b) iyo hubinta xubnaha EN 1993-1-1.
 
-Kadibna dooro {{ui:Darajada birta}} (A992, A36 iyo kuwa kale; ama S235 ilaa S450, oo xadka hoose ee xooga bilaabidda ka sarreeya 40 mm).
+Kadibna dooro {{ui:Darajada birta}} (A992, A36 iyo kuwa kale; ama S235 ilaa S450, oo xoogga wax-soo-saarka ee hoose ka weyn 40 mm).
 
 ## Samee isku-darka
 
-Bixi nooca culeyska kasta **nooc** (joogto, nool, saqafka nool, barafka, dabaysha, dhaqdhaqaaqa dhulka) liiska kiisaska, kadibna riix {{ui:Samee isku-darka}}. DetailCraft wuxuu u qoraa isku-darrada code-ku sheegay sida isku-darro kiisaskaaga: isku-darka xoog kasta oo code-ku liistay oo nooca aad leedahay, iyo isku-darrada adeegga ee foosha. Kuwii aad adigu ku qortay way ku sii jiraan; lama hubiyo code-ka. Kiis nooc {{ui:Kale}} ah lama isku daro.
+Siiso load case kasta **nooc** (joogto, kala-guur, saqaf kala-guur, barafka, dabayshaha, dhulgariirka) liiska load case-ka, kadibna riix {{ui:Samee isku-darka}}. DetailCraft wuxuu u qoraa code-ka isku-darkiisa sida isku-darka load case-yadaada: xoog kasta oo code-ku liisteeyo noocyada aad leedahay, iyo isku-darka adeegga ee hoos-u-dhaca. Kuwa aad qortay adiga ayay sii joogaan, lama hubinayo code-ka. Load case oo nooc {{ui:Kale}} ah lama isku daro.
 
-Eurocode-ka, factor-yada waa **qiyamaha la talinayo** ee EN 1990 Annex A1 (γG 1.35, γQ 1.5, qiyamaha ψ ee culeyska la soo saaray, barafka iyo dabaysha) iyo EN 1993-1-1 (γM0 = γM1 = 1.0). Annex-ka qaranka ee waddankaaga qaarkood ayaa beddela: fur {{ui:Qiyamaha Annex-ka Qaranka}}, qor kaaga, kadibna mar kale samee isku-darka. Waa la kaydiyaa moodeelka.
+Code-ka Eurocode-ka, factors-ka waa **qiyamaha la taliyay** ee EN 1990 Annex A1 (γG 1.35, γQ 1.5, qiyamaha ψ ee culeysyada la saaray, barafka iyo dabaysha) iyo EN 1993-1-1 (γM0 = γM1 = 1.0). Annex-ka qaranka ee dalkaaga ayaa qaarkood beddela: fur {{ui:Qiyamaha Annex-ka Qaranka}}, qor kuwaaga, kadibna mar kale samee isku-darka. Waa la kaydiyaa moodeelka.
 
 ## Hubi xubnaha
 
-Riix {{ui:Hubi xubnaha}}. Profile I ah oo birta ah kasta, miiska wuxuu muujinayaa **isticmaalkeeda** (culeyska ka qaybsan awoodda: 100 % waa xadka), haddii ay gudbay, qodobka hubinta ee xukuma, iyo isku-darka. Xubnaha moodeelka ayaa midab la siiyaa: buluug haddii aad yar isticmaasho, cagaar qiyaastii badh, jaalle xadka u dhow, casaan ka sarreeya, iyo shabeel haddii aan la hubin. Guji magaca xubin si aad u doorato.
+Riix {{ui:Hubi xubnaha}}. Mid kasta oo I-shape birta ah, miiska wuxuu muujinayaa **isticmaalkeeda** (baahida marka loo qiyaaso awoodda: 100 % waa xadka), haddii ay gudbeyso ama ay fashilanto, hubinta xukuma, iyo isku-darka. Xubnaha moodeelka ayaa midab la siiyaa: buluug yar la isticmaalay, cagaar qiyaastii badh, dhaxaan xadka u dhow, casaan ka dhaafsan, cawl aan la hubin. Guji magaca xubin si aad u doorato.
 
-Hubinta, iyo qodobka mid kasta raacayo (waxay ku jiraan warbixinta):
+Hubinta, iyo cutubka code-ka ee ay raacayaan (waa lagu soo sheegay warbixinta):
 
-- xoog-jiidasho; cadaadis oo leh buckling-ka dabacsanaanta iyo kan torsional; qallafsanaan labada tiir oo leh lateral-torsional buckling; shear; iyo qallafsanaan oo leh xoog toosan;
-- hoos u dhaca isku-darrada adeegga marka loo eego {{ui:Xadka hoos u dhaca}} aad dejisay (L/360 marka hore; qiimo mashruuc, ma aha qiimo code).
+- xoog-jiidasho, cadaadis oo leh buckling-ka xoogga iyo wareegga, foorarsashada labada tiir oo leh lateral-torsional buckling, shear, iyo foorarsashada oo leh xoog tiir;
+- hoos-u-dhaca isku-darka adeegga marka loo barbardhigo {{ui:Xadka hoos-u-dhaca}} aad dejiso (L/360 marka hore; qiimaha mashruuca, ma aha qiimaha code-ka).
 
-**Dhererka.** Dhererka la xidhay waa qayb ka mid ah qayb kasta oo la falanqeeyay (1 = aan la xidhin); xidhka waxaa loo qaatay isku-fogaan siman laga bilaabo bilowga. Factor-yada K waxay dherer ku dhufanayaan buckling-ka. Isku-xirka xubin kale ku dhacda wuxuu qaybiyaa xubinta, qaybna mid ahaan ayaa lagu hubiyaa dherkeeda, sida halkaas la xidhay.
+**Dhererka.** Dhererka la xidhay waa qayb ka mid ah qayb kasta oo la falanqeeyay (1 = aan la xidhin); xidhitaanka waxaa loo qaadaa iyaga oo u dhexeeya siman bilowga. Factors K waxay dhererka ku dhufanayaan buckling-ka. Meel xubin kale ku degto xubin ayay kala qaybisaa, qayb kasta waa la hubiyaa dhererkeeda, sida lagu xidhay meeshaas.
 
 ## Waxa aan la hubin
 
-Xubin waxay muujinaysaa **aan la hubin**, iyo sababta, halkii lambar marka qaybteeda aanay ahayn I oo ay hubintu aqoon (tuubooyin, xagaaleyaal, kanaalo), ama marka ay tahay shakhsi la alxanay oo gaar ah, ama marka qayb ka mid ah ay dhuuban tahay (AISC) ama heerka 4 (Eurocode) jiifka. Qayb dhuuban oo cadaadis ku jirta waxay ka saartaa hubinta cadaadiska, xubinta waxaa lagu akhriyaa *waa la gudbay, qayb qayb ah ayaa la hubiyay*. Sidoo kale lama dhisin: saameynta heerka labaad, torsion-ka, shear buckling oo la jaro jiifka, isku xirka, daalka, dabka iyo faahfaahinta dhulgariirka. Xubnaha kontaretiga iyo culeyska dhulgariirku waxay leeyihiin [hubinteeda](topic:concrete-and-seismic) gaar ah. Eeg [Weli lama dhisin](topic:not-built-yet).
+Xubin wuxuu muujinayaa **aan la hubin**, sababta oo la sheegayo, halkii lambar lagu muujin lahaa marka qaabkeeda aan hubinta la garanayn (xagaxyo, kanaalyo; tuubooyin afar-geesood iyo wareeg ah waa la hubiyaa marka darbigoodu compact yahay), marka ay tahay qaab la alxaamay (welded), ama marka qayb ka mid ah ay slender (AISC) ama class 4 (Eurocode) tahay foorarsashada. Qayb slender ah oo cadaadis ku jirta ayaa ka saarta hubinta cadaadiska, xubinta waxaa lagu akhrin doonaa *passes, partly checked* (gudbay, qayb ahaan la hubiyay). Alxaamadda meelaha isku-xidhka waxay leedahay [hubintooda gaarka ah](topic:weld-checks). Sidoo kale lama dhisin: saamaynta dalabka labaad, wareegga (torsion), shear buckling oo wehelinaya foorarsasho, xidhiidhka boolt-ka, daallinta (fatigue), dabka iyo faahfaahinta dhulgariirka. Kaadhka iyo culeysyada dhulgariirku waxay leeyihiin [hubintooda gaarka ah](topic:concrete-and-seismic). Eeg [Wali lama dhisin](topic:not-built-yet).
 
 ## Warbixinta
 
-{{ui:Warbixin (PDF)}} iyo {{ui:Warbixin (CSV)}} waxay helaan miisaska naqshadda marka aad hubisid: nooca code-ka, dejinta iyo qiimaha Annex-ka qaranka, isticmaalka xubin kasta, qodob kasta oo la isticmaalay, iyo xubin kasta: culeyska, awoodda iyo isticmaalka hubin kasta oo isku-darka xukuma.
+{{ui:Warbixin (PDF)}} iyo {{ui:Warbixin (CSV)}} waxay helayaan miisaska naqshadda marka aad hubisid: noocyada code-ka, dejinta iyo qiyamaha National Annex, isticmaalka xubin kasta, dhammaan clause-yada la isticmaalay, iyo xubin kasta baahida, awoodda iyo isticmaalka hubin kasta oo isku-darkeeda xukuma.

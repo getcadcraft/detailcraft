@@ -1,0 +1,19 @@
+{
+  "@locale": "mk",
+  "@name": "Македонски",
+  "@note": "Draft translation, not yet reviewed by a native speaker",
+  "zeman.name": "Извоз за Zeman",
+  "zeman.label": "Zeman (XML + NC)",
+  "zeman.done": "Датотеките за Zeman се запишани за {marks}: по еден XML и неговите NC датотеки во папка за секоја, зачувани како {file}.",
+  "zeman.none": "Извоз за Zeman: ништо не е запишано.",
+  "zeman.empty": "Извоз за Zeman: сè уште нема челични делови.",
+  "zeman.skipped": "Не е запишано: {list}.",
+  "zeman.skipped.item": "{mark} ({why})",
+  "zeman.refuse.lead": "главниот дел {profile} не е I-профил",
+  "zeman.refuse.attached": "има приклучен дел што не е лим: {profile}",
+  "zeman.refuse.nc": "{why}",
+  "zeman.loose": "Деловите поставени како слободни, не заварени, беа изоставени: {n}.",
+  "zeman.turned": "Идентичните лимови делат една NC датотека; лим што е ист дел свртен наопаку има своја позиција во XML.",
+  "zeman.misfit": "Проверете ги лимовите со иста ознака: еден се разликува од NC датотеката што ја дели за {mm} mm.",
+  "zeman.check": "Овој извоз е изработен од една примерна група датотеки: проверете ја првата во вашиот сопствен софтвер пред производство."
+}

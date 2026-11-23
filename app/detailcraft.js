@@ -33,7 +33,7 @@
  * window.detailcraft exposes the model and actions for the browser check.
  */
 import { el, fillDl } from './ui-util.js';
-import { Model, starterState, gridsFromSpacings, spacingsOf, nodeName, pointAt, MATERIALS, defaultsFor, connPhase, recoverText } from './model.js';
+import { Model, olderCopy, starterState, gridsFromSpacings, spacingsOf, nodeName, pointAt, MATERIALS, defaultsFor, connPhase, recoverText } from './model.js';
 import { followJournal } from './history/index.js';   // 0.10 PERF.24
 import { getProfile, catalogGroups, plateName, CUSTOM_KINDS, describe, holeFaces, cleanCustom, cleanLibrary } from './profiles.js';
 import { build } from './build.js';
@@ -86,6 +86,13 @@ import { mountDrawings } from './drawings-ui.js';
 import { mountIfcImport } from './ifc-import-ui.js';
 import { mountFootingStair } from './footing-stair-ui.js';
 import { mountClash } from './clash-ui.js';
+import { mountReportPanel } from './report-panel-ui.js';
+import { mountConnProps } from './conn-props-ui.js';
+import { mountMemberProps } from './member-props-ui.js';
+import { mountManyProps } from './many-props-ui.js';
+import { mountToolOptions } from './tool-options-ui.js';
+import { mountConnAdd } from './conn-add-ui.js';
+import { mountPlace } from './place-ui.js';
 
 const root = document.querySelector('[data-detailcraft]');
 if (root) start(root);
@@ -95,6 +102,8 @@ const mm = (v) => String(Math.round(v));
 const kg = (v) => v.toFixed(1);
 
 async function start(root) {
+  // PERF.71 round two (perf-finish-11 code): the closure's mutable state in one object (tools/perf/main-state.mjs); was one `let` each
+  const ST = { mine: undefined, model: undefined, built: undefined, marks: undefined, schedule: undefined, tool: undefined, sel: undefined, multi: undefined, pickReady: undefined, pickLast: undefined, pickGuids: undefined, shellMount: undefined, pasteClip: undefined, moveRefs: undefined, curPhase: undefined, pending: undefined, viewMode: undefined, reportTab: undefined, idsUi: undefined, frameProblems: undefined, frameProblemsSet: undefined, problemsSync: undefined, breakSet: undefined, breakProblems: undefined, consSet: undefined, consTimer: undefined, consCache: undefined, supply: undefined, supplySet: undefined, framing: undefined, frmSet: undefined, foundation: undefined, fndSet: undefined, congestion: undefined, congSet: undefined, rcUi: undefined, rcSet: undefined, ifaceSet: undefined, rcb: undefined, autopilot: undefined, erection: undefined, extraProblems: undefined, extraSet: undefined, autoProblems: undefined, autoSet: undefined, analysis: undefined, workspace: undefined, view: undefined, viewCube: undefined, axisIcon: undefined, cubeOpts: undefined, cornerShown: undefined, settings: undefined, buildVer: undefined, clip: undefined, clipRaw: undefined, fid: undefined, saveTarget: undefined, leaving: undefined, clashRes: undefined, clashTol: undefined, dwgSet: undefined, lastFocus: undefined, copyPending: undefined, guidMap: undefined, guidBuilt: undefined, guidName: undefined };
   const $ = (s) => root.querySelector(s);
   const ui = {
     tools: $('.dc-tools'), file: $('[data-file]'), name: $('[data-model-name]'),
@@ -113,50 +122,88 @@ async function start(root) {
     dwgOneLabel: $('[data-dwg-one-label]'), dwgAllLabel: $('[data-dwg-all-label]'),
     issueStatus: $('[data-issue-status]'), issueNote: $('[data-issue-note]'), issueOne: $('[data-issue-one]'), issueAll: $('[data-issue-all]'),
   };
-
+  // 0.11 PERF.78 (perf-finish-11 r2): the Properties panel section for each kind of selected thing (was an else-if chain in renderProps; same
+  // order of work, same nodes). Each entry sets the panel head and pushes its rows into `body`.
+  // Declared up here (it only names closure bindings inside the entries) so renderProps can run at any point of the start-up.
+  const PROPS_BY_KIND = {
+    member: (body) => { const m = ST.model.member(ST.sel.id); ui.propsH.textContent = typeName(m.type) + (ST.marks.partMark.get(m.id) ? ' ' + ST.marks.partMark.get(m.id) : ''); body.push(...memberProps(m)); },
+    conn: (body) => { const c = ST.model.connection(ST.sel.id); ui.propsH.textContent = tr('app.props.' + c.type); body.push(...connProps(c)); },
+    stair: (body) => { const x = ST.model.stair(ST.sel.id); ui.propsH.textContent = tr('app.props.stair', { mark: (ST.marks.asmMark.get(x.id + '.stringerL') || ST.marks.asmMark.get(x.id + '.f1stringerL') || '') }); body.push(...stairProps(x)); },
+    picture: (body) => { const p = ST.model.picture(ST.sel.id); ui.propsH.textContent = tr('pic.props'); body.push(...pictureProps(p)); },
+    footing: (body) => { const f = ST.model.footing(ST.sel.id); ui.propsH.textContent = tr('app.props.footing', { mark: ST.marks.footingMark.get(f.id) || '' }); body.push(...footingProps(f)); },
+    rc: (body) => { const x = ST.model.state.rc.elements.find((q) => q.id === ST.sel.id); ui.propsH.textContent = ST.rcb.labels.get(x.id) || tr('rc.kind.' + x.kind); body.push(...ST.rcUi.props(x)); },
+    rcbar: (body) => { ui.propsH.textContent = tr('rc.props.loose'); body.push(el('p', { className: 'dc-note' }, describeRef(ST.sel)), el('div', { className: 'dc-actions' }, el('button', { type: 'button', className: 'btn-line btn-sm-dc dc-danger', onclick: deleteSelection }, tr('app.btn.delete')))); },
+  };
   // My profiles: custom profiles kept in this browser (localStorage), copied into every new model
   const MY_KEY = 'detailcraft.myprofiles';
   const readMine = () => { try { return cleanLibrary(JSON.parse(localStorage.getItem(MY_KEY) || '[]')); } catch { return []; } };
-  let mine = readMine();
-  const writeMine = () => { try { localStorage.setItem(MY_KEY, JSON.stringify(mine)); return true; } catch { print(tr('app.mine.nosave')); return false; } };
-  const freshState = () => { const s = starterState(tr('app.model.untitled')); s.profiles = mine.map((p) => ({ ...p })); return s; };
+  ST.mine = readMine();
+  const writeMine = () => { try { localStorage.setItem(MY_KEY, JSON.stringify(ST.mine)); return true; } catch { print(tr('app.mine.nosave')); return false; } };
+  const freshState = () => { const s = starterState(tr('app.model.untitled')); s.profiles = ST.mine.map((p) => ({ ...p })); return s; };
   /** Keeps a profile in My profiles; false (and a message) when another one already has its name. */
   function keepProfile(p) {
     const r = cleanCustom(p);
     if (!r.ok) { print(r.error); return false; }
-    const old = mine.find((x) => x.name.toUpperCase() === r.profile.name.toUpperCase());
+    const old = ST.mine.find((x) => x.name.toUpperCase() === r.profile.name.toUpperCase());
     if (old) {
       if (JSON.stringify(old) === JSON.stringify(r.profile)) return true;
       print(tr('app.mine.taken', { name: r.profile.name })); return false;
     }
-    if (mine.length >= 200) { print(tr('app.mine.full')); return false; }
-    mine = [...mine, r.profile];
+    if (ST.mine.length >= 200) { print(tr('app.mine.full')); return false; }
+    ST.mine = [...ST.mine, r.profile];
     return writeMine();
   }
 
-  let model = new Model(freshState());
-  const undoHook = mountUndoHook({ getModel: () => model });   // 0.9 EG.77 undo across apps (follows the model when a file opens: attach)
-  let built = null, marks = null, schedule = null;
-  let tool = 'select';
-  let sel = null;                      // { kind: 'member'|'conn'|'footing'|'stair', id } when one thing is selected
-  let multi = [];                      // two or more refs when several are (sel is then null)
-  const selected = () => (multi.length ? multi : sel ? [sel] : []);
+  ST.model = new Model(freshState());
+  const undoHook = mountUndoHook({ getModel: () => ST.model });   // 0.9 EG.77 undo across apps (follows the model when a file opens: attach)
+  ST.built = null;
+  ST.marks = null;
+  ST.schedule = null;
+  ST.tool = 'select';
+  ST.sel = null;                      // { kind: 'member'|'conn'|'footing'|'stair', id } when one thing is selected
+  ST.multi = [];                      // two or more refs when several are (sel is then null)
+  function selected() { return ST.multi.length ? ST.multi : ST.sel ? [ST.sel] : []; }
   const selListeners = new Set();      // the shell's design reasons listen for the selection (shell-mount.js)
-  let pickReady = false, pickLast = '', pickGuids = null;   // SC.5: the pick adapter (announcePick, near the end): on once the page is up
-  let shellMount = null;               // the shell's seven modules, attached after the assistants below
-  let pasteClip = null;                // the clipboard being placed by the paste tool
-  let moveRefs = null;                 // what the Move tool moves (the selection when it started)
-  let curPhase = 1;                    // new members and footings go in this phase (D13)
+  ST.pickReady = false;
+  ST.pickLast = '';
+  ST.pickGuids = null;   // SC.5: the pick adapter (announcePick, near the end): on once the page is up
+  ST.shellMount = null;               // the shell's seven modules, attached after the assistants below
+  ST.pasteClip = null;                // the clipboard being placed by the paste tool
+  ST.moveRefs = null;                 // what the Move tool moves (the selection when it started)
+  ST.curPhase = 1;                    // new members and footings go in this phase (D13)
   const hiddenPhases = new Set();      // phases not drawn, not picked, not selected by Ctrl+A or a window (view only)
-  let pending = null;                  // first node of a two-point placement
-  let viewMode = '3d';
-  let reportTab = 'problems';
-  let idsUi = null;                    // 0.7.1 71.25: the IDS check of the IFC export (ids-ui.js)
-  let frameProblems = null, frameProblemsSet = null;   // the Analysis tab's concrete / seismic problems (0.8 SU.1056): kept until the shell's Problems is there
-  let problemsSync = null;             // the shell's Problems (manifest "problems"): hands build.js's problems over after every rebuild
-  let breakSet = null, breakProblems = [], consSet = null, consTimer = 0, consCache = new Map(),   /* 0.10 PERF.36: constructability re-checks only the connections an edit touched */ supply = null, supplySet = null, framing = null, frmSet = null, foundation = null, fndSet = null, congestion = null, congSet = null, rcUi = null, rcSet = null, ifaceSet = null, rcb = null, autopilot = null, erection = null, extraProblems = [], extraSet = null, autoProblems = [], autoSet = null;   // the Erection tab (0.8 EG.72) and the problems of the round-2 checks, kept until the shell's Problems is there
-  let analysis = null;                 // the Analysis tab (0.6 LC.4, analysis-ui.js), mounted with the reports below
-  let workspace = null;                // the workspace layouts (0.7 WS.13, workspace-detailcraft.js): told after every redraw
+  ST.pending = null;                  // first node of a two-point placement
+  ST.viewMode = '3d';
+  ST.reportTab = 'problems';
+  ST.idsUi = null;                    // 0.7.1 71.25: the IDS check of the IFC export (ids-ui.js)
+  ST.frameProblems = null;
+  ST.frameProblemsSet = null;   // the Analysis tab's concrete / seismic problems (0.8 SU.1056): kept until the shell's Problems is there
+  ST.problemsSync = null;             // the shell's Problems (manifest "problems"): hands build.js's problems over after every rebuild
+  ST.breakSet = null;
+  ST.breakProblems = [];
+  ST.consSet = null;
+  ST.consTimer = 0;
+  ST.consCache = new Map();
+  ST.supply = null;
+  ST.supplySet = null;
+  ST.framing = null;
+  ST.frmSet = null;
+  ST.foundation = null;
+  ST.fndSet = null;
+  ST.congestion = null;
+  ST.congSet = null;
+  ST.rcUi = null;
+  ST.rcSet = null;
+  ST.ifaceSet = null;
+  ST.rcb = null;
+  ST.autopilot = null;
+  ST.erection = null;
+  ST.extraProblems = [];
+  ST.extraSet = null;
+  ST.autoProblems = [];
+  ST.autoSet = null;   // the Erection tab (0.8 EG.72) and the problems of the round-2 checks, kept until the shell's Problems is there
+  ST.analysis = null;                 // the Analysis tab (0.6 LC.4, analysis-ui.js), mounted with the reports below
+  ST.workspace = null;                // the workspace layouts (0.7 WS.13, workspace-detailcraft.js): told after every redraw
   const opts = {
     beam: { ...defaultsFor('beam') }, column: { ...defaultsFor('column'), to: '' }, brace: { ...defaultsFor('brace') },
     plate: { t: 20, w: 200, material: 'A36', position: 'middle', rotation: 0 },
@@ -166,14 +213,21 @@ async function start(root) {
   };
 
   // ---- the 3D view (WebGL may be missing: everything else still works) ----
-  let view = null;
+  ST.view = null;
+  const { placeAt, placeLine } = mountPlace({
+    ST, opts, print, edit, setTool,
+    get runXf() { return runXf; },
+    get pasteClipAt() { return pasteClipAt; },
+    get mm() { return mm; },
+    get r1() { return r1; },
+  });
   try {
     const { View3D } = await import('./view3d.js');
-    view = new View3D(ui.canvas, {
+    ST.view = new View3D(ui.canvas, {
       onPick: (ref, e) => { pick(ref, e); },
-      onNode: (n) => placeAt(n),
-      onHoverNode: (n) => { ui.node.value = n ? nodeName(model.state, n.p) : ''; },
-      onWindow: (w) => windowPicked(w),
+      onNode: placeAt,
+      onHoverNode: (n) => { ui.node.value = n ? nodeName(ST.model.state, n.p) : ''; },
+      onWindow: windowPicked,
     });
   } catch (err) {
     ui.nogl.hidden = false;
@@ -182,36 +236,39 @@ async function start(root) {
   }
 
   function print(msg) { ui.status.textContent = msg; }
-  if (view) view.pictureSrc = (h) => model.pictureSrcs.get(h);   // D8.15: the PNGs are the Model's, not the state's
+  if (ST.view) ST.view.pictureSrc = (h) => ST.model.pictureSrcs.get(h);   // D8.15: the PNGs are the Model's, not the state's
 
   // ---- corner indicator (Settings › DetailCraft): the view cube (viewcube.js through viewcube-three.js) | the X/Y/Z axis
   // icon | none — in the 3D view only (plan and elevation are fixed square views)
-  let viewCube = null, axisIcon = null, cubeOpts = null, cornerShown = '';
-  if (view) {
-    cubeOpts = threeCubeOptions({ camera: () => view.camera, controls: () => view.controls, render: () => view.render(), home: () => view.fit() });
-    viewCube = mountViewCube(ui.stage, { ...cubeOpts, i18n: { t: tr, has: hasKey } });   // the view cube's words from our language file
-    axisIcon = mountAxisIcon(ui.stage, { getView: cubeOpts.getView, i18n: { t: tr, has: hasKey } });
-    view.onRender = () => { syncCorner(); viewCube.update(); axisIcon.update(); };
-    ui.canvas.addEventListener('pointerdown', () => cubeOpts.stop(), true);
+  ST.viewCube = null;
+  ST.axisIcon = null;
+  ST.cubeOpts = null;
+  ST.cornerShown = '';
+  if (ST.view) {
+    ST.cubeOpts = threeCubeOptions({ camera: () => ST.view.camera, controls: () => ST.view.controls, render: () => ST.view.render(), home: () => ST.view.fit() });
+    ST.viewCube = mountViewCube(ui.stage, { ...ST.cubeOpts, i18n: { t: tr, has: hasKey } });   // the view cube's words from our language file
+    ST.axisIcon = mountAxisIcon(ui.stage, { getView: ST.cubeOpts.getView, i18n: { t: tr, has: hasKey } });
+    ST.view.onRender = () => { syncCorner(); ST.viewCube.update(); ST.axisIcon.update(); };
+    ui.canvas.addEventListener('pointerdown', () => ST.cubeOpts.stop(), true);
     // touch (S.8): a long press adds the part to the selection or takes it out — a tablet has no Shift
-    view.onLongPress = (ref) => {
-      if (tool !== 'select') return;
+    ST.view.onLongPress = (ref) => {
+      if (ST.tool !== 'select') return;
       pick(ref, { shiftKey: true });
       navigator.vibrate?.(15);
     };
     // D2: press on a selected part and drag moves the selection (snapping the held part onto grid intersections)
     let dragRefs = null;
-    view.dragParts = {
-      can: (ref) => tool === 'select' && ref.kind !== 'conn' && selected().some((r) => refKey(r) === refKey(ref)),
+    ST.view.dragParts = {
+      can: (ref) => ST.tool === 'select' && ref.kind !== 'conn' && selected().some((r) => refKey(r) === refKey(ref)),
       start: (ref) => {
         dragRefs = selected().filter((r) => r.kind !== 'conn');
         if (!dragRefs.length) return null;
-        const m = ref.kind === 'member' ? model.member(ref.id) : null, f = ref.kind === 'footing' ? model.footing(ref.id) : null, st = ref.kind === 'stair' ? model.stair(ref.id) : null;
-        const pic = ref.kind === 'picture' ? model.picture(ref.id) : null;   // D8.15: its middle and corners snap onto grid intersections
+        const m = ref.kind === 'member' ? ST.model.member(ref.id) : null, f = ref.kind === 'footing' ? ST.model.footing(ref.id) : null, st = ref.kind === 'stair' ? ST.model.stair(ref.id) : null;
+        const pic = ref.kind === 'picture' ? ST.model.picture(ref.id) : null;   // D8.15: its middle and corners snap onto grid intersections
         const points = m ? [m.start, m.end] : f ? [[f.x, f.y, f.top]] : st ? [[st.x, st.y, st.z]] : pic ? [[pic.x, pic.y, pic.z], ...pictureCorners(pic)] : [];
-        return { points, ghost: [...ghostLines(model.state, dragRefs, [0, 0, 0]), ...pictureGhost(dragRefs)] };
+        return { points, ghost: [...ghostLines(ST.model.state, dragRefs, [0, 0, 0]), ...pictureGhost(dragRefs)] };
       },
-      move: (off, node) => print(tr(node ? 'drag.snap' : 'drag.free', { x: mm(off[0]), y: mm(off[1]), z: mm(off[2]), node: node ? nodeName(model.state, node) : '' })),
+      move: (off, node) => print(tr(node ? 'drag.snap' : 'drag.free', { x: mm(off[0]), y: mm(off[1]), z: mm(off[2]), node: node ? nodeName(ST.model.state, node) : '' })),
       end: (off) => {
         const refs = dragRefs; dragRefs = null;
         const pics = refs.filter((r) => r.kind === 'picture').map((r) => r.id), parts = refs.filter((r) => r.kind !== 'picture');
@@ -228,25 +285,25 @@ async function start(root) {
     // (kind follows view.mode; Plan / Elevation don't orbit, their controls have rotate off). Moves go through the view's OrbitControls
     // as its own drag and wheel do (_pan × panSpeed, _rotateLeft/_rotateUp at 2π·px/height × rotateSpeed, _dollyIn(1 / f), then
     // update(), whose change event renders); a view cube turn in progress stops first, as a press does; fit = Fit
-    const oc = () => view.controls;
-    (window.ccViews ||= []).push({ el: ui.canvas, get kind() { return view.mode === '3d' ? '3d' : '2d'; },
-      pan(dx, dy) { cubeOpts.stop(); const c = oc(); if (!c.enablePan) return; c._pan(dx * c.panSpeed, dy * c.panSpeed); c.update(); },
+    const oc = () => ST.view.controls;
+    (window.ccViews ||= []).push({ el: ui.canvas, get kind() { return ST.view.mode === '3d' ? '3d' : '2d'; },
+      pan(dx, dy) { ST.cubeOpts.stop(); const c = oc(); if (!c.enablePan) return; c._pan(dx * c.panSpeed, dy * c.panSpeed); c.update(); },
       zoom(f, x, y) {
-        cubeOpts.stop(); const c = oc(); if (!c.enableZoom || !(f > 0)) return;
+        ST.cubeOpts.stop(); const c = oc(); if (!c.enableZoom || !(f > 0)) return;
         if (x != null && y != null) { const r = ui.canvas.getBoundingClientRect(); c._updateZoomParameters(r.left + x, r.top + y); }   // only acts with zoomToCursor, as the wheel
         c._dollyIn(1 / f); c.update();
       },
       orbit(dx, dy) {
-        cubeOpts.stop(); const c = oc(); if (view.mode !== '3d' || !c.enableRotate) return;
+        ST.cubeOpts.stop(); const c = oc(); if (ST.view.mode !== '3d' || !c.enableRotate) return;
         const k = 2 * Math.PI * c.rotateSpeed / Math.max(1, ui.canvas.clientHeight);
         c._rotateLeft(dx * k); c._rotateUp(dy * k); c.update();
       },
-      fit: () => view.fit() });
+      fit: () => ST.view.fit() });
   }
   function syncCorner() {
-    if (!viewCube) return;
-    const want = view.mode === '3d' ? settings.corner : 'none';
-    if (want !== cornerShown) { cornerShown = want; viewCube.setVisible(want === 'cube'); axisIcon.setVisible(want === 'axes'); }
+    if (!ST.viewCube) return;
+    const want = ST.view.mode === '3d' ? ST.settings.corner : 'none';
+    if (want !== ST.cornerShown) { ST.cornerShown = want; ST.viewCube.setVisible(want === 'cube'); ST.axisIcon.setVisible(want === 'axes'); }
   }
 
   // ---- settings (Settings › DetailCraft, settings.inc; conveniences for this viewer, kept in this browser) ----
@@ -281,49 +338,49 @@ async function start(root) {
     } catch { /* private window or a damaged value: the defaults */ }
     return out;
   }
-  let settings = readSettings();
-  const persistSettings = () => { try { localStorage.setItem(SET_KEY, JSON.stringify(settings)); } catch { /* private window: this visit only */ } };
+  ST.settings = readSettings();
+  const persistSettings = () => { try { localStorage.setItem(SET_KEY, JSON.stringify(ST.settings)); } catch { /* private window: this visit only */ } };
   const settingsDlg = document.querySelector('[data-app-settings]');
   function applySteel() {
-    const st = STEEL[settings.steel];
+    const st = STEEL[ST.settings.steel];
     for (const t of ['beam', 'column', 'brace']) { opts[t].profile = st[t][0]; opts[t].material = st[t][1]; }
     opts.plate.material = st.plate;
     // new footings: ASTM bars and psi concrete with US steel; BS 4449 bars and a C-class with European steel (D9)
-    const eu = settings.steel === 'eu';
+    const eu = ST.settings.steel === 'eu';
     Object.assign(opts.footing.mat, { barX: eu ? 'H16' : FOOTING_DEFAULTS.mat.barX, barY: eu ? 'H16' : FOOTING_DEFAULTS.mat.barY });
     opts.footing.starters.bar = eu ? 'H20' : FOOTING_DEFAULTS.starters.bar;
     opts.footing.concrete = eu ? 'C30/37' : FOOTING_DEFAULTS.concrete;
   }
   function applyBolts() {
-    if (!view) return;
-    view.showBolts = settings.bolts;
-    if (built) { view.setModel(model.state, built, marks); view.setSelection(selected()); }
+    if (!ST.view) return;
+    ST.view.showBolts = ST.settings.bolts;
+    if (ST.built) { ST.view.setModel(ST.model.state, ST.built, ST.marks); ST.view.setSelection(selected()); }
   }
   function syncSettingsForm() {
     if (!settingsDlg) return;
     const q = (n) => settingsDlg.querySelector('[name="' + n + '"]');
-    settingsDlg.querySelectorAll('input[name="dcSteel"]').forEach((r) => { r.checked = r.value === settings.steel; });
-    ['dcOffX', 'dcOffY', 'dcOffZ'].forEach((n, i) => { const f = q(n); if (f && document.activeElement !== f) { f.value = String(settings.offset[i]); f.removeAttribute('aria-invalid'); } });
+    settingsDlg.querySelectorAll('input[name="dcSteel"]').forEach((r) => { r.checked = r.value === ST.settings.steel; });
+    ['dcOffX', 'dcOffY', 'dcOffZ'].forEach((n, i) => { const f = q(n); if (f && document.activeElement !== f) { f.value = String(ST.settings.offset[i]); f.removeAttribute('aria-invalid'); } });
     const c = q('dcConns'), b = q('dcBolts');
-    if (c) c.checked = settings.conns;
-    if (b) b.checked = settings.bolts;
-    settingsDlg.querySelectorAll('input[name="dcCorner"]').forEach((r) => { r.checked = r.value === settings.corner; });
-    settingsDlg.querySelectorAll('input[name="dcKiss"]').forEach((r) => { r.checked = r.value === settings.kiss; });
-    settingsDlg.querySelectorAll('input[name="dcDragSel"]').forEach((r) => { r.checked = r.value === settings.dragSel; });
-    settingsDlg.querySelectorAll('input[name="dcBarNames"]').forEach((r) => { r.checked = r.value === settings.barNames; });
-    settingsDlg.querySelectorAll('input[name="dcShapeCodes"]').forEach((r) => { r.checked = r.value === settings.shapeCodes; });
+    if (c) c.checked = ST.settings.conns;
+    if (b) b.checked = ST.settings.bolts;
+    settingsDlg.querySelectorAll('input[name="dcCorner"]').forEach((r) => { r.checked = r.value === ST.settings.corner; });
+    settingsDlg.querySelectorAll('input[name="dcKiss"]').forEach((r) => { r.checked = r.value === ST.settings.kiss; });
+    settingsDlg.querySelectorAll('input[name="dcDragSel"]').forEach((r) => { r.checked = r.value === ST.settings.dragSel; });
+    settingsDlg.querySelectorAll('input[name="dcBarNames"]').forEach((r) => { r.checked = r.value === ST.settings.barNames; });
+    settingsDlg.querySelectorAll('input[name="dcShapeCodes"]').forEach((r) => { r.checked = r.value === ST.settings.shapeCodes; });
     const pp = q('dcPaper');
-    if (pp) { fillPaper(pp); pp.value = settings.paper; }
+    if (pp) { fillPaper(pp); pp.value = ST.settings.paper; }
   }
   /** A sheet-size list (Settings, the Drawings and Shop drawing dialogs). */
   function fillPaper(sel) {
     if (sel.options.length !== PAPER_KEYS.length) sel.replaceChildren(...PAPER_KEYS.map((k) => el('option', { value: k }, paperLabel(k))));
-    sel.value = settings.paper;
+    sel.value = ST.settings.paper;
   }
   function setSetting(k, v, say) {
-    settings[k] = v;
+    ST.settings[k] = v;
     persistSettings();
-    if (k === 'steel') { applySteel(); if (tool !== 'select') renderProps(); }
+    if (k === 'steel') { applySteel(); if (ST.tool !== 'select') renderProps(); }
     if (k === 'bolts') applyBolts();
     if (k === 'corner') syncCorner();
     syncSettingsForm();
@@ -331,11 +388,11 @@ async function start(root) {
   }
   /** Settings changed elsewhere (another tab, or before the dialog opened): take them, re-applying only what moved. */
   function reloadSettings() {
-    const prev = settings;
-    settings = readSettings();
-    if (settings.steel !== prev.steel) { applySteel(); if (tool !== 'select') renderProps(); }
-    if (settings.bolts !== prev.bolts) applyBolts();
-    if (settings.corner !== prev.corner) syncCorner();
+    const prev = ST.settings;
+    ST.settings = readSettings();
+    if (ST.settings.steel !== prev.steel) { applySteel(); if (ST.tool !== 'select') renderProps(); }
+    if (ST.settings.bolts !== prev.bolts) applyBolts();
+    if (ST.settings.corner !== prev.corner) syncCorner();
     syncSettingsForm();
   }
   if (settingsDlg) {
@@ -346,19 +403,19 @@ async function start(root) {
         const v = Number(t.value);
         if (t.value === '' || !Number.isFinite(v) || Math.abs(v) > 1e6) { t.setAttribute('aria-invalid', 'true'); print(tr('app.set.offset.bad')); return; }
         t.removeAttribute('aria-invalid');
-        const off = settings.offset.slice();
+        const off = ST.settings.offset.slice();
         off['XYZ'.indexOf(t.name.slice(-1))] = v;
         setSetting('offset', off, tr('app.set.offset.done', { x: String(off[0]), y: String(off[1]), z: String(off[2]) }));
       } else if (t.name === 'dcConns') setSetting('conns', t.checked, tr(t.checked ? 'app.set.conns.on' : 'app.set.conns.off'));
       else if (t.name === 'dcCorner') setSetting('corner', ['cube', 'axes', 'none'].includes(t.value) ? t.value : 'cube');
       else if (t.name === 'dcBarNames') { setSetting('barNames', t.value === 'metric' ? 'metric' : 'imperial'); renderProps(); renderReport(); }
       else if (t.name === 'dcShapeCodes') { setSetting('shapeCodes', ['dc', 'aci', 'bs8666'].includes(t.value) ? t.value : 'dc'); renderReport(); }
-      else if (t.name === 'dcDragSel') { setSetting('dragSel', t.value === 'lasso' ? 'lasso' : 'rect'); if (view) view.lasso = settings.dragSel === 'lasso'; }
+      else if (t.name === 'dcDragSel') { setSetting('dragSel', t.value === 'lasso' ? 'lasso' : 'rect'); if (ST.view) ST.view.lasso = ST.settings.dragSel === 'lasso'; }
       else if (t.name === 'dcKiss') setSetting('kiss', ['auto', 'imperial', 'metric'].includes(t.value) ? t.value : 'auto');
       else if (t.name === 'dcPaper') setSetting('paper', PAPER_KEYS.includes(t.value) ? t.value : DEFAULT_PAPER, tr('dwg.paper.set', { paper: paperLabel(t.value) }));
       else if (t.name === 'dcBolts') setSetting('bolts', t.checked, tr(t.checked ? 'app.set.bolts.on' : 'app.set.bolts.off'));
     });
-    settingsDlg.addEventListener('cc-settings-reset', () => { settings = freshSettings(); persistSettings(); applySteel(); applyBolts(); syncCorner(); if (tool !== 'select') renderProps(); syncSettingsForm(); });
+    settingsDlg.addEventListener('cc-settings-reset', () => { ST.settings = freshSettings(); persistSettings(); applySteel(); applyBolts(); syncCorner(); if (ST.tool !== 'select') renderProps(); syncSettingsForm(); });
     // the shared dialog has no "open" event of its own: watch its open attribute and fill the fields each time
     new MutationObserver(() => { if (settingsDlg.open) reloadSettings(); }).observe(settingsDlg, { attributes: true, attributeFilter: ['open'] });
   }
@@ -367,69 +424,72 @@ async function start(root) {
     if (e.key === CLIP_KEY || e.key === null) renderBar();
   });
   applySteel();
-  if (view) { view.showBolts = settings.bolts; view.lasso = settings.dragSel === 'lasso'; }
+  if (ST.view) { ST.view.showBolts = ST.settings.bolts; ST.view.lasso = ST.settings.dragSel === 'lasso'; }
   syncSettingsForm();
 
   // ---- model → parts → marks; then redraw ----
+  const buildCache = {};
+  ST.buildVer = -1;
   function recompute() {
-    built = build(model.state);
-    const perPhase = model.state.numbering?.perPhase !== false;
-    marks = markParts(built, { perPhase });
-    marks.footingMark = markFootings(model.state.footings, { perPhase });
-    rcb = rcBuild(model.state);   // 0.9 RC.1: concrete elements, their bars and checks; loose bars read from a file
-    built.rc = rcb;
-    schedule = mergeSchedule(bendingSchedule(model.state.footings), rcb);   // one bending schedule over the whole structure
+    ST.built = build(ST.model.state, { cache: buildCache, dirty: ST.model.dirtySince?.(ST.buildVer) ?? null });   // 0.11 PERF.36: an edit runs only the connections it touched; the model says which chunks changed since the last build
+    ST.buildVer = ST.model.version;
+    const perPhase = ST.model.state.numbering?.perPhase !== false;
+    ST.marks = markParts(ST.built, { perPhase });
+    ST.marks.footingMark = markFootings(ST.model.state.footings, { perPhase });
+    ST.rcb = rcBuild(ST.model.state);   // 0.9 RC.1: concrete elements, their bars and checks; loose bars read from a file
+    ST.built.rc = ST.rcb;
+    ST.schedule = mergeSchedule(bendingSchedule(ST.model.state.footings), ST.rcb);   // one bending schedule over the whole structure
   }
   function refresh() {
-    for (const n of [...hiddenPhases]) if (!model.state.phases.some((p) => p.n === n)) hiddenPhases.delete(n);
-    if (!model.state.phases.some((p) => p.n === curPhase)) curPhase = model.state.phases[0]?.n || 1;
-    if (view) view.hiddenPhases = hiddenPhases;
-    if (sel && !exists(sel)) sel = null;
-    multi = multi.filter(exists);
-    if (multi.length === 1) { sel = multi[0]; multi = []; }
+    for (const n of [...hiddenPhases]) if (!ST.model.state.phases.some((p) => p.n === n)) hiddenPhases.delete(n);
+    if (!ST.model.state.phases.some((p) => p.n === ST.curPhase)) ST.curPhase = ST.model.state.phases[0]?.n || 1;
+    if (ST.view) ST.view.hiddenPhases = hiddenPhases;
+    if (ST.sel && !exists(ST.sel)) ST.sel = null;
+    ST.multi = ST.multi.filter(exists);
+    if (ST.multi.length === 1) { ST.sel = ST.multi[0]; ST.multi = []; }
     recompute();
-    if (view) { view.setModel(model.state, built, marks); view.setSelection(selected()); }
+    if (ST.view) { ST.view.setModel(ST.model.state, ST.built, ST.marks); ST.view.setSelection(selected()); }
     announcePick();   // SC.5: a selection set without setSelection (a connection just added) and one that lost its object end here
     renderLeft();
     // while someone is typing or tabbing in the properties panel, redraw it once focus has settled
     if (ui.props.contains(ui.props.ownerDocument.activeElement)) setTimeout(renderProps, 0); else renderProps();   // ownerDocument: the panel may be in the panels window
-    analysis?.modelChanged();
-    if (extraSet) { extraSet(erection.problems()); autoSet?.(autopilot.problems()); congSet?.(congestion.problems()); fndSet?.(foundation.problems()); frmSet?.(framing.problems()); rcSet?.(rcProblems(rcb)); ifaceSet?.(dcInterfaces(model.state).problems); if (consSet) { clearTimeout(consTimer); consTimer = setTimeout(() => consSet?.(constructability(model.state, built, { cache: consCache })), 400); } }   // 0.8 EG.72/73: their Problems follow the model, not the open tab
-    problemsSync?.();
-    idsUi?.changed();   // 0.7.1 71.25: re-check the IFC export against the IDS
+    ST.analysis?.modelChanged();
+    if (ST.extraSet) { ST.extraSet(ST.erection.problems()); ST.autoSet?.(ST.autopilot.problems()); ST.congSet?.(ST.congestion.problems()); ST.fndSet?.(ST.foundation.problems()); ST.frmSet?.(ST.framing.problems()); ST.rcSet?.(rcProblems(ST.rcb)); ST.ifaceSet?.(dcInterfaces(ST.model.state).problems); if (ST.consSet) { clearTimeout(ST.consTimer); ST.consTimer = setTimeout(() => ST.consSet?.(constructability(ST.model.state, ST.built, { cache: ST.consCache })), 400); } }   // 0.8 EG.72/73: their Problems follow the model, not the open tab
+    ST.problemsSync?.();
+    ST.idsUi?.changed();   // 0.7.1 71.25: re-check the IFC export against the IDS
     renderReport();
     renderBar();
-    ui.hint.hidden = model.state.members.length > 0 || model.state.footings.length > 0 || !!model.state.rc?.elements.length || !!model.state.rc?.loose.length;
+    ui.hint.hidden = ST.model.state.members.length > 0 || ST.model.state.footings.length > 0 || !!ST.model.state.rc?.elements.length || !!ST.model.state.rc?.loose.length;
   }
-  model.on(refresh);
-  model.on(() => refreshAutosave());
+  ST.model.on(refresh);
+  ST.model.on(() => refreshAutosave());
   // The add-on host (add-on API 1.4, addons.js): the open model, for the Building regulations add-on. `model` is replaced when a file is opened.
-  window.ccAddonModel = { current: () => ({ name: model.state.name || '' }), read: (fn) => fn(model) };
+  window.ccAddonModel = { current: () => ({ name: ST.model.state.name || '' }), read: (fn) => fn(ST.model) };
   const addonModelChanged = () => window.dispatchEvent(new CustomEvent('cc-addon-model-changed'));
-  model.on(addonModelChanged);
-  const exists = (r) => (r.kind === 'member' ? !!model.member(r.id) : r.kind === 'conn' ? !!model.connection(r.id) : r.kind === 'stair' ? !!model.stair(r.id) : r.kind === 'picture' ? !!model.picture(r.id)
-    : r.kind === 'rc' ? !!model.state.rc?.elements.some((x) => x.id === r.id) : r.kind === 'rcbar' ? !!model.state.rc?.loose.some((x) => x.id === r.id) : !!model.footing(r.id));
+  ST.model.on(addonModelChanged);
+  const exists = (r) => (r.kind === 'member' ? !!ST.model.member(r.id) : r.kind === 'conn' ? !!ST.model.connection(r.id) : r.kind === 'stair' ? !!ST.model.stair(r.id) : r.kind === 'picture' ? !!ST.model.picture(r.id)
+    : r.kind === 'rc' ? !!ST.model.state.rc?.elements.some((x) => x.id === r.id) : r.kind === 'rcbar' ? !!ST.model.state.rc?.loose.some((x) => x.id === r.id) : !!ST.model.footing(r.id));
 
   /** One undo step; a refused edit is said in the status bar and nothing changes. */
   function edit(label, fn) {
-    try { const r = model.change(label, fn); return r === undefined ? true : r; }
+    try { const r = ST.model.change(label, fn); return r === undefined ? true : r; }
     catch (err) { print(err.message || String(err)); renderProps(); return null; }
   }
 
   function setModel(m) {
-    model = m;
+    ST.model = m;
     undoHook.attach();
-    model.on(refresh);
-    model.on(() => refreshAutosave());
-    model.on(addonModelChanged); addonModelChanged();
-    sel = null; multi = []; pending = null;
-    shellMount?.modelChanged();
-    hiddenPhases.clear(); curPhase = model.state.phases?.[0]?.n || 1;
-    saveTarget = null;
-    if (view) view.fitted = false;
+    ST.model.on(refresh);
+    ST.model.on(() => refreshAutosave());
+    ST.model.on(addonModelChanged); addonModelChanged();
+    ST.sel = null; ST.multi = []; ST.pending = null;
+    ST.shellMount?.modelChanged();
+    hiddenPhases.clear(); ST.curPhase = ST.model.state.phases?.[0]?.n || 1;
+    ST.saveTarget = null;
+    if (ST.view) ST.view.fitted = false;
     syncViewSelects();
     refresh();
-    if (view) setView(viewMode);
+    if (ST.view) setView(ST.viewMode);
   }
 
   // ---- toolbar ----
@@ -444,7 +504,7 @@ async function start(root) {
   document.addEventListener('click', (e) => { for (const d of root.querySelectorAll('details.dc-menu[open]')) if (!d.contains(e.target)) d.open = false; });
   // on the controls themselves, not the bar: a workspace layout moves the 3D / Plan / Elevation picker into its info box (0.7 WS.13)
   root.querySelector('.dc-viewbar .dc-seg').addEventListener('click', (e) => { const v = e.target.closest('[data-view]'); if (v) setView(v.dataset.view); });
-  root.querySelector('.dc-viewbar [data-act="fit"]').addEventListener('click', () => view?.fit());
+  root.querySelector('.dc-viewbar [data-act="fit"]').addEventListener('click', () => ST.view?.fit());
   function act(a) {
     if (a.startsWith('tool:')) return setTool(a.slice(5));
     switch (a) {
@@ -452,6 +512,7 @@ async function start(root) {
       case 'open': return pickAndOpen(OPEN_TYPES);
       case 'import': return pickAndOpen(IFC_TYPES);
       case 'save': return saveModel();
+      case 'save-older': return saveOlder();   // 0.11 DC.27
       case 'sample': return openSample();
       case 'endplates': return addEndPlates();
       case 'baseplate': return addBasePlate();
@@ -460,8 +521,8 @@ async function start(root) {
       case 'gusset': return addGussets();
       case 'mitre': return addMitres();
       case 'similar': return applySimilar();
-      case 'undo': { const l = model.undo(); print(l ? tr('app.undo.done', { label: l }) : tr('app.undo.nothing')); return; }
-      case 'redo': { const l = model.redo(); print(l ? tr('app.redo.done', { label: l }) : tr('app.redo.nothing')); return; }
+      case 'undo': { const l = ST.model.undo(); print(l ? tr('app.undo.done', { label: l }) : tr('app.undo.nothing')); return; }
+      case 'redo': { const l = ST.model.redo(); print(l ? tr('app.redo.done', { label: l }) : tr('app.redo.nothing')); return; }
       case 'delete': return deleteSelection();
       case 'copy': return void copySelection();
       case 'cut': return cutSelection();
@@ -472,19 +533,19 @@ async function start(root) {
       case 'select-all': return selectAll();
       case 'select-none': { const had = selected().length; setSelection([]); print(tr(had ? 'app.sel.none.done' : 'app.sel.none.already')); return; }
       case 'ifc': return exportIfc();
-      case 'ids': return idsUi?.open();   // 0.7.1 71.25
+      case 'ids': return ST.idsUi?.open();   // 0.7.1 71.25
       case 'usd': return exportUsd();   // 0.7 XF.8 (session usd)
       case 'nc': return exportNc();
       case 'nc-send': return sendNc();
       case 'bom': return exportBom();
       case 'bending': return exportBending();
-      case 'rc-sheets': return rcUi.openSheets(null);   // 0.9 RC.1: reinforcement shop drawings and bending sheets
-      case 'rc-tab': reportTab = 'rc'; renderReport(); ui.report.focus(); print(tr('rc.tab.opened')); return;
+      case 'rc-sheets': return ST.rcUi.openSheets(null);   // 0.9 RC.1: reinforcement shop drawings and bending sheets
+      case 'rc-tab': ST.reportTab = 'rc'; renderReport(); ui.report.focus(); print(tr('rc.tab.opened')); return;
       case 'shop': return openShop();
       case 'drawings': return openDrawings();
       case 'kiss': return exportKiss();
-      case 'report': reportTab = 'phases'; renderReport(); ui.report.focus(); print(tr('rep.opened')); return;
-      case 'fit': return view?.fit();
+      case 'report': ST.reportTab = 'phases'; renderReport(); ui.report.focus(); print(tr('rep.opened')); return;
+      case 'fit': return ST.view?.fit();
     }
   }
   function renderBar() {
@@ -492,8 +553,8 @@ async function start(root) {
     // the Edit buttons and their twins in the More menu: disabled with the reason in the title
     const setEdit = (a, on, title, why) => { for (const b of ui.tools.querySelectorAll('[data-act="' + a + '"]')) { b.disabled = !on; b.title = on ? title : tr('app.bar.why', { title, why }); } };
     const lastLabel = (stack) => stack[stack.length - 1]?.label || '';
-    setEdit('undo', model.canUndo, model.canUndo ? tr('app.bar.undo.label', { label: lastLabel(model.undoStack) }) : tr('app.bar.undo'), tr('app.bar.undo.why'));
-    setEdit('redo', model.canRedo, model.canRedo ? tr('app.bar.redo.label', { label: lastLabel(model.redoStack) }) : tr('app.bar.redo'), tr('app.bar.redo.why'));
+    setEdit('undo', ST.model.canUndo, ST.model.canUndo ? tr('app.bar.undo.label', { label: lastLabel(ST.model.undoStack) }) : tr('app.bar.undo'), tr('app.bar.undo.why'));
+    setEdit('redo', ST.model.canRedo, ST.model.canRedo ? tr('app.bar.redo.label', { label: lastLabel(ST.model.redoStack) }) : tr('app.bar.redo'), tr('app.bar.redo.why'));
     const picked = selected(), copyable = picked.some((r) => r.kind !== 'conn' && r.kind !== 'picture');
     const needCopy = tr(picked.length ? 'app.bar.copy.why.conn' : 'app.bar.copy.why.none');
     setEdit('copy', copyable, tr('app.bar.copy'), needCopy);
@@ -501,47 +562,47 @@ async function start(root) {
     setEdit('duplicate', copyable, tr('app.bar.duplicate'), needCopy);
     setEdit('move', copyable, tr('app.bar.move'), needCopy);
     setEdit('delete', picked.length > 0, tr('app.bar.delete'), tr('app.bar.delete.why'));
-    const canPaste = !!clip || clipStored();
+    const canPaste = !!ST.clip || clipStored();
     setEdit('paste', canPaste || !!storedArea(), tr('app.bar.paste'), tr('app.bar.paste.why'));
     setEdit('paste-in-place', canPaste, tr('app.bar.paste-in-place'), tr('app.bar.paste.why'));
-    const any = model.state.members.length + model.state.footings.length > 0;
+    const any = ST.model.state.members.length + ST.model.state.footings.length > 0;
     setEdit('select-all', any, tr('app.bar.select-all'), tr('app.bar.select-all.why'));
-    const st = model.state, content = any || st.stairs.length + st.connections.length > 0 || !!st.rc?.elements.length || !!st.rc?.loose.length;
+    const st = ST.model.state, content = any || st.stairs.length + st.connections.length > 0 || !!st.rc?.elements.length || !!st.rc?.loose.length;
     for (const b of ui.tools.querySelectorAll('[data-act]')) {
       const a = b.dataset.act;
-      if (a === 'new') b.disabled = !content && !model.dirty;
+      if (a === 'new') b.disabled = !content && !ST.model.dirty;
       else if (['save', 'ifc', 'nc', 'bom', 'bending', 'drawings', 'kiss', 'fit'].includes(a)) b.disabled = !content;
       else if (a === 'nc-send') { b.hidden = !machinesReady(); b.disabled = !content; }
     }
     setEdit('select-none', picked.length > 0, tr('app.bar.select-none'), tr('app.bar.select-none.why'));
-    btn('endplates').disabled = !(sel?.kind === 'member' && model.member(sel.id)?.type === 'beam');
-    btn('baseplate').disabled = !(sel?.kind === 'member' && model.member(sel.id)?.type === 'column');
+    btn('endplates').disabled = !(ST.sel?.kind === 'member' && ST.model.member(ST.sel.id)?.type === 'beam');
+    btn('baseplate').disabled = !(ST.sel?.kind === 'member' && ST.model.member(ST.sel.id)?.type === 'column');
     btn('sheartabs').disabled = btn('endplates').disabled;
-    btn('gusset').disabled = !picked.some((r) => r.kind === 'member' && model.member(r.id)?.type === 'brace');
-    btn('splice').disabled = !picked.some((r) => r.kind === 'member' && ['beam', 'column'].includes(model.member(r.id)?.type));
-    btn('mitre').disabled = picked.filter((r) => r.kind === 'member').length < 2 && !(sel?.kind === 'conn' && model.connection(sel.id)?.type === 'mitre');
-    btn('similar').disabled = !(sel?.kind === 'conn');
+    btn('gusset').disabled = !picked.some((r) => r.kind === 'member' && ST.model.member(r.id)?.type === 'brace');
+    btn('splice').disabled = !picked.some((r) => r.kind === 'member' && ['beam', 'column'].includes(ST.model.member(r.id)?.type));
+    btn('mitre').disabled = picked.filter((r) => r.kind === 'member').length < 2 && !(ST.sel?.kind === 'conn' && ST.model.connection(ST.sel.id)?.type === 'mitre');
+    btn('similar').disabled = !(ST.sel?.kind === 'conn');
     const part = selectedPart();
-    btn('shop').disabled = !built.parts.length;   // no selection needed: the dialog holds every part mark
-    for (const b of ui.tools.querySelectorAll('[data-act^="tool:"]')) b.setAttribute('aria-pressed', String(b.dataset.act === 'tool:' + tool));
-    const steel = built.parts.reduce((s, p) => s + p.weight, 0), bars = schedule.rows.reduce((s, r) => s + r.totalWeight, 0);
-    ui.counts.textContent = tr('app.bar.counts', { parts: built.parts.length, bolts: built.bolts.length, steel: kg(steel) }) + (bars ? ' ' + tr('app.bar.counts.rebar', { rebar: kg(bars) }) : '');
-    window.ccSetDocTitle ? window.ccSetDocTitle(model.state.name, model.dirty) : (document.title = (model.dirty ? '• ' : '') + model.state.name + ' — DetailCraft | CadCraft');   // 2026-11-09: the shell's one title pattern
-    workspace?.refresh();
+    btn('shop').disabled = !ST.built.parts.length;   // no selection needed: the dialog holds every part mark
+    for (const b of ui.tools.querySelectorAll('[data-act^="tool:"]')) b.setAttribute('aria-pressed', String(b.dataset.act === 'tool:' + ST.tool));
+    const steel = ST.built.parts.reduce((s, p) => s + p.weight, 0), bars = ST.schedule.rows.reduce((s, r) => s + r.totalWeight, 0);
+    ui.counts.textContent = tr('app.bar.counts', { parts: ST.built.parts.length, bolts: ST.built.bolts.length, steel: kg(steel) }) + (bars ? ' ' + tr('app.bar.counts.rebar', { rebar: kg(bars) }) : '');
+    window.ccSetDocTitle ? window.ccSetDocTitle(ST.model.state.name, ST.model.dirty) : (document.title = (ST.model.dirty ? '• ' : '') + ST.model.state.name + ' — DetailCraft | CadCraft');   // 2026-11-09: the shell's one title pattern
+    ST.workspace?.refresh();
   }
 
   function setTool(t) {
     if (t === 'move') {
-      moveRefs = selected().filter((r) => r.kind !== 'conn');
-      if (!moveRefs.length) { print(tr('xf.none')); return; }
-    } else moveRefs = null;
-    tool = t;
-    pending = null;
-    pasteClip = t === 'paste' ? currentClip(true) : null;
-    if (t === 'paste' && !pasteClip) tool = t = 'select';
-    if (view) { view.placing = t !== 'select'; view.boxSelect = t === 'select'; view.rubberFrom = null; view.ghost = pasteClip ? clipSegments(pasteClip) : null; view.updateHover(); }
+      ST.moveRefs = selected().filter((r) => r.kind !== 'conn');
+      if (!ST.moveRefs.length) { print(tr('xf.none')); return; }
+    } else ST.moveRefs = null;
+    ST.tool = t;
+    ST.pending = null;
+    ST.pasteClip = t === 'paste' ? currentClip(true) : null;
+    if (t === 'paste' && !ST.pasteClip) ST.tool = t = 'select';
+    if (ST.view) { ST.view.placing = t !== 'select'; ST.view.boxSelect = t === 'select'; ST.view.rubberFrom = null; ST.view.ghost = ST.pasteClip ? clipSegments(ST.pasteClip) : null; ST.view.updateHover(); }
     ui.stage.classList.toggle('is-placing', t !== 'select');
-    if (t !== 'select') sel = null, multi = [], view?.setSelection(moveRefs || []);
+    if (t !== 'select') ST.sel = null, ST.multi = [], ST.view?.setSelection(ST.moveRefs || []);
     renderBar();
     renderProps();
     if (t === 'move') { print(tr('xf.move.from')); return; }
@@ -552,7 +613,7 @@ async function start(root) {
 
   // ---- views ----
   function syncViewSelects() {
-    const s = model.state;
+    const s = ST.model.state;
     const lv = ui.vlevel.value, gv = ui.vgrid.value;
     ui.vlevel.replaceChildren(...s.levels.map((l) => el('option', { value: l.name }, l.name)));
     ui.vgrid.replaceChildren(...s.grids.y.map((g) => el('option', { value: g.label }, tr('app.view.grid', { label: g.label }))));
@@ -560,113 +621,40 @@ async function start(root) {
     if (s.grids.y.some((g) => g.label === gv)) ui.vgrid.value = gv;
   }
   function setView(mode) {
-    viewMode = mode;
+    ST.viewMode = mode;
     for (const b of root.querySelectorAll('[data-view]')) b.setAttribute('aria-checked', String(b.dataset.view === mode));
     ui.vlevel.hidden = mode !== 'plan';
     ui.vgrid.hidden = mode !== 'elevation';
-    const level = model.state.levels.find((l) => l.name === ui.vlevel.value) || model.state.levels[model.state.levels.length - 1];
-    const grid = model.state.grids.y.find((g) => g.label === ui.vgrid.value) || model.state.grids.y[0];
+    const level = ST.model.state.levels.find((l) => l.name === ui.vlevel.value) || ST.model.state.levels[ST.model.state.levels.length - 1];
+    const grid = ST.model.state.grids.y.find((g) => g.label === ui.vgrid.value) || ST.model.state.grids.y[0];
     if (mode === 'plan' && level) ui.vlevel.value = level.name;
     if (mode === 'elevation' && grid) ui.vgrid.value = grid.label;
-    view?.setMode(mode, { level, grid });
-    workspace?.refresh();
+    ST.view?.setMode(mode, { level, grid });
+    ST.workspace?.refresh();
   }
   ui.vlevel.addEventListener('change', () => setView('plan'));
   ui.vgrid.addEventListener('change', () => setView('elevation'));
 
-  // ---- placing ----
-  function placeAt(n) {
-    const s = model.state;
-    if (tool === 'move') {
-      if (!pending) {
-        pending = n;
-        if (view) { view.rubberFrom = n.p; view.ghost = ghostLines(s, moveRefs, n.p); view.drawOverlay(); }
-        print(tr('xf.move.to', { from: nodeName(s, n.p) }));
-        return;
-      }
-      if (pending.p.join() === n.p.join()) { print(tr('xf.move.same')); return; }
-      const d = [n.p[0] - pending.p[0], n.p[1] - pending.p[1], n.p[2] - pending.p[2]];
-      const refs = moveRefs;
-      setTool('select');
-      runXf(refs, moveXf(...d), false, { kind: 'move', d });
-      return;
-    }
-    if (tool === 'paste') {
-      if (!pasteClip) return setTool('select');
-      const b = pasteClip.base;
-      pasteClipAt(pasteClip, [n.p[0] - b[0], n.p[1] - b[1], n.p[2] - b[2]], 'at', { node: nodeName(s, n.p) });
-      return;
-    }
-    if (tool === 'column') {
-      const above = s.levels.filter((l) => l.z > n.p[2] + 0.5);
-      const top = above.find((l) => l.name === opts.column.to) || above[0];
-      if (!top) { print(tr('app.place.column.no-level', { level: n.level })); return; }
-      const o = opts.column;
-      const id = edit(tr('app.undo.place.column'), (tx) => tx.addMember({ type: 'column', profile: o.profile, material: o.material, position: o.position, rotation: o.rotation, start: n.p, end: [n.p[0], n.p[1], top.z], phase: curPhase }));
-      if (id) print(tr('app.place.column.done', { profile: o.profile, gy: n.gy, gx: n.gx, level: n.level, top: top.name }));
-      return;
-    }
-    if (tool === 'footing') {
-      const o = opts.footing;
-      const id = edit(tr('app.undo.place.footing'), (tx) => tx.addFooting({ x: n.p[0], y: n.p[1], top: n.p[2], L: o.L, B: o.B, H: o.H, concrete: o.concrete, mat: o.mat, starters: o.starters, phase: curPhase }));
-      if (id) print(tr('app.place.footing.done', { l: mm(o.L), b: mm(o.B), h: mm(o.H), gy: n.gy, gx: n.gx }));
-      return;
-    }
-    if (tool === 'stair') {
-      const o = opts.useGen ? opts.steelStair : opts.stair;
-      let rise = o.rise;
-      if (!rise) {
-        const up = s.levels.filter((l) => l.z > n.p[2] + 0.5).sort((a, b) => a.z - b.z)[0];
-        if (!up) { print(tr('app.place.stair.no-level', { level: n.level })); return; }
-        rise = up.z - n.p[2];
-      }
-      const id = edit(tr('app.undo.place.stair'), (tx) => tx.addStair({ ...o, tread: { ...o.tread }, x: n.p[0], y: n.p[1], z: n.p[2], rise, phase: curPhase }));
-      if (id) {
-        const g = stairGeometry(model.stair(id), (nm) => getProfile(nm, model.state.profiles));
-        print(opts.useGen ? tr('app.stair.gen.done', { n: g.n, r: r1(g.riser), g: r1(g.going), f: g.gen.flights.length, l: g.gen.landings.length }) : tr('app.place.stair.done', { n: g.n, r: r1(g.riser), gy: n.gy, gx: n.gx }));
-      }
-      return;
-    }
-    if (!['beam', 'brace', 'plate'].includes(tool)) return;
-    if (!pending) {
-      pending = n;
-      if (view) { view.rubberFrom = n.p; view.drawOverlay(); }
-      print(tr('app.place.from', { node: nodeName(s, n.p) }));
-      return;
-    }
-    if (pending.p.join() === n.p.join()) { print(tr('app.place.same')); return; }
-    const a = pending.p, b = n.p;
-    pending = null;
-    if (view) { view.rubberFrom = null; view.drawOverlay(); }
-    placeLine(a, b);
-  }
-  function placeLine(a, b) {
-    const o = opts[tool];
-    const profile = tool === 'plate' ? plateName(o.t, o.w) : o.profile;
-    const id = edit(tr('app.undo.place.' + tool), (tx) => tx.addMember({ type: tool, profile, material: o.material, position: o.position, rotation: o.rotation, start: a, end: b, phase: curPhase }));
-    if (id) print(tr('app.place.done.' + tool, { profile, from: nodeName(model.state, a), to: nodeName(model.state, b) }));
-  }
-
   // ---- selection ----
   function select(ref) {
-    if (tool !== 'select') return;
+    if (ST.tool !== 'select') return;
     setSelection(ref && exists(ref) ? [ref] : []);
-    if (sel) print(describeRef(sel));
+    if (ST.sel) print(describeRef(ST.sel));
   }
   /** Any number of refs (missing ones and repeats dropped): one → sel, several → multi. */
   function setSelection(refs) {
     const seen = new Set(), list = [];
     for (const r of refs) { if (!r || !exists(r) || seen.has(refKey(r))) continue; seen.add(refKey(r)); list.push(r); }
-    if (list.length <= 1) { sel = list[0] || null; multi = []; } else { sel = null; multi = list; }
-    view?.setSelection(selected());
+    if (list.length <= 1) { ST.sel = list[0] || null; ST.multi = []; } else { ST.sel = null; ST.multi = list; }
+    ST.view?.setSelection(selected());
     renderProps();
     renderBar();
     for (const fn of selListeners) { try { fn(); } catch (e) { /* a listener must not stop the selection */ } }
-    if (reportTab === 'analysis') renderReport();   // 0.6 LC.4: the Analysis tab loads the selected members
+    if (ST.reportTab === 'analysis') renderReport();   // 0.6 LC.4: the Analysis tab loads the selected members
   }
   /** A click in the view: plain = select that; Shift/Ctrl/Cmd = add it or take it away. */
   function pick(ref, e) {
-    if (tool !== 'select') return;
+    if (ST.tool !== 'select') return;
     if (!(e && (e.shiftKey || e.ctrlKey || e.metaKey))) return select(ref);
     if (!ref) return;
     const cur = selected();
@@ -677,8 +665,8 @@ async function start(root) {
   const refKey = (r) => r.kind + ':' + r.id;
   /** A selection window let go in the view: what it takes (winsel.js), added with Shift. */
   function windowPicked(w) {
-    if (tool !== 'select' || !view || !built) return;
-    const got = windowSelect(selectionItems(model.state, built, hiddenPhases), (p) => view.project(p), w.path, w.mode, view.cutPlanes());
+    if (ST.tool !== 'select' || !ST.view || !ST.built) return;
+    const got = windowSelect(selectionItems(ST.model.state, ST.built, hiddenPhases), (p) => ST.view.project(p), w.path, w.mode, ST.view.cutPlanes());
     const kind = w.mode === 'fence' ? 'fence' : w.mode === 'crossing' ? 'crossing' : 'window';
     if (!got.length) { if (!w.add) setSelection([]); print(tr('sel.' + kind + '.none')); return; }
     const next = w.add ? [...selected(), ...got] : got;
@@ -686,8 +674,8 @@ async function start(root) {
     print(tr('sel.' + kind + '.got', { n: got.length }) + (w.add ? ' ' + tr('sel.total', { n: selected().length }) : ''));
   }
   function selectAll() {
-    if (tool !== 'select') setTool('select');
-    const s = model.state;
+    if (ST.tool !== 'select') setTool('select');
+    const s = ST.model.state;
     const vis = (x) => !hiddenPhases.has(x.phase || 1);
     const mem = s.members.filter(vis), foot = s.footings.filter(vis), conns = s.connections.filter((c) => !hiddenPhases.has(connPhase(s, c))), sts = (s.stairs || []).filter(vis);
     const refs = [...mem.map((m) => ({ kind: 'member', id: m.id })), ...conns.map((c) => ({ kind: 'conn', id: c.id })), ...foot.map((f) => ({ kind: 'footing', id: f.id })), ...sts.map((x) => ({ kind: 'stair', id: x.id }))];
@@ -696,18 +684,18 @@ async function start(root) {
     print(tr('app.sel.all.done', { what: countText({ members: mem.length, connections: conns.length, footings: foot.length, stairs: sts.length }) }) + (hiddenPhases.size ? ' ' + tr('phase.all.note') : ''));
   }
   function describeRef(r) {
-    if (r.kind === 'member') { const m = model.member(r.id); const mk = marks.partMark.get(r.id); return mk ? tr('app.ref.member.marked', { type: typeName(m.type), profile: m.profile, part: mk, asm: marks.asmMark.get(r.id) || '' }) : tr('app.ref.member', { type: typeName(m.type), profile: m.profile }); }
-    if (r.kind === 'conn') { const c = model.connection(r.id); return tr('app.ref.' + c.type, { id: c.id }); }
-    if (r.kind === 'stair') { const x = model.stair(r.id); return tr('app.ref.stair', { mark: (marks.asmMark.get(r.id + '.stringerL') || marks.asmMark.get(r.id + '.f1stringerL') || ''), rise: mm(x.rise), width: mm(x.width) }); }
-    if (r.kind === 'picture') { const p = model.picture(r.id), [w, h] = pictureSizeMm(p); return tr('pic.ref', { name: p.name || tr('pic.unnamed'), w: mm(w), h: mm(h) }); }
-    if (r.kind === 'rc') { const x = model.state.rc.elements.find((q) => q.id === r.id), it = rcb?.byId.get(r.id); return tr('rc.ref', { name: rcb?.labels.get(r.id) || r.id, n: it ? it.res.groups.reduce((a, g) => a + g.count, 0) : 0, fails: it ? it.checks.filter((c) => c.status === 'fail').length : 0, kind: tr('rc.kind.' + x.kind) }); }
-    if (r.kind === 'rcbar') { const b = model.state.rc.loose.find((q) => q.id === r.id); return tr('rc.ref.loose', { bar: barLabel(b.bar, settings.barNames), mark: b.mark || '—', host: b.host?.name || b.host?.cls || tr('rc.loose.nohost') }); }
-    const f = model.footing(r.id); return tr('app.ref.footing', { mark: marks.footingMark.get(f.id) || '', l: mm(f.L), b: mm(f.B), h: mm(f.H) });
+    if (r.kind === 'member') { const m = ST.model.member(r.id); const mk = ST.marks.partMark.get(r.id); return mk ? tr('app.ref.member.marked', { type: typeName(m.type), profile: m.profile, part: mk, asm: ST.marks.asmMark.get(r.id) || '' }) : tr('app.ref.member', { type: typeName(m.type), profile: m.profile }); }
+    if (r.kind === 'conn') { const c = ST.model.connection(r.id); return tr('app.ref.' + c.type, { id: c.id }); }
+    if (r.kind === 'stair') { const x = ST.model.stair(r.id); return tr('app.ref.stair', { mark: (ST.marks.asmMark.get(r.id + '.stringerL') || ST.marks.asmMark.get(r.id + '.f1stringerL') || ''), rise: mm(x.rise), width: mm(x.width) }); }
+    if (r.kind === 'picture') { const p = ST.model.picture(r.id), [w, h] = pictureSizeMm(p); return tr('pic.ref', { name: p.name || tr('pic.unnamed'), w: mm(w), h: mm(h) }); }
+    if (r.kind === 'rc') { const x = ST.model.state.rc.elements.find((q) => q.id === r.id), it = ST.rcb?.byId.get(r.id); return tr('rc.ref', { name: ST.rcb?.labels.get(r.id) || r.id, n: it ? it.res.groups.reduce((a, g) => a + g.count, 0) : 0, fails: it ? it.checks.filter((c) => c.status === 'fail').length : 0, kind: tr('rc.kind.' + x.kind) }); }
+    if (r.kind === 'rcbar') { const b = ST.model.state.rc.loose.find((q) => q.id === r.id); return tr('rc.ref.loose', { bar: barLabel(b.bar, ST.settings.barNames), mark: b.mark || '—', host: b.host?.name || b.host?.cls || tr('rc.loose.nohost') }); }
+    const f = ST.model.footing(r.id); return tr('app.ref.footing', { mark: ST.marks.footingMark.get(f.id) || '', l: mm(f.L), b: mm(f.B), h: mm(f.H) });
   }
   function selectedPart() {
-    if (!sel) return null;
-    if (sel.kind === 'member') return built.byId.get(sel.id) || null;
-    if (sel.kind === 'conn') return built.byId.get(sel.id + '.plate') || null;
+    if (!ST.sel) return null;
+    if (ST.sel.kind === 'member') return ST.built.byId.get(ST.sel.id) || null;
+    if (ST.sel.kind === 'conn') return ST.built.byId.get(ST.sel.id + '.plate') || null;
     return null;
   }
   const cap = (s) => s.charAt(0).toUpperCase() + s.slice(1);
@@ -725,128 +713,39 @@ async function start(root) {
     const refs = selected();
     if (!refs.length) { print(tr('app.delete.none')); return; }
     const r = refs[0];
-    const label = refs.length > 1 ? tr('app.undo.delete.many', { n: refs.length }) : r.kind === 'member' ? tr('app.undo.delete.' + model.member(r.id).type) : tr(r.kind === 'conn' ? 'app.undo.delete.conn' : r.kind === 'picture' ? 'pic.undo.delete' : r.kind === 'rc' ? 'rc.undo.delete' : r.kind === 'rcbar' ? 'rc.undo.delete-bar' : 'app.undo.delete.footing');
+    const label = refs.length > 1 ? tr('app.undo.delete.many', { n: refs.length }) : r.kind === 'member' ? tr('app.undo.delete.' + ST.model.member(r.id).type) : tr(r.kind === 'conn' ? 'app.undo.delete.conn' : r.kind === 'picture' ? 'pic.undo.delete' : r.kind === 'rc' ? 'rc.undo.delete' : r.kind === 'rcbar' ? 'rc.undo.delete-bar' : 'app.undo.delete.footing');
     if (deleteRefs(refs, label)) print(refs.length > 1 ? tr('app.delete.done.many', { n: refs.length }) : tr('app.delete.done.one'));
   }
 
   // ---- clipboard: this tab's copy in memory, and in localStorage so another tab can paste it ----
-  let clip = null, clipRaw = null;     // the last copy (checked by readClip) and the stored text it came from
+  ST.clip = null;
+  ST.clipRaw = null;     // the last copy (checked by readClip) and the stored text it came from
   const { clipStored, currentClip, countText, copySelection, cutSelection, startPaste, storedArea, pasteNewest, pictureGhost, keyPasteArea, duplicate, pasteClipAt } = mountClipboard({
     ui, selected, print, edit, renderBar, setTool, setSelection, deleteRefs, mm,
-    get clipRaw() { return clipRaw; }, set clipRaw(v) { clipRaw = v; },
-    get clip() { return clip; }, set clip(v) { clip = v; },
-    get model() { return model; },
-    get settings() { return settings; },
-    get tool() { return tool; },
-    get viewMode() { return viewMode; },
+    get clipRaw() { return ST.clipRaw; }, set clipRaw(v) { ST.clipRaw = v; },
+    get clip() { return ST.clip; }, set clip(v) { ST.clip = v; },
+    get model() { return ST.model; },
+    get settings() { return ST.settings; },
+    get tool() { return ST.tool; },
+    get viewMode() { return ST.viewMode; },
   });
 
-  // ---- connections ----
-  function addEndPlates() {
-    if (sel?.kind !== 'member') return;
-    const id = sel.id;
-    const joints = findJoints(model.state).filter((j) => j.beam === id);
-    const taken = new Set(model.state.connections.filter(isBeamEnd).map((c) => c.beam + ':' + c.end));
-    const free = joints.filter((j) => !taken.has(j.beam + ':' + j.end));
-    const flange = free.filter((j) => j.face === 'flange' || j.face === 'web');   // square joints (D6: a column web too)
-    if (!joints.length) { print(tr('app.endplate.no-joint')); return; }
-    if (!flange.length) { print(tr(free.length ? 'app.endplate.skew' : 'app.endplate.both')); return; }
-    const ids = edit(tr('app.undo.endplates'), (tx) => flange.map((j) => tx.addConnection({ type: 'endplate', beam: j.beam, end: j.end, column: j.column })));
-    if (ids) { sel = { kind: 'conn', id: ids[0] }; refresh(); print(tr('app.endplate.added', { n: flange.length })); }
-  }
-  /** Shear tabs (D5, D7) at every end of the selected beam that meets a column, square or not. */
-  function addShearTabs() {
-    if (sel?.kind !== 'member') return;
-    const id = sel.id;
-    const joints = findJoints(model.state).filter((j) => j.beam === id);
-    const taken = new Set(model.state.connections.filter(isBeamEnd).map((c) => c.beam + ':' + c.end));
-    const free = joints.filter((j) => !taken.has(j.beam + ':' + j.end));
-    if (!joints.length) { print(tr('app.endplate.no-joint')); return; }
-    if (!free.length) { print(tr('app.endplate.both')); return; }
-    const ids = edit(tr('app.undo.sheartabs'), (tx) => free.map((j) => tx.addConnection({ type: 'sheartab', beam: j.beam, end: j.end, column: j.column })));
-    if (ids) { sel = { kind: 'conn', id: ids[0] }; refresh(); print(tr('app.sheartab.added', { n: free.length })); }
-  }
-  /** Bolted splices (D21) wherever a selected beam or column meets another piece of its profile end to end. */
-  function addSplices() {
-    const ids = selected().filter((r) => r.kind === 'member').map((r) => r.id);
-    if (!ids.length) return;
-    const free = freeSplices(model.state, ids);
-    if (!free.length) { print(tr('app.splice.none')); return; }
-    const cids = edit(tr('app.undo.splice'), (tx) => free.map((j) => tx.addConnection({ type: 'splice', a: j.a, aEnd: j.aEnd, b: j.b })));
-    if (cids) { sel = { kind: 'conn', id: cids[0] }; refresh(); print(tr('app.splice.added2', { n: free.length })); }
-  }
-  /** Brace gussets (D22) at every end of the selected braces that lands on a column or beam. */
-  function addGussets() {
-    const ids = selected().filter((r) => r.kind === 'member').map((r) => r.id);
-    if (!ids.length) return;
-    const free = freeBraceEnds(model.state, ids);
-    if (!free.length) { print(tr('app.gusset.none')); return; }
-    const cids = edit(tr('app.undo.gusset'), (tx) => free.map((j) => tx.addConnection({ type: 'gusset', brace: j.brace, end: j.end, support: j.support })));
-    if (cids) { sel = { kind: 'conn', id: cids[0] }; refresh(); print(tr('app.gusset.added', { n: free.length })); }
-  }
-  /**
-   * Mitres (0.7.1 71.20) where the selected I-shaped members meet end to end at an angle: the Mitre dialog, with a preview,
-   * then one undo step for every joint found (the same parameters on each). A selected mitre opens it to change.
-   */
-  function addMitres() {
-    if (sel?.kind === 'conn' && model.connection(sel.id)?.type === 'mitre') { openMitre({ conn: model.connection(sel.id) }); return; }
-    const ids = selected().filter((r) => r.kind === 'member').map((r) => r.id);
-    const joints = ids.length >= 2 ? freeMitres(model.state, ids) : [];
-    // two members that already have their mitre: open it (a plain cut has no plate to click)
-    const had = !joints.length && model.state.connections.find((c) => c.type === 'mitre' && ids.includes(c.a) && ids.includes(c.b));
-    if (had) { openMitre({ conn: had }); return; }
-    if (!joints.length) { print(tr('app.mitre.none')); return; }
-    openMitre({ joints });
-  }
+  const { addEndPlates, addShearTabs, addSplices, addGussets, addMitres, addBasePlate, applySimilar } = mountConnAdd({
+    ST, selected, print, refresh, edit,
+    get openMitre() { return openMitre; },
+  });
   const { openMitre } = mountMitre({
     print, refresh, edit, numIn, textIn, restoreFocus, root, r1,
-    get lastFocus() { return lastFocus; }, set lastFocus(v) { lastFocus = v; },
-    get model() { return model; },
-    get marks() { return marks; },
-    get sel() { return sel; }, set sel(v) { sel = v; },
-    get multi() { return multi; }, set multi(v) { multi = v; },
+    get lastFocus() { return ST.lastFocus; }, set lastFocus(v) { ST.lastFocus = v; },
+    get model() { return ST.model; },
+    get marks() { return ST.marks; },
+    get sel() { return ST.sel; }, set sel(v) { ST.sel = v; },
+    get multi() { return ST.multi; }, set multi(v) { ST.multi = v; },
   });
-  function addBasePlate() {
-    if (sel?.kind !== 'member') return;
-    const id = sel.id;
-    if (model.state.connections.some((c) => c.type === 'baseplate' && c.column === id)) { print(tr('app.baseplate.has')); return; }
-    const cid = edit(tr('app.undo.baseplate'), (tx) => tx.addConnection({ type: 'baseplate', column: id }));
-    if (cid) { sel = { kind: 'conn', id: cid }; refresh(); print(tr('app.baseplate.added')); }
-  }
-  function applySimilar() {
-    if (sel?.kind !== 'conn') return;
-    const c = model.connection(sel.id);
-    if (c.type === 'mitre') {
-      const js = similarMitres(model.state, c);
-      if (!js.length) { print(tr('app.mitre.none')); return; }
-      edit(tr('app.undo.mitre'), (tx) => { for (const j of js) tx.addConnection({ type: 'mitre', a: j.a, aEnd: j.aEnd, b: j.b, bEnd: j.bEnd, params: c.params }); });
-      print(tr('app.mitre.added', { n: js.length }));
-    } else if (c.type === 'gusset') {
-      const js = similarBraceEnds(model.state, c);
-      if (!js.length) { print(tr('app.gusset.none')); return; }
-      edit(tr('app.undo.gusset'), (tx) => { for (const j of js) tx.addConnection({ type: 'gusset', brace: j.brace, end: j.end, support: j.support, params: c.params }); });
-      print(tr('app.gusset.added', { n: js.length }));
-    } else if (c.type === 'splice') {
-      const js = similarSplices(model.state, c);
-      if (!js.length) { print(tr('app.splice.none')); return; }
-      edit(tr('app.undo.splice'), (tx) => { for (const j of js) tx.addConnection({ type: 'splice', a: j.a, aEnd: j.aEnd, b: j.b, params: c.params }); });
-      print(tr('app.splice.added2', { n: js.length }));
-    } else if (isBeamEnd(c)) {
-      const js = similarJoints(model.state, c);
-      if (!js.length) { print(tr('app.similar.endplate.none')); return; }
-      edit(tr('app.undo.similar.endplate'), (tx) => { for (const j of js) tx.addConnection({ type: c.type, beam: j.beam, end: j.end, column: j.column, params: c.params }); });
-      print(tr('app.similar.joints', { n: js.length }));
-    } else {
-      const cols = similarColumns(model.state, c);
-      if (!cols.length) { print(tr('app.similar.baseplate.none')); return; }
-      edit(tr('app.undo.similar.baseplate'), (tx) => { for (const col of cols) tx.addConnection({ type: 'baseplate', column: col, params: c.params }); });
-      print(tr('app.similar.columns', { n: cols.length }));
-    }
-  }
 
   // ---- left panel ----
   function renderLeft() {
-    const s = model.state;
+    const s = ST.model.state;
     const focused = ui.name.ownerDocument.activeElement;   // the panel's own document: it may be in the panels window
     if (focused !== ui.name) ui.name.value = s.name;
     const inGrid = ui.gridForm.contains(focused);
@@ -857,29 +756,29 @@ async function start(root) {
     if (!ui.levelForm.contains(focused)) renderLevels(s.levels);
     if (!ui.phases.contains(focused)) renderPhases();
     syncViewSelects();
-    const kept = (p) => mine.some((x) => x.name.toUpperCase() === p.name.toUpperCase());
+    const kept = (p) => ST.mine.some((x) => x.name.toUpperCase() === p.name.toUpperCase());
     ui.customList.replaceChildren(...s.profiles.map((p) => el('li', {}, el('span', { className: 'dc-ellip' }, p.name + ' · ' + kindName(p.kind)),
       kept(p) ? el('span', { className: 'dc-muted' }, tr('app.mine.kept'))
         : el('button', { type: 'button', className: 'btn-line btn-sm-dc', onclick: () => { if (keepProfile(p)) { print(tr('app.mine.added', { name: p.name })); refresh(); } } }, tr('app.mine.keep')))));
-    ui.myList.replaceChildren(...mine.map((p) => el('li', {}, el('span', { className: 'dc-ellip' }, p.name + ' · ' + kindName(p.kind)),
+    ui.myList.replaceChildren(...ST.mine.map((p) => el('li', {}, el('span', { className: 'dc-ellip' }, p.name + ' · ' + kindName(p.kind)),
       el('span', { className: 'dc-row' },
         s.profiles.some((x) => x.name.toUpperCase() === p.name.toUpperCase()) ? '' : el('button', { type: 'button', className: 'btn-line btn-sm-dc', onclick: () => { if (edit(tr('app.undo.add-profile', { name: p.name }), (tx) => tx.addProfile(p))) print(tr('app.mine.used', { name: p.name })); } }, tr('app.mine.use')),
-        el('button', { type: 'button', className: 'btn-line btn-sm-dc', onclick: () => { mine = mine.filter((x) => x !== p); if (writeMine()) { print(tr('app.mine.removed', { name: p.name })); refresh(); } } }, tr('app.mine.remove'))))));
-    if (!mine.length) ui.myList.append(el('li', { className: 'dc-muted' }, tr('app.mine.none')));
-    ui.marks.replaceChildren(...marks.parts.map((p) => el('li', {},
+        el('button', { type: 'button', className: 'btn-line btn-sm-dc', onclick: () => { ST.mine = ST.mine.filter((x) => x !== p); if (writeMine()) { print(tr('app.mine.removed', { name: p.name })); refresh(); } } }, tr('app.mine.remove'))))));
+    if (!ST.mine.length) ui.myList.append(el('li', { className: 'dc-muted' }, tr('app.mine.none')));
+    ui.marks.replaceChildren(...ST.marks.parts.map((p) => el('li', {},
       el('button', { type: 'button', onclick: () => { setTool('select'); select(refForPart(p.ids[0])); }, title: tr('app.marks.select-first', { mark: p.mark }) },
         el('span', { className: 'dc-mk' }, p.mark), el('span', { className: 'dc-ellip' }, p.profile + ' x ' + mm(p.length))),
       el('span', { className: 'dc-muted' }, '× ' + p.count))));
-    if (!marks.parts.length) ui.marks.append(el('li', { className: 'dc-muted' }, tr('app.marks.none')));
+    if (!ST.marks.parts.length) ui.marks.append(el('li', { className: 'dc-muted' }, tr('app.marks.none')));
   }
   const kindName = (k) => { const key = ({ I: 'app.kind.i', C: 'app.kind.c', L: 'app.kind.l', RHS: 'app.kind.rhs', CHS: 'app.kind.chs', FLAT: 'app.kind.flat', PL: 'app.kind.pl' })[k]; return key ? tr(key) : k; };
-  const refForPart = (pid) => { const p = built.byId.get(pid); return p?.member ? { kind: 'member', id: p.member } : p?.conn ? { kind: 'conn', id: p.conn } : null; };
+  const refForPart = (pid) => { const p = ST.built.byId.get(pid); return p?.member ? { kind: 'member', id: p.member } : p?.conn ? { kind: 'conn', id: p.conn } : null; };
 
   // ---- phases (D13) ----
-  const phaseName = (n) => model.state.phases.find((p) => p.n === n)?.name || tr('phase.default', { n });
-  const phaseOptions = () => model.state.phases.map((p) => [String(p.n), phaseName(p.n)]);
+  const phaseName = (n) => ST.model.state.phases.find((p) => p.n === n)?.name || tr('phase.default', { n });
+  const phaseOptions = () => ST.model.state.phases.map((p) => [String(p.n), phaseName(p.n)]);
   function renderPhases() {
-    const s = model.state;
+    const s = ST.model.state;
     const count = (n) => s.members.filter((m) => (m.phase || 1) === n).length + s.footings.filter((f) => (f.phase || 1) === n).length;
     const list = el('ul', { className: 'dc-phases' }, ...s.phases.map((p) => {
       const show = el('input', { type: 'checkbox', checked: !hiddenPhases.has(p.n), 'aria-label': tr('phase.show', { phase: phaseName(p.n) }), dataset: { phaseShow: String(p.n) } });
@@ -889,8 +788,8 @@ async function start(root) {
       const del = el('button', { type: 'button', className: 'shell-x', 'aria-label': tr('phase.remove', { phase: phaseName(p.n) }), title: tr('phase.remove', { phase: phaseName(p.n) }), dataset: { phaseRemove: String(p.n) }, onclick: () => { if (edit(tr('phase.undo.remove'), (tx) => tx.removePhase(p.n))) print(tr('phase.removed', { phase: phaseName(p.n) })); } }, el('i', { className: 'bi bi-x-lg', 'aria-hidden': 'true' }));
       return el('li', { className: hiddenPhases.has(p.n) ? 'is-hidden' : '' }, show, el('span', { className: 'dc-mk' }, String(p.n)), name, el('span', { className: 'dc-muted' }, tr('phase.count', { n: count(p.n) })), del);
     }));
-    const add = el('button', { type: 'button', className: 'dc-linkbtn', dataset: { phaseAdd: '' }, onclick: () => { const n = edit(tr('phase.undo.add'), (tx) => tx.addPhase()); if (n) { curPhase = n; renderPhases(); print(tr('phase.added', { phase: phaseName(n) })); } } }, el('i', { className: 'bi bi-plus-lg', 'aria-hidden': 'true' }), ' ', tr('phase.add'));
-    const cur = selectIn(phaseOptions(), String(curPhase), (v) => { curPhase = Number(v); print(tr('phase.current.set', { phase: phaseName(curPhase) })); }, { id: 'dc-phase-cur' });
+    const add = el('button', { type: 'button', className: 'dc-linkbtn', dataset: { phaseAdd: '' }, onclick: () => { const n = edit(tr('phase.undo.add'), (tx) => tx.addPhase()); if (n) { ST.curPhase = n; renderPhases(); print(tr('phase.added', { phase: phaseName(n) })); } } }, el('i', { className: 'bi bi-plus-lg', 'aria-hidden': 'true' }), ' ', tr('phase.add'));
+    const cur = selectIn(phaseOptions(), String(ST.curPhase), (v) => { ST.curPhase = Number(v); print(tr('phase.current.set', { phase: phaseName(ST.curPhase) })); }, { id: 'dc-phase-cur' });
     cur.dataset.phaseCurrent = '';
     const per = el('input', { type: 'checkbox', id: 'dc-phase-per', checked: s.numbering?.perPhase !== false, dataset: { phasePer: '' } });
     per.addEventListener('change', () => { if (edit(tr('phase.undo.numbering'), (tx) => tx.setNumbering({ perPhase: per.checked }))) print(tr(per.checked ? 'phase.per.on' : 'phase.per.off')); });
@@ -900,9 +799,9 @@ async function start(root) {
   }
   function setPhaseShown(n, on) {
     if (on) hiddenPhases.delete(n); else hiddenPhases.add(n);
-    if (view) { view.setModel(model.state, built, marks); }
+    if (ST.view) { ST.view.setModel(ST.model.state, ST.built, ST.marks); }
     // what is hidden cannot stay selected
-    setSelection(selected().filter((r) => !hiddenPhases.has(r.kind === 'conn' ? connPhase(model.state, model.connection(r.id)) : (r.kind === 'member' ? model.member(r.id) : r.kind === 'stair' ? model.stair(r.id) : model.footing(r.id))?.phase || 1)));
+    setSelection(selected().filter((r) => !hiddenPhases.has(r.kind === 'conn' ? connPhase(ST.model.state, ST.model.connection(r.id)) : (r.kind === 'member' ? ST.model.member(r.id) : r.kind === 'stair' ? ST.model.stair(r.id) : ST.model.footing(r.id))?.phase || 1)));
     renderPhases();
     print(tr(on ? 'phase.shown' : 'phase.hidden', { phase: phaseName(n) }));
   }
@@ -940,14 +839,14 @@ async function start(root) {
     e.preventDefault();
     const rows = [...ui.levels.children].map((li) => ({ name: li.querySelector('[data-lname]').value, z: li.querySelector('[data-lz]').value }));
     if (edit(tr('app.undo.levels'), (tx) => tx.setLevels(rows))) print(tr('app.levels.done'));
-    renderLevels(model.state.levels);
+    renderLevels(ST.model.state.levels);
   });
   ui.gridForm.addEventListener('submit', (e) => {
     e.preventDefault();
     let g;
     try { g = gridsFromSpacings(ui.gx.value, ui.gxs.value, ui.gy.value, ui.gys.value); }
     catch (err) { print(err.message); return; }
-    if (edit(tr('app.undo.grids'), (tx) => tx.setGrids(g))) { print(tr('app.grids.done')); if (view) { view.fitted = false; view.fit(); } }
+    if (edit(tr('app.undo.grids'), (tx) => tx.setGrids(g))) { print(tr('app.grids.done')); if (ST.view) { ST.view.fitted = false; ST.view.fit(); } }
   });
   ui.name.addEventListener('change', () => edit(tr('app.undo.rename-model'), (tx) => tx.setName(ui.name.value)));
 
@@ -974,20 +873,15 @@ async function start(root) {
   });
 
   // ---- properties panel ----
+
   function renderProps() {
-    fid = 0;
+    ST.fid = 0;
     const body = [];
-    if (tool === 'paste') { ui.propsH.textContent = tr('app.props.paste'); body.push(...pasteOptions()); }
-    else if (tool === 'move') { ui.propsH.textContent = tr('xf.move.title'); body.push(el('p', { className: 'dc-note' }, tr('xf.move.help'))); }
-    else if (tool !== 'select') { ui.propsH.textContent = tr('app.props.place.' + tool); body.push(...toolOptions()); }
-    else if (multi.length) { ui.propsH.textContent = tr('app.props.selected', { n: multi.length }); body.push(...multiProps()); }
-    else if (sel?.kind === 'member') { const m = model.member(sel.id); ui.propsH.textContent = typeName(m.type) + (marks.partMark.get(m.id) ? ' ' + marks.partMark.get(m.id) : ''); body.push(...memberProps(m)); }
-    else if (sel?.kind === 'conn') { const c = model.connection(sel.id); ui.propsH.textContent = tr('app.props.' + c.type); body.push(...connProps(c)); }
-    else if (sel?.kind === 'stair') { const x = model.stair(sel.id); ui.propsH.textContent = tr('app.props.stair', { mark: (marks.asmMark.get(x.id + '.stringerL') || marks.asmMark.get(x.id + '.f1stringerL') || '') }); body.push(...stairProps(x)); }
-    else if (sel?.kind === 'picture') { const p = model.picture(sel.id); ui.propsH.textContent = tr('pic.props'); body.push(...pictureProps(p)); }
-    else if (sel?.kind === 'footing') { const f = model.footing(sel.id); ui.propsH.textContent = tr('app.props.footing', { mark: marks.footingMark.get(f.id) || '' }); body.push(...footingProps(f)); }
-    else if (sel?.kind === 'rc') { const x = model.state.rc.elements.find((q) => q.id === sel.id); ui.propsH.textContent = rcb.labels.get(x.id) || tr('rc.kind.' + x.kind); body.push(...rcUi.props(x)); }
-    else if (sel?.kind === 'rcbar') { ui.propsH.textContent = tr('rc.props.loose'); body.push(el('p', { className: 'dc-note' }, describeRef(sel)), el('div', { className: 'dc-actions' }, el('button', { type: 'button', className: 'btn-line btn-sm-dc dc-danger', onclick: deleteSelection }, tr('app.btn.delete')))); }
+    if (ST.tool === 'paste') { ui.propsH.textContent = tr('app.props.paste'); body.push(...pasteOptions()); }
+    else if (ST.tool === 'move') { ui.propsH.textContent = tr('xf.move.title'); body.push(el('p', { className: 'dc-note' }, tr('xf.move.help'))); }
+    else if (ST.tool !== 'select') { ui.propsH.textContent = tr('app.props.place.' + ST.tool); body.push(...toolOptions()); }
+    else if (ST.multi.length) { ui.propsH.textContent = tr('app.props.selected', { n: ST.multi.length }); body.push(...multiProps()); }
+    else if (ST.sel && Object.hasOwn(PROPS_BY_KIND, ST.sel.kind)) PROPS_BY_KIND[ST.sel.kind](body);   // 0.11 PERF.78: one entry per kind of selection, below
     else { ui.propsH.textContent = tr('app.props.model'); body.push(...modelSummary()); }
     const pdoc = ui.props.ownerDocument;   // the panel may be in the panels window
     const focusedId = pdoc.activeElement && ui.props.contains(pdoc.activeElement) ? pdoc.activeElement.id : null;
@@ -997,9 +891,9 @@ async function start(root) {
     else if (focusedId) pdoc.getElementById(focusedId)?.focus();
   }
 
-  let fid = 0;
+  ST.fid = 0;
   /** A labeled field row pair for a .dc-props grid. */
-  function field(label, input) { if (!input.id) input.id = 'dc-f' + (++fid); return [el('label', { for: input.id }, label), input]; }
+  function field(label, input) { if (!input.id) input.id = 'dc-f' + (++ST.fid); return [el('label', { for: input.id }, label), input]; }
   // a number box reads arithmetic too (0.6 DF.3, numtext.js: 2*450, 4500/3): a text box, refusals say where they went wrong
   function numIn(value, onSet, o = {}) {
     const i = el('input', { type: 'text', className: 'dc-input dc-num', value: String(Math.round(value * 1000) / 1000), id: o.id, autocomplete: 'off', spellcheck: false });
@@ -1028,340 +922,47 @@ async function start(root) {
     s.addEventListener('change', () => onSet(s.value));
     return s;
   }
-  const profileOptions = () => catalogGroups(model.state.profiles).map((g) => ({ group: g.label + ' — ' + g.source, items: g.names.map((n) => [n, n]) }));
-  const materialOptions = () => MATERIALS.map((m) => [m, m]);
-  const positionOptions = [['top', tr('app.pos.top')], ['middle', tr('app.pos.middle')], ['bottom', tr('app.pos.bottom')]];
+  const { profileOptions, materialOptions, positionOptions, toolOptions, addByGridForm, pasteOptions, multiProps } = mountToolOptions({
+    ST, opts, print, act, placeAt, placeLine, deleteSelection, pasteClipAt, phaseField, renderProps, field, numIn, selectIn, deepAssign,
+    get footingForm() { return footingForm; },
+    get stairForm() { return stairForm; },
+    get ROW_START() { return ROW_START; },
+    get manyEditor() { return manyEditor; },
+    get xfBlock() { return xfBlock; },
+    get mm() { return mm; },
+    get kg() { return kg; },
+  });
 
-  function toolOptions() {
-    const out = [];
-    if (tool === 'footing') return footingForm(opts.footing, (patch) => { deepAssign(opts.footing, patch); renderProps(); }, true);
-    if (tool === 'stair') return stairForm(opts.stair, (patch) => { deepAssign(opts.stair, patch); renderProps(); }, true);
-    const o = opts[tool];
-    const p = el('div', { className: 'dc-props' });
-    if (tool === 'plate') {
-      p.append(...field(tr('app.f.thickness'), numIn(o.t, (v) => { o.t = v; renderProps(); }, { min: 1 })), ...field(tr('app.f.width'), numIn(o.w, (v) => { o.w = v; renderProps(); }, { min: 1 })));
-    } else p.append(...field(tr('app.f.profile'), selectIn(profileOptions(), o.profile, (v) => { o.profile = v; renderProps(); })));
-    p.append(...field(tr('app.f.material'), selectIn(materialOptions(), o.material, (v) => { o.material = v; })));
-    if (tool !== 'plate') p.append(...field(tr('app.f.position'), selectIn(positionOptions, o.position, (v) => { o.position = v; })));
-    p.append(...field(tr('app.f.rotation'), numIn(o.rotation, (v) => { o.rotation = v; })));
-    if (tool === 'column') {
-      const lv = model.state.levels.map((l) => [l.name, l.name]);
-      p.append(...field(tr('app.f.up-to'), selectIn([['', tr('app.f.up-to.next')], ...lv], o.to, (v) => { o.to = v; })));
-    }
-    out.push(p);
-    const prof = tool === 'plate' ? getProfile(plateName(o.t, o.w)) : getProfile(o.profile, model.state.profiles);
-    if (prof) {
-      const dl = el('dl', { className: 'dc-props' });
-      for (const [k, v] of describe(prof)) dl.append(el('dt', { className: 'k' }, k), el('dd', { className: 'v' }, v));
-      out.push(el('div', { className: 'dc-block' }, el('p', { className: 'dc-sub' }, tr('app.f.profile')), dl));
-    }
-    out.push(addByGridForm());
-    return out;
-  }
-
-  /** Placing by keyboard: pick grid lines and levels from lists. */
-  function addByGridForm() {
-    const s = model.state;
-    const gyO = s.grids.y.map((g) => [g.label, g.label]), gxO = s.grids.x.map((g) => [g.label, g.label]), lvO = s.levels.map((l) => [l.name, l.name]);
-    if (!gyO.length || !gxO.length) return el('p', { className: 'dc-note' }, tr('app.grid.add.none'));
-    const two = ['beam', 'brace', 'plate'].includes(tool);
-    const sels = {};
-    const mk = (key, options, value, label) => { const s2 = selectIn(options, value, () => {}); sels[key] = s2; return field(label, s2); };
-    const top = s.levels[s.levels.length - 1]?.name;
-    const form = el('form', { className: 'dc-props dc-block', dataset: { byGrid: '' } },
-      el('p', { className: 'dc-sub' }, tr('app.grid.add.title')),
-      ...mk('gy1', gyO, gyO[0][0], tr(two ? 'app.grid.from.letter' : 'app.grid.letter')),
-      ...mk('gx1', gxO, gxO[0][0], tr(two ? 'app.grid.from.number' : 'app.grid.number')),
-      ...mk('l1', lvO, tool === 'beam' || tool === 'plate' ? top : lvO[0][0], tr(two ? 'app.grid.from.level' : 'app.grid.level')),
-      ...(two ? [...mk('gy2', gyO, gyO[0][0], tr('app.grid.to.letter')), ...mk('gx2', gxO, gxO[Math.min(1, gxO.length - 1)][0], tr('app.grid.to.number')), ...mk('l2', lvO, tool === 'brace' ? top : (tool === 'beam' || tool === 'plate' ? top : lvO[0][0]), tr('app.grid.to.level'))] : []),
-      el('div', { className: ROW_START }, el('button', { type: 'submit', className: 'btn-line btn-sm-dc' }, tr('app.grid.add'))));
-    form.addEventListener('submit', (e) => {
-      e.preventDefault();
-      const a = pointAt(s, sels.gy1.value, sels.gx1.value, sels.l1.value);
-      const n = { p: a, gy: sels.gy1.value, gx: sels.gx1.value, level: sels.l1.value };
-      if (!two) { placeAt(n); return; }
-      const b = pointAt(s, sels.gy2.value, sels.gx2.value, sels.l2.value);
-      if (a.join() === b.join()) { print(tr('app.grid.same')); return; }
-      pending = null;
-      placeLine(a, b);
-    });
-    return form;
-  }
-
-  /** Paste tool: what is on the clipboard, then pasting by typed offset or onto a grid intersection (keyboard). */
-  function pasteOptions() {
-    const c = pasteClip;
-    if (!c) return [];
-    const s = model.state;
-    const dl = el('dl', { className: 'dc-props' });
-    const rows = [[tr('app.paste.k.from'), c.from], [tr('app.k.members'), c.members.length || ''], [tr('app.k.connections'), c.connections.length || ''], [tr('app.k.footings'), c.footings.length || ''], [tr('app.paste.k.base'), tr('app.unit.mm', { v: c.base.map(mm).join(', ') })]];
-    for (const [k, v] of rows) if (v !== '' && v !== undefined) dl.append(el('dt', { className: 'k' }, k), el('dd', { className: 'v' }, String(v)));
-    const out = [dl, el('p', { className: 'dc-note' }, tr('app.paste.note'))];
-    const off = settings.offset.slice();
-    const row = el('div', { className: 'dc-xyz' }, ...[0, 1, 2].map((k) => { const i = numIn(off[k], (v) => { off[k] = v; }, { id: 'dc-poff' + k }); i.setAttribute('aria-label', tr('app.paste.offset.axis', { axis: 'xyz'[k] })); return i; }));
-    const form = el('form', { className: 'dc-props dc-block', dataset: { pasteOffset: '' } },
-      el('p', { className: 'dc-sub' }, tr('app.paste.offset.title')), el('span', { className: 'k' }, tr('app.paste.offset.axes')), row,
-      el('div', { className: ROW_START },
-        el('button', { type: 'submit', className: 'btn-line btn-sm-dc' }, tr('app.paste.offset.go')),
-        el('button', { type: 'button', className: 'btn-line btn-sm-dc', onclick: () => pasteClipAt(c, [0, 0, 0], 'in-place') }, tr('app.paste.in-place'))));
-    form.addEventListener('submit', (e) => {
-      e.preventDefault();
-      for (const i of form.querySelectorAll('input')) i.dispatchEvent(new Event('change'));
-      pasteClipAt(c, off, 'offset', { x: String(off[0]), y: String(off[1]), z: String(off[2]) });
-    });
-    out.push(form);
-    const gyO = s.grids.y.map((g) => [g.label, g.label]), gxO = s.grids.x.map((g) => [g.label, g.label]), lvO = s.levels.map((l) => [l.name, l.name]);
-    if (gyO.length && gxO.length) {
-      const sels = {};
-      const mk = (key, options, label) => { const s2 = selectIn(options, options[0][0], () => {}); sels[key] = s2; return field(label, s2); };
-      const g = el('form', { className: 'dc-props dc-block', dataset: { pasteGrid: '' } },
-        el('p', { className: 'dc-sub' }, tr('app.paste.grid.title')),
-        ...mk('gy', gyO, tr('app.grid.letter')), ...mk('gx', gxO, tr('app.grid.number')), ...mk('lv', lvO, tr('app.grid.level')),
-        el('div', { className: ROW_START }, el('button', { type: 'submit', className: 'btn-line btn-sm-dc' }, tr('app.paste.grid.go'))));
-      g.addEventListener('submit', (e) => {
-        e.preventDefault();
-        const p = pointAt(s, sels.gy.value, sels.gx.value, sels.lv.value);
-        if (!p) { print(tr('app.paste.grid.none')); return; }
-        pasteClipAt(c, [p[0] - c.base[0], p[1] - c.base[1], p[2] - c.base[2]], 'at', { node: nodeName(s, p) });
-      });
-      out.push(g);
-    }
-    return out;
-  }
-
-  /** Several things selected: what they are, their weight, and what can be done to all of them. */
-  function multiProps() {
-    const of = (k) => multi.filter((r) => r.kind === k).map((r) => r.id);
-    const mem = of('member').map((id) => model.member(id)).filter(Boolean), conns = of('conn'), foots = of('footing');
-    const types = {};
-    for (const m of mem) types[m.type] = (types[m.type] || 0) + 1;
-    const typeText = Object.entries(types).map(([t, n]) => tr('app.count.type.' + t, { n })).join(tr('app.count.sep'));
-    const steel = [...mem.map((m) => built.byId.get(m.id)), ...conns.map((id) => built.byId.get(id + '.plate'))].reduce((t, p) => t + (p ? p.weight : 0), 0);
-    const dl = el('dl', { className: 'dc-props' });
-    const rows = [[tr('app.k.members'), mem.length ? mem.length + ' (' + typeText + ')' : ''], [tr('app.k.connections'), conns.length || ''], [tr('app.k.footings'), foots.length || ''], [tr('pic.k.pictures'), of('picture').length || ''], [tr('app.k.steel'), steel ? tr('app.multi.steel', { kg: kg(steel) }) : '']];
-    for (const [k, v] of rows) if (v !== '') dl.append(el('dt', { className: 'k' }, k), el('dd', { className: 'v' }, String(v)));
-    const copyable = mem.length + foots.length > 0;
-    const acts = el('div', { className: 'dc-actions' },
-      el('button', { type: 'button', className: 'btn-line btn-sm-dc', onclick: () => act('copy'), disabled: !copyable }, tr('app.btn.copy')),
-      el('button', { type: 'button', className: 'btn-line btn-sm-dc', onclick: () => act('duplicate'), disabled: !copyable }, tr('app.btn.duplicate')),
-      el('button', { type: 'button', className: 'btn-line btn-sm-dc dc-danger', onclick: deleteSelection }, tr('app.btn.delete')));
-    const phs = new Set([...mem.map((m) => m.phase || 1), ...foots.map((id) => model.footing(id)?.phase || 1)]);
-    const phaseRow = mem.length + foots.length ? [el('div', { className: 'dc-props dc-block' }, ...phaseField(multi, phs.size === 1 ? [...phs][0] : null))] : [];
-    return [dl, ...phaseRow, ...manyEditor(mem.map((m) => m.id)), ...xfBlock(multi), acts, el('p', { className: 'dc-note' }, tr('app.multi.note'))];
-  }
-
-  /** "Change on all of them": one property on every selected member it applies to (one undo step). */
-  const ROW_START = 'span dc-row start';   // i18n-ignore (class names)
-  const manyKey = (f) => 'many.' + f.replace(/[A-Z]/g, (c) => '-' + c.toLowerCase());   // plateT → many.plate-t
-  function manyEditor(ids) {
-    if (ids.length < 2) return [];
-    const st = manyPatchable(model.state, ids);
-    const box = el('div', { className: 'dc-props dc-block', dataset: { manyEdit: '' } }, el('p', { className: 'dc-sub' }, tr('many.sub')));
-    const set = (key, value) => {
-      const r = edit(tr('many.undo', { field: tr(manyKey(key)) }), (tx) => applyToMany(tx, model.state, ids, key, value));
-      if (r) print(tr('many.done', { field: tr(manyKey(key)), n: r.changed }) + (r.skipped ? ' ' + tr('many.skipped', { n: r.skipped }) : ''));
-    };
-    const varies = (sel) => { sel.prepend(el('option', { value: '', className: 'dc-varies' }, tr('many.varies'))); sel.value = ''; sel.classList.add('dc-varies'); return sel; };
-    const choice = (key, options) => {
-      const f = st[key];
-      if (!f.applies) return [];
-      const s2 = selectIn(options, f.varies ? '' : f.value, (v) => { if (v) set(key, v); }, { id: 'dc-many-' + key });
-      if (f.varies) varies(s2);
-      s2.dataset.many = key;
-      return field(tr(manyKey(key)), s2);
-    };
-    const number = (key, o = {}) => {
-      const f = st[key];
-      if (!f.applies) return [];
-      const i = numIn(f.varies ? 0 : f.value, (v) => set(key, v), { id: 'dc-many-' + key, ...o });
-      if (f.varies) { i.value = ''; i.placeholder = tr('many.varies'); }
-      i.dataset.many = key;
-      return field(tr(manyKey(key)), i);
-    };
-    box.append(...choice('profile', profileOptions()), ...number('plateT', { min: 1 }), ...number('plateW', { min: 1 }),
-      ...choice('material', materialOptions()), ...choice('position', positionOptions), ...number('rotation'),
-      el('p', { className: 'span dc-note' }, tr('many.note')));
-    return [box];
-  }
+  const { ROW_START, manyEditor } = mountManyProps({
+    ST, print, edit, field, numIn, selectIn, profileOptions, materialOptions, positionOptions,
+  });
 
   const { xfBlock, runXf, whatText } = mountXf({
     print, edit, setTool, setSelection, field, numIn, selectIn, ROW_START, mm,
-    get model() { return model; },
-    get settings() { return settings; },
+    get model() { return ST.model; },
+    get settings() { return ST.settings; },
   });
 
+  const { memberProps } = mountMemberProps({
+    ST, print, edit, deleteSelection, addEndPlates, addShearTabs, addBasePlate, phaseField, field, numIn, textIn, selectIn, profileOptions, materialOptions, positionOptions, ROW_START, xfBlock,
+    get openShop() { return openShop; },
+    get r1() { return r1; },
+    get kg() { return kg; },
+  });
 
-  function memberProps(m) {
-    const part = built.byId.get(m.id);
-    const upd = (label, patch) => edit(label, (tx) => tx.updateMember(m.id, patch));
-    const out = [];
-    const p = el('div', { className: 'dc-props' });
-    p.append(...field(tr('app.f.name'), textIn(m.name, (v) => upd(tr('app.undo.rename'), { name: v }))));
-    if (m.type === 'plate') {
-      const pr = getProfile(m.profile, model.state.profiles);
-      p.append(...field(tr('app.f.thickness'), numIn(pr?.t ?? 20, (v) => upd(tr('app.undo.plate-size'), { profile: plateName(v, pr?.b ?? 200) }), { min: 1 })),
-        ...field(tr('app.f.width'), numIn(pr?.b ?? 200, (v) => upd(tr('app.undo.plate-size'), { profile: plateName(pr?.t ?? 20, v) }), { min: 1 })));
-    } else p.append(...field(tr('app.f.profile'), selectIn(profileOptions(), m.profile, (v) => upd(tr('app.undo.profile'), { profile: v }))));
-    p.append(...field(tr('app.f.material'), selectIn(materialOptions(), m.material, (v) => upd(tr('app.undo.material'), { material: v }))));
-    if (m.type !== 'plate') p.append(...field(tr('app.f.position'), selectIn(positionOptions, m.position, (v) => upd(tr('app.undo.position'), { position: v }))));
-    p.append(...field(tr('app.f.rotation'), numIn(m.rotation, (v) => upd(tr('app.undo.rotate'), { rotation: v }))));
-    p.append(...phaseField([{ kind: 'member', id: m.id }], m.phase || 1));
-    out.push(p);
-    const ends = el('div', { className: 'dc-props dc-block' }, el('p', { className: 'dc-sub' }, tr('app.member.ends')));
-    for (const end of ['start', 'end']) {
-      const row = el('div', { className: 'dc-xyz' }, ...[0, 1, 2].map((k) => numIn(m[end][k], (v) => { const pt = [...m[end]]; pt[k] = v; upd(tr('app.undo.move.' + end), { [end]: pt }); }, { id: 'dc-' + end + k })));
-      for (const [k, inp] of [...row.children].entries()) inp.setAttribute('aria-label', tr('app.member.' + end + '.axis', { axis: 'xyz'[k] }));
-      ends.append(el('span', { className: 'k' }, tr('app.member.' + end)), row, el('span', { className: 'v span dc-muted' }, nodeName(model.state, m[end])));   // i18n-ignore (class names)
-    }
-    out.push(ends);
-    if (part) {
-      const info = el('dl', { className: 'dc-props dc-block' });
-      const rows = [[tr('app.k.part-mark'), marks.partMark.get(m.id)], [tr('app.k.assembly'), marks.asmMark.get(marks.asmOf.get(m.id))], [tr('app.k.cut-length'), tr('app.unit.mm', { v: r1(part.length) })], [tr('app.k.weight'), tr('app.member.weight', { kg: kg(part.weight), mass: part.profile.mass.toFixed(2) })], [tr('app.k.profile-from'), part.profile.massPub !== undefined ? PROFILE_SOURCES[part.profile.source] : part.profile.massFrom]];
-      if (part.setback.start || part.setback.end) rows.push([tr('app.k.cut-back'), tr('app.member.cut-back', { start: r1(part.setback.start), end: r1(part.setback.end) })]);
-      for (const [k, v] of rows) if (v) info.append(el('dt', { className: 'k' }, k), el('dd', { className: 'v' }, v));
-      out.push(info);
-    }
-    out.push(...holeEditor(m, part), ...copeEditor(m), ...xfBlock([{ kind: 'member', id: m.id }]));
-    const acts = el('div', { className: 'dc-actions' });
-    if (m.type === 'beam') acts.append(el('button', { type: 'button', className: 'btn-line btn-sm-dc', onclick: addEndPlates }, tr('app.btn.endplates')));
-    if (m.type === 'beam') acts.append(el('button', { type: 'button', className: 'btn-line btn-sm-dc', onclick: addShearTabs }, tr('app.btn.sheartabs')));
-    if (m.type === 'column') acts.append(el('button', { type: 'button', className: 'btn-line btn-sm-dc', onclick: addBasePlate }, tr('app.btn.baseplate')));
-    if (part && !shopRefusal(part)) acts.append(el('button', { type: 'button', className: 'btn-line btn-sm-dc', onclick: openShop }, tr('app.btn.shop')));
-    acts.append(el('button', { type: 'button', className: 'btn-line btn-sm-dc dc-danger', onclick: deleteSelection }, tr('app.btn.delete')));
-    out.push(acts);
-    const probs = built.problems.filter((x) => x.ref === m.id);
-    if (probs.length) out.push(el('ul', { className: 'dc-msgs' }, ...probs.map((x) => el('li', { className: x.hard ? 'is-hard' : '' }, x.text))));
-    return out;
-  }
+  const { connProps, pictureProps } = mountConnProps({
+    ST, print, edit, deleteSelection, openMitre, applySimilar, renderProps, field, numIn, textIn, selectIn,
+    get openShop() { return openShop; },
+    get r1() { return r1; },
+    get mm() { return mm; },
+  });
 
-  const PROFILE_SOURCES = { aisc: 'AISC Shapes Database v16.0', en: 'EN 10365:2017' };   // i18n-ignore: names of the published tables
-  const FACE_NAME = { web: tr('app.face.web'), top: tr('app.face.top'), bottom: tr('app.face.bottom'), plate: tr('app.face.plate') };
-  function holeEditor(m, part) {
-    const prof = getProfile(m.profile, model.state.profiles);
-    const faces = holeFaces(prof);
-    const box = el('div', { className: 'dc-block' }, el('p', { className: 'dc-sub' }, tr('app.holes.title')));
-    const list = el('ul', { className: 'dc-list' });
-    for (const h of m.holes) list.append(el('li', {}, el('span', {}, tr('app.holes.item', { face: FACE_NAME[h.face], d: r1(h.d), x: r1(h.x), y: r1(h.y) })),
-      el('button', { type: 'button', className: 'shell-x', title: tr('app.holes.remove'), 'aria-label': tr('app.holes.remove'), onclick: () => edit(tr('app.undo.remove-hole'), (tx) => tx.removeHole(m.id, h.id)) }, el('i', { className: 'bi bi-x-lg', 'aria-hidden': 'true' }))));
-    const fromConn = part ? part.holes.filter((h) => h.conn) : [];
-    if (fromConn.length) list.append(el('li', { className: 'dc-muted' }, tr('app.holes.from-conn', { n: fromConn.length })));
-    if (!m.holes.length && !fromConn.length) list.append(el('li', { className: 'dc-muted' }, tr('app.holes.none')));
-    box.append(list);
-    if (!faces.length) { box.append(el('p', { className: 'dc-note' }, tr('app.holes.where'))); return [box]; }
-    const f = { face: faces[0], x: 100, y: 0, d: 22 };
-    const form = el('form', { className: 'dc-props' },
-      ...field(tr('app.holes.face'), selectIn(faces.map((x) => [x, FACE_NAME[x]]), f.face, (v) => { f.face = v; })),
-      ...field(tr('app.holes.x'), numIn(f.x, (v) => { f.x = v; })),
-      ...field(tr('app.holes.y'), numIn(f.y, (v) => { f.y = v; })),
-      ...field(tr('app.holes.d'), numIn(f.d, (v) => { f.d = v; }, { min: 1 })),
-      el('div', { className: ROW_START }, el('button', { type: 'submit', className: 'btn-line btn-sm-dc' }, tr('app.holes.add'))));
-    form.addEventListener('submit', (e) => {
-      e.preventDefault();
-      for (const i of form.querySelectorAll('input')) i.dispatchEvent(new Event('change'));
-      if (edit(tr('app.undo.add-hole'), (tx) => tx.addHole(m.id, f))) print(tr('app.holes.added'));
-    });
-    box.append(form);
-    return [box];
-  }
-  function copeEditor(m) {
-    const prof = getProfile(m.profile, model.state.profiles);
-    if (!prof || prof.kind !== 'I') return [];
-    const box = el('div', { className: 'dc-block' }, el('p', { className: 'dc-sub' }, tr('app.copes.title')));
-    const list = el('ul', { className: 'dc-list' });
-    for (const c of m.cuts) list.append(el('li', {}, el('span', {}, tr('app.copes.item', { side: tr('app.side.' + c.side), end: tr('app.word.' + c.end), length: r1(c.length), depth: r1(c.depth) })),
-      el('button', { type: 'button', className: 'shell-x', title: tr('app.copes.remove'), 'aria-label': tr('app.copes.remove'), onclick: () => edit(tr('app.undo.remove-cope'), (tx) => tx.removeCut(m.id, c.id)) }, el('i', { className: 'bi bi-x-lg', 'aria-hidden': 'true' }))));
-    if (!m.cuts.length) list.append(el('li', { className: 'dc-muted' }, tr('app.copes.none')));
-    const f = { kind: 'cope', end: 'start', side: 'top', length: 100, depth: 40 };
-    const form = el('form', { className: 'dc-props' },
-      ...field(tr('app.copes.end'), selectIn([['start', tr('app.member.start')], ['end', tr('app.member.end')]], f.end, (v) => { f.end = v; })),
-      ...field(tr('app.copes.side'), selectIn([['top', tr('app.side.top')], ['bottom', tr('app.side.bottom')]], f.side, (v) => { f.side = v; })),
-      ...field(tr('app.copes.length'), numIn(f.length, (v) => { f.length = v; }, { min: 1 })),
-      ...field(tr('app.copes.depth'), numIn(f.depth, (v) => { f.depth = v; }, { min: 1 })),
-      el('div', { className: ROW_START }, el('button', { type: 'submit', className: 'btn-line btn-sm-dc' }, tr('app.copes.add'))));
-    form.addEventListener('submit', (e) => {
-      e.preventDefault();
-      for (const i of form.querySelectorAll('input')) i.dispatchEvent(new Event('change'));
-      edit(tr('app.undo.add-cope'), (tx) => tx.addCut(m.id, f));
-    });
-    box.append(list, form);
-    return [box];
-  }
-
-  function connProps(c) {
-    const out = [];
-    const mInfo = c.type === 'mitre' ? built.infos?.get(c.id) : null;
-    const joined = c.type === 'mitre' ? [[tr('app.k.piece-a'), partLabel(c.a)], [tr('app.k.piece-b'), partLabel(c.b)], ...(mInfo ? [[tr('app.k.angle'), tr('app.conn.mitre-angle', { angle: r1(mInfo.angle), cut: r1(mInfo.cut) })]] : [])]
-      : c.type === 'splice' ? [[tr('app.k.piece-a'), partLabel(c.a)], [tr('app.k.piece-b'), partLabel(c.b)]]
-      : c.type === 'gusset' ? [[tr('app.k.brace'), partLabel(c.brace)], [tr('app.k.end'), hasKey('app.word.' + c.end) ? tr('app.word.' + c.end) : c.end], [tr('app.k.support'), partLabel(c.support)]] : isBeamEnd(c)
-      ? [[tr('app.k.beam'), partLabel(c.beam)], [tr('app.k.end'), hasKey('app.word.' + c.end) ? tr('app.word.' + c.end) : c.end], [tr('app.k.column'), partLabel(c.column)]]
-      : [[tr('app.k.column'), partLabel(c.column)]];
-    const dl = el('dl', { className: 'dc-props' });
-    for (const [k, v] of joined) dl.append(el('dt', { className: 'k' }, k), el('dd', { className: 'v' }, v));
-    out.push(dl);
-    const p = el('div', { className: 'dc-props dc-block' }, el('p', { className: 'dc-sub' }, tr('app.conn.params')));
-    for (const [k, v] of Object.entries(c.params)) {
-      const set = (val) => edit(tr('app.undo.change', { what: (PARAM_LABELS[k] || k).toLowerCase() }), (tx) => tx.updateConnection(c.id, { [k]: val }));
-      const choices = PARAM_CHOICES[k];
-      const input = choices ? selectIn(choices.map((n) => [String(n), tr('app.conn.choice.' + k.toLowerCase() + '.' + n)]), String(v), (val) => set(Number(val)))
-        : typeof v === 'number' ? numIn(v, set, { min: 0 }) : textIn(v, set, { max: 30 });
-      if (PARAM_HELP[k]) input.title = PARAM_HELP[k];
-      p.append(...field(PARAM_LABELS[k] || k, input));
-    }
-    if (c.type === 'baseplate' && c.params.washers && !(c.params.washerSize && c.params.washerT)) {
-      const row = dg1Row(c.params.rodD);
-      p.append(el('p', { className: 'dc-note' }, row ? tr('app.conn.washer-dg1', { size: r1(c.params.washerSize || row.washer), t: r1(c.params.washerT || row.washerT), rod: r1(row.rod) }) : tr('conn.warn.washer-size')));
-    }
-    out.push(p);
-    const bolts = built.bolts.filter((b) => b.conn === c.id), weld = built.welds.find((w) => w.conn === c.id);
-    const info = el('dl', { className: 'dc-props dc-block' });
-    const rows = [];
-    // one row per bolt length (a splice has flange and web bolts)
-    const byLen = new Map();
-    for (const b of bolts) { const k = b.length + '|' + r1(b.grip); if (!byLen.has(k)) byLen.set(k, []); byLen.get(k).push(b); }
-    for (const g of byLen.values()) rows.push([tr(c.type !== 'baseplate' ? 'app.k.bolts' : 'app.k.anchor-rods'), tr('app.conn.bolts', { n: g.length, d: g[0].d, length: g[0].length, grade: g[0].grade, grip: r1(g[0].grip) })]);
-    if (weld) rows.push([tr('app.k.weld'), tr('app.conn.weld', { size: weld.size, where: weld.where.toLowerCase(), length: mm(weld.length) })]);
-    const plate = built.byId.get(c.id + '.plate');
-    if (plate) rows.push([tr('app.k.plate'), plate.profileName + ' x ' + r1(plate.length) + ' — ' + (marks.partMark.get(plate.id) || '')]);
-    for (const [k, v] of rows) info.append(el('dt', { className: 'k' }, k), el('dd', { className: 'v' }, v));
-    if (rows.length) out.push(info);
-    out.push(el('p', { className: 'dc-note' }, tr('app.conn.note')));
-    const probs = built.problems.filter((x) => x.ref === c.id);
-    if (probs.length) out.push(el('ul', { className: 'dc-msgs' }, ...probs.map((x) => el('li', { className: x.hard ? 'is-hard' : '' }, x.text))));
-    const n = c.type === 'mitre' ? similarMitres(model.state, c).length : c.type === 'gusset' ? similarBraceEnds(model.state, c).length : c.type === 'splice' ? similarSplices(model.state, c).length : isBeamEnd(c) ? similarJoints(model.state, c).length : similarColumns(model.state, c).length;
-    const acts = el('div', { className: 'dc-actions' },
-      el('button', { type: 'button', className: 'btn-line btn-sm-dc', onclick: applySimilar, disabled: !n }, tr('app.conn.similar', { n })));
-    if (c.type === 'mitre') acts.prepend(el('button', { type: 'button', className: 'btn-line btn-sm-dc', dataset: { mitreOpen: '' }, onclick: () => openMitre({ conn: c }) }, tr('app.conn.mitre-dialog')));
-    if (plate && !shopRefusal(plate)) acts.append(el('button', { type: 'button', className: 'btn-line btn-sm-dc', onclick: openShop }, tr('app.btn.plate-drawing')));
-    acts.append(el('button', { type: 'button', className: 'btn-line btn-sm-dc dc-danger', onclick: deleteSelection }, tr('app.btn.delete')));
-    out.push(acts);
-    return out;
-  }
-  const partLabel = (id) => { const m = model.member(id); return m ? m.profile + ' ' + (marks.partMark.get(id) || '') + ' (' + nodeName(model.state, m.start) + ')' : tr('app.conn.missing'); };
-
-  /** D8.15: a reference picture — where it lies, how big a pixel is, how strong it shows. */
-  function pictureProps(p) {
-    const upd = (label, patch) => edit(label, (tx) => tx.updatePicture(p.id, patch));
-    const [w, h] = pictureSizeMm(p);
-    const lv = model.state.levels.find((l) => Math.abs(l.z - p.z) < 0.5);
-    const g = el('div', { className: 'dc-props' });
-    g.append(...field(tr('pic.f.x'), numIn(p.x, (v) => upd(tr('pic.undo.move'), { x: v }))),
-      ...field(tr('pic.f.y'), numIn(p.y, (v) => upd(tr('pic.undo.move'), { y: v }))),
-      ...field(tr('pic.f.z'), numIn(p.z, (v) => upd(tr('pic.undo.move'), { z: v }))),
-      ...field(tr('pic.f.scale'), numIn(p.mmPerPx, (v) => { if (!(v > 0)) { print(tr('pic.err.value')); renderProps(); return; } upd(tr('pic.undo.scale'), { mmPerPx: v }); })),
-      ...field(tr('pic.f.opacity'), numIn(Math.round(p.opacity * 100), (v) => { if (!(v >= OPACITY_MIN * 100 && v <= 100)) { print(tr('pic.err.opacity')); renderProps(); return; } upd(tr('pic.undo.opacity'), { opacity: v / 100 }); })));
-    const info = el('dl', { className: 'dc-props dc-block' });
-    fillDl(info, [[tr('pic.k.name'), p.name || tr('pic.unnamed')], [tr('pic.k.pixels'), tr('pic.k.pixels.v', { w: String(p.px[0]), h: String(p.px[1]) })], [tr('pic.k.size'), tr('pic.k.size.v', { w: mm(w), h: mm(h) })], [tr('pic.k.level'), lv ? lv.name : tr('pic.k.level.none')]]);
-    for (const n of info.querySelectorAll('dt')) n.className = 'k';
-    for (const n of info.querySelectorAll('dd')) n.className = 'v';
-    return [g, info, el('p', { className: 'dc-note' }, tr(p.size === 'paper' ? 'pic.note.paper' : 'pic.note.real')),
-      el('div', { className: 'dc-actions' }, el('button', { type: 'button', className: 'btn-line btn-sm-dc dc-danger', onclick: deleteSelection }, tr('app.btn.delete')))];
-  }
   const { footingProps, footingForm, stairForm, stairProps } = mountFootingStair({
     opts, print, edit, deleteSelection, phaseField, renderProps, field, numIn, textIn, selectIn, materialOptions, addByGridForm, xfBlock, check, deepAssign, download, mm, r1,
-    get built() { return built; },
-    get schedule() { return schedule; },
-    get settings() { return settings; },
-    get model() { return model; },
+    get built() { return ST.built; },
+    get schedule() { return ST.schedule; },
+    get settings() { return ST.settings; },
+    get model() { return ST.model; },
     get safeName() { return safeName; },
   });
   function check(value, onSet) {
@@ -1372,10 +973,10 @@ async function start(root) {
   function deepAssign(o, patch) { for (const [k, v] of Object.entries(patch)) { if (v && typeof v === 'object' && !Array.isArray(v)) Object.assign(o[k], v); else o[k] = v; } }
 
   function modelSummary() {
-    const s = model.state;
-    const steel = built.parts.reduce((t, p) => t + p.weight, 0), bars = schedule.rows.reduce((t, r) => t + r.totalWeight, 0);
+    const s = ST.model.state;
+    const steel = ST.built.parts.reduce((t, p) => t + p.weight, 0), bars = ST.schedule.rows.reduce((t, r) => t + r.totalWeight, 0);
     const dl = el('dl', { className: 'dc-props' });
-    fillDl(dl, [[tr('app.k.members'), s.members.length], [tr('app.k.connections'), s.connections.length], [tr('app.k.footings'), s.footings.length], [tr('app.k.parts'), built.parts.length], [tr('app.k.part-marks'), marks.parts.length], [tr('app.k.assemblies'), marks.assemblies.length], [tr('app.k.bolts-rods'), built.bolts.length], [tr('app.k.steel'), tr('app.unit.kg', { v: kg(steel) })], [tr('app.k.rebar'), tr('app.unit.kg', { v: kg(bars) })], [tr('app.k.grids'), s.grids.x.length + ' × ' + s.grids.y.length], [tr('app.k.levels'), s.levels.length]]);
+    fillDl(dl, [[tr('app.k.members'), s.members.length], [tr('app.k.connections'), s.connections.length], [tr('app.k.footings'), s.footings.length], [tr('app.k.parts'), ST.built.parts.length], [tr('app.k.part-marks'), ST.marks.parts.length], [tr('app.k.assemblies'), ST.marks.assemblies.length], [tr('app.k.bolts-rods'), ST.built.bolts.length], [tr('app.k.steel'), tr('app.unit.kg', { v: kg(steel) })], [tr('app.k.rebar'), tr('app.unit.kg', { v: kg(bars) })], [tr('app.k.grids'), s.grids.x.length + ' × ' + s.grids.y.length], [tr('app.k.levels'), s.levels.length]]);
     for (const n of dl.querySelectorAll('dt')) n.className = 'k';
     for (const n of dl.querySelectorAll('dd')) n.className = 'v';
     const out = [dl, el('p', { className: 'dc-note' }, tr('app.model.note'))];
@@ -1386,138 +987,85 @@ async function start(root) {
     return out;
   }
 
+  const { renderReport, table } = mountReportPanel({
+    ST, ui, setTool, select, refForPart, nestPanel, root,
+    get exportBom() { return exportBom; },
+    get clashPanel() { return clashPanel; },
+    get exportReport() { return exportReport; },
+    get exportReportPdf() { return exportReportPdf; },
+    get exportBending() { return exportBending; },
+    get kg() { return kg; },
+  });
+  const { exportIfc, exportUsd, machinesReady, sendNc, exportNc, exportBom, exportNest, exportReport, exportReportPdf, exportKiss, exportBending } = mountExports({
+    print, safeName, download, nestResult, ask,
+    get built() { return ST.built; },
+    get model() { return ST.model; },
+    get rcb() { return ST.rcb; },
+    get marks() { return ST.marks; },
+    get selection() { return selected(); },   // for an add-on's exporter (export-ui.js exportInput)
+    get schedule() { return ST.schedule; },
+    get settings() { return ST.settings; },
+  });
   // ---- reports ----
-  erection = mountErection({ getModel: () => model, built: () => built, marks: () => marks, edit, print, download: (n, d, ty) => download(n, d, ty), safeName: () => safeName(), rerender: () => renderReport(), setProblems: (list) => { extraProblems = list; extraSet?.(list); } });
-  window.detailcraftIssues = mountDetailIssues({ root, t: tr, model: () => model, download: (data, name, type) => download(name, data, type) });   // 0.10 BK.48; tests
-  supply = mountSupply({ getModel: () => model, edit, print, nest: () => nestResult(), built: () => built, rerender: () => renderReport(), setProblems: (list) => supplySet?.(list) });
-  framing = mountFraming({ getModel: () => model, edit, print, download: (n, d, ty) => download(n, d, ty), safeName: () => safeName(), rerender: () => renderReport(), setProblems: (list) => frmSet?.(list) });
-  foundation = mountFoundation({ getModel: () => model, edit, print, rerender: () => renderReport(), select, label: (id) => marks?.footingMark?.get(id) || id, analysisResult: () => analysis?.result || null, profileSize: (name) => { const p = getProfile(name, model.state.customProfiles || []); return p ? [Math.round(p.width), Math.round(p.depth)] : null; }, setProblems: (list) => fndSet?.(list) });
+  ST.erection = mountErection({ getModel: () => ST.model, built: () => ST.built, marks: () => ST.marks, edit, print, download, safeName, rerender: renderReport, setProblems: (list) => { ST.extraProblems = list; ST.extraSet?.(list); } });
+  window.detailcraftIssues = mountDetailIssues({ root, t: tr, model: () => ST.model, download: (data, name, type) => download(name, data, type) });   // 0.10 BK.48; tests
+  ST.supply = mountSupply({ getModel: () => ST.model, edit, print, nest: nestResult, built: () => ST.built, rerender: renderReport, setProblems: (list) => ST.supplySet?.(list) });
+  ST.framing = mountFraming({ getModel: () => ST.model, edit, print, download, safeName, rerender: renderReport, setProblems: (list) => ST.frmSet?.(list) });
+  ST.foundation = mountFoundation({ getModel: () => ST.model, edit, print, rerender: renderReport, select, label: (id) => ST.marks?.footingMark?.get(id) || id, analysisResult: () => ST.analysis?.result || null, profileSize: (name) => { const p = getProfile(name, ST.model.state.customProfiles || []); return p ? [Math.round(p.width), Math.round(p.depth)] : null; }, setProblems: (list) => ST.fndSet?.(list) });
   // 0.9 RC.1: the Concrete tab, a concrete element's properties and the reinforcement shop drawings (rc-ui.js)
-  rcUi = mountRc({ getModel: () => model, rb: () => rcb, schedule: () => schedule, edit, print, select: (ref) => { setTool('select'); select(ref); }, rerender: () => renderReport(),
-    barLabel: (b) => (rcBarOf(b)?.set === 'other' ? b : barLabel(b, settings.barNames)), paper: () => settings.paper, numIn, textIn, selectIn, field, phaseField, deleteSelection,
-    download: (n, d, ty) => download(n, d, ty), safeName: () => safeName(), root, drawList: (c, l) => drawList(c, l), toPdf, remember: () => { lastFocus = document.activeElement; }, restoreFocus: () => restoreFocus(),
-    shapeCode: (sh) => shapeCode(sh, settings.shapeCodes) || sh, scheduleDims: (sh, d) => scheduleDims(sh, d, settings.shapeCodes), phase: () => curPhase });
-  congestion = mountCongestion({ getModel: () => model, rerender: () => renderReport(), print, select, label: (id) => { const m = marks?.footingMark?.get(id); return m || id; }, setProblems: (list) => congSet?.(list) });
-  autopilot = mountAutopilot({ getModel: () => model, edit, print, selected, rerender: () => renderReport(), label: (id) => marks?.partMark.get(id) || model.member(id)?.name || id, setProblems: (list) => { autoProblems = list; autoSet?.(list); } });
-  analysis = mountAnalysis({ getModel: () => model, getView: () => view, edit, selected, select, print, download: (n, d, ty) => download(n, d, ty), safeName: () => safeName(), rerender: () => renderReport(), setFrameProblems: (list) => { frameProblems = list; frameProblemsSet?.(list); }, setBreakProblems: (list) => { breakProblems = list; breakSet?.(list); } });
-  root.querySelector('.dc-tabs').addEventListener('click', (e) => { const t = e.target.closest('[data-tab]'); if (t) { reportTab = t.dataset.tab; renderReport(); } });
+  ST.rcUi = mountRc({ getModel: () => ST.model, rb: () => ST.rcb, schedule: () => ST.schedule, edit, print, select: (ref) => { setTool('select'); select(ref); }, rerender: renderReport,
+    barLabel: (b) => (rcBarOf(b)?.set === 'other' ? b : barLabel(b, ST.settings.barNames)), paper: () => ST.settings.paper, numIn, textIn, selectIn, field, phaseField, deleteSelection,
+    download, safeName, root, drawList: (c, l) => drawList(c, l), toPdf, remember: () => { ST.lastFocus = document.activeElement; }, restoreFocus,
+    shapeCode: (sh) => shapeCode(sh, ST.settings.shapeCodes) || sh, scheduleDims: (sh, d) => scheduleDims(sh, d, ST.settings.shapeCodes), phase: () => ST.curPhase });
+  ST.congestion = mountCongestion({ getModel: () => ST.model, rerender: renderReport, print, select, label: (id) => { const m = ST.marks?.footingMark?.get(id); return m || id; }, setProblems: (list) => ST.congSet?.(list) });
+  ST.autopilot = mountAutopilot({ getModel: () => ST.model, edit, print, selected, rerender: renderReport, label: (id) => ST.marks?.partMark.get(id) || ST.model.member(id)?.name || id, setProblems: (list) => { ST.autoProblems = list; ST.autoSet?.(list); } });
+  ST.analysis = mountAnalysis({ getModel: () => ST.model, getView: () => ST.view, edit, selected, select, print, download, safeName, rerender: renderReport, setFrameProblems: (list) => { ST.frameProblems = list; ST.frameProblemsSet?.(list); }, setBreakProblems: (list) => { ST.breakProblems = list; ST.breakSet?.(list); } });
+  root.querySelector('.dc-tabs').addEventListener('click', (e) => { const t = e.target.closest('[data-tab]'); if (t) { ST.reportTab = t.dataset.tab; renderReport(); } });
   root.querySelector('.dc-tabs').addEventListener('keydown', (e) => {
     if (e.key !== 'ArrowRight' && e.key !== 'ArrowLeft') return;
-    const tabs = [...root.querySelectorAll('[data-tab]')], i = tabs.findIndex((t) => t.dataset.tab === reportTab);
+    const tabs = [...root.querySelectorAll('[data-tab]')], i = tabs.findIndex((t) => t.dataset.tab === ST.reportTab);
     const n = tabs[(i + (e.key === 'ArrowRight' ? 1 : tabs.length - 1)) % tabs.length];
-    reportTab = n.dataset.tab; renderReport(); n.focus();
+    ST.reportTab = n.dataset.tab; renderReport(); n.focus();
   });
-  function renderReport() {
-    for (const t of root.querySelectorAll('[data-tab]')) { const on = t.dataset.tab === reportTab; t.setAttribute('aria-selected', String(on)); t.tabIndex = on ? 0 : -1; }
-    ui.countProblems.textContent = built.problems.length ? '(' + built.problems.length + ')' : '';
-    ui.countClashes.textContent = clashRes && clashRes.clashes.length ? '(' + clashRes.clashes.length + ')' : '';
-    const out = [];
-    if (reportTab === 'problems') {
-      // 0.7.1 → 0.8: with the shell's Problems panel, a line that opens it, and the problems accepted there marked here
-      const sharedIds = window.ccProblems && problemsSync ? dcProblems(built, model.state, { strings: langCatalog().strings }).map((p) => 'detailcraft.build:' + p.code + ':' + (p.about[0] ? p.about[0].kind + ':' + p.about[0].id : '') + (p.part ? '#' + p.part : '')) : null;
-      if (sharedIds && built.problems.length) out.push(el('p', { className: 'dc-note', dataset: { problemsShared: '' } }, tr('problems.tab.shared'), ' ', el('button', { type: 'button', className: 'dc-linkbtn', onclick: () => window.ccProblems.open() }, tr('problems.tab.open'))));
-      if (!built.problems.length) out.push(el('p', { className: 'dc-note' }, tr('app.rep.problems.none')));
-      else out.push(el('ul', { className: 'dc-msgs' }, ...built.problems.map((x, i) => {
-        const ref = x.ref?.startsWith('m') ? { kind: 'member', id: x.ref } : x.ref?.startsWith('j') ? { kind: 'conn', id: x.ref } : x.ref?.startsWith('f') ? { kind: 'footing', id: x.ref } : x.ref?.startsWith('s') ? { kind: 'stair', id: x.ref } : null;
-        const acc = sharedIds && window.ccProblems.store.get(sharedIds[i])?.accepted;
-        return el('li', { className: (x.hard ? 'is-hard' : '') + (acc ? ' is-accepted' : '') }, x.text, acc ? el('span', { className: 'dc-note' }, ' ' + tr('problems.tab.accepted', { reason: acc.reason })) : null, ref ? el('button', { type: 'button', onclick: () => { setTool('select'); select(ref); } }, tr('app.rep.select')) : null);
-      })));
-    } else if (reportTab === 'bom') {
-      const t = bomTables(marks, built.bolts);
-      out.push(el('div', { className: 'dc-rep-head' }, el('h3', {}, tr('app.rep.parts', { kg: kg(t.totalWeight) })), el('button', { type: 'button', className: 'dc-linkbtn', onclick: exportBom }, tr('app.rep.csv'))));
-      out.push(table(t.parts, [4, 5, 6, 7], (row) => { const p = marks.parts.find((x) => x.mark === row[0]); return p ? refForPart(p.ids[0]) : null; }));
-      out.push(el('div', { className: 'dc-rep-head' }, el('h3', {}, tr('app.rep.assemblies'))), table(t.assemblies, [3, 4, 5]));
-      out.push(el('div', { className: 'dc-rep-head' }, el('h3', {}, tr('app.rep.bolts'))), table(t.bolts, [1, 2, 4]));
-    } else if (reportTab === 'clashes') {
-      out.push(...clashPanel());
-    } else if (reportTab === 'nest') {
-      out.push(...nestPanel());
-    } else if (reportTab === 'supply') {
-      out.push(...supply.panel());
-    } else if (reportTab === 'framing') {
-      out.push(...framing.panel());
-    } else if (reportTab === 'foundation') {
-      out.push(...foundation.panel());
-    } else if (reportTab === 'rc') {
-      out.push(...rcUi.panel());
-    } else if (reportTab === 'congestion') {
-      out.push(...congestion.panel());
-    } else if (reportTab === 'autopilot') {
-      out.push(...autopilot.panel());
-    } else if (reportTab === 'erection') {
-      out.push(...erection.panel());
-    } else if (reportTab === 'analysis') {
-      out.push(...(analysis ? analysis.panel() : []));
-    } else if (reportTab === 'phases') {
-      const T = reportTables(phaseReport(model.state, built, marks, schedule));
-      out.push(el('div', { className: 'dc-rep-head' }, el('h3', {}, tr('rep.summary')),
-        el('button', { type: 'button', className: 'dc-linkbtn', dataset: { repCsv: '' }, onclick: exportReport }, tr('rep.csv')),
-        el('button', { type: 'button', className: 'dc-linkbtn', dataset: { repPdf: '' }, onclick: exportReportPdf }, tr('rep.pdf'))));
-      out.push(table(T.summary, [1, 2, 3, 4, 5]));
-      for (const p of T.phases) {
-        out.push(el('div', { className: 'dc-rep-head' }, el('h3', {}, p.title)), table(p.parts, [4, 5, 6, 7, 8]));
-        if (p.bolts.length > 1) out.push(table(p.bolts, [1, 2, 4]));
-      }
-      out.push(el('p', { className: 'dc-note' }, tr('rep.note')));
-    } else {
-      const rows = scheduleTable(schedule.rows, { codes: settings.shapeCodes, naming: settings.barNames });
-      out.push(el('div', { className: 'dc-rep-head' }, el('h3', {}, tr('app.rep.bending2', { codes: tr('app.codes.' + settings.shapeCodes) })), el('button', { type: 'button', className: 'dc-linkbtn', onclick: exportBending }, tr('app.rep.csv'))));
-      if (schedule.rows.length) out.push(table(rows, [3, 4, 5, 6, 7, 8, 9, 10, 11]));
-      else out.push(el('p', { className: 'dc-note' }, tr('app.rep.bending.none')));
-    }
-    ui.report.replaceChildren(...out);
-  }
-  /** A table's total row, in whichever words the reports wrote it (marks.js, rebar.js, report.js). */
-  const isTotal = (c) => [tr('marks.total'), tr('rebar.total'), tr('rep.total')].includes(c);
-  function table(rows, numeric = [], refOf = null) {
-    const [head, ...body] = rows;
-    const n = new Set(numeric);
-    return el('table', { className: 'dc-table' },
-      el('thead', {}, el('tr', {}, ...head.map((h, i) => el('th', { className: n.has(i) ? 'n' : '', scope: 'col' }, h)))),
-      el('tbody', {}, ...body.map((r) => el('tr', { className: isTotal(r[0]) ? 'total' : '' }, ...r.map((c, i) => {
-        if (i === 0 && refOf && !isTotal(r[0])) { const ref = refOf(r); if (ref) return el('td', {}, el('button', { type: 'button', onclick: () => { setTool('select'); select(ref); } }, c)); }
-        return el('td', { className: n.has(i) ? 'n' : '' }, c);
-      })))));
-  }
 
   // ---- files ----
-  const safeName = () => (model.state.name || 'model').replace(/[\\/:*?"<>|\u0000-\u001f]+/g, '-').trim().slice(0, 80) || 'model';
+  function safeName() { return (ST.model.state.name || 'model').replace(/[\\/:*?"<>|\u0000-\u001f]+/g, '-').trim().slice(0, 80) || 'model'; }
   // the shell's host adapter: the browser's picker and downloads, or the desktop's dialogs (saving in place there)
   const fileHost = getHost({ app: 'detailcraft' });
   const MODEL_TYPES = [{ description: 'DetailCraft', extensions: ['.json'] }];   // i18n-ignore: a file type label the OS shows
   const IFC_TYPES = [{ description: 'IFC', extensions: ['.ifc'] }];             // i18n-ignore
   const OPEN_TYPES = [{ description: 'DetailCraft, IFC, project bundle', extensions: ['.json', '.ifc', '.ccbundle', '.zip'] }];   // i18n-ignore
-  let saveTarget = null;               // the HostFile the open model came from, when it can be written in place
+  ST.saveTarget = null;               // the HostFile the open model came from, when it can be written in place
   /** Every export and download: a copy (the browser downloads it; the desktop asks where). */
   function download(name, data, type) { fileHost.download(data, name, type); }
   // ---- AI assistants and scripts (0.4 X.12; agents.js on host.js's control channel): off until Settings › Assistants ----
   window.detailcraftControl = installAgents({
-    model: () => model, built: () => built, marks: () => marks, selected: () => selected(), analysis: () => analysis,
+    model: () => ST.model, built: () => ST.built, marks: () => ST.marks, selected, analysis: () => ST.analysis,
     select: (refs) => { setTool('select'); setSelection(refs); return selected().length; },
-    busy: () => (pending ? 'placing a member' : moveRefs ? 'moving parts' : tool === 'paste' ? 'pasting' : null),   // i18n-ignore: read by the assistant
-    save: () => saveModel(),
+    busy: () => (ST.pending ? 'placing a member' : ST.moveRefs ? 'moving parts' : ST.tool === 'paste' ? 'pasting' : null),   // i18n-ignore: read by the assistant
+    save: saveModel,
     usd: async (format) => {   // 0.7 AS.6: as Output › USD (exportUsd) makes it
       const { steelUsd } = await import('./usd-detailcraft.js');
-      const r = steelUsd(built, marks, { format, name: safeName() });
+      const r = steelUsd(ST.built, ST.marks, { format, name: safeName() });
       return { data: r.data, report: r.report, name: safeName(), type: format === 'usda' ? 'model/vnd.usda' : format === 'usdz' ? 'model/vnd.usdz+zip' : 'application/octet-stream' };
     },
-    download: (name, data, type) => download(name, data, type),
-    exports: { ifc: () => exportIfc(), nc: () => exportNc(), bom: () => exportBom(), bending: () => exportBending(), kiss: () => exportKiss(), cutlist: () => exportNest() },
+    download,
+    exports: { ifc: exportIfc, nc: exportNc, bom: exportBom, bending: exportBending, kiss: exportKiss, cutlist: exportNest },
   });
   // ---- the shell's modules (0.8 round 3; docs/apps/shell-modules.md § Mounting): calc sheets, design reasons, running totals, lessons, Suggest, activity, Ask ----
-  shellMount = mountDetailShell({
-    model: () => model, built: () => built, schedule: () => schedule, selected: () => selected(), setSelection: (refs) => { setTool('select'); setSelection(refs); },
-    describe: (r) => describeRef(r), control: window.detailcraftControl, name: () => model.state.name, path: () => saveTarget?.path || saveTarget?.name || '',
+  ST.shellMount = mountDetailShell({
+    model: () => ST.model, built: () => ST.built, schedule: () => ST.schedule, selected, setSelection: (refs) => { setTool('select'); setSelection(refs); },
+    describe: describeRef, control: window.detailcraftControl, name: () => ST.model.state.name, path: () => ST.saveTarget?.path || ST.saveTarget?.name || '',
     onSelection: (fn) => { selListeners.add(fn); return () => selListeners.delete(fn); },
   });
   // ---- drafting without sight (0.8 round 3, EG.52; assets/js/app-access.js): the model's members, connections, stairs and footings in order, each said with its mark ----
   {
     const refKey2 = (r) => r.kind + ':' + r.id;
-    const rows = () => { const m = model.state; return [...m.members.map((x) => ({ kind: 'member', id: x.id })), ...m.connections.map((x) => ({ kind: 'conn', id: x.id })), ...(m.stairs || []).map((x) => ({ kind: 'stair', id: x.id })), ...m.footings.map((x) => ({ kind: 'footing', id: x.id }))].filter(exists); };
+    const rows = () => { const m = ST.model.state; return [...m.members.map((x) => ({ kind: 'member', id: x.id })), ...m.connections.map((x) => ({ kind: 'conn', id: x.id })), ...(m.stairs || []).map((x) => ({ kind: 'stair', id: x.id })), ...m.footings.map((x) => ({ kind: 'footing', id: x.id }))].filter(exists); };
     const goAccess = () => window.ccAccess.mount({
       stage: ui.canvas, label: () => tr('app.access.stage'),
       walk: () => rows().map((r) => ({ id: refKey2(r), ref: r, label: describeRef(r) })),
-      describe: () => { const m = model.state, n = m.members.length + m.connections.length + m.footings.length + (m.stairs || []).length; return n ? tr('app.access.model', { name: m.name || '', what: countText({ members: m.members.length, connections: m.connections.length, footings: m.footings.length, stairs: (m.stairs || []).length }) }) : tr('app.access.empty'); },
+      describe: () => { const m = ST.model.state, n = m.members.length + m.connections.length + m.footings.length + (m.stairs || []).length; return n ? tr('app.access.model', { name: m.name || '', what: countText({ members: m.members.length, connections: m.connections.length, footings: m.footings.length, stairs: (m.stairs || []).length }) }) : tr('app.access.empty'); },
       selection: () => { const l = selected(); return l.length ? tr('app.access.selected', { n: l.length, what: l.slice(0, 5).map(describeRef).join(' ') }) : tr('app.access.nosel'); },
       pick: (p, item) => { if (item) { setTool('select'); setSelection([item.ref]); window.ccAccess.say(tr('app.access.selected', { n: 1, what: item.label })); } else window.ccAccess.say(tr('app.access.nosel')); },
     });
@@ -1525,15 +1073,27 @@ async function start(root) {
     for (const f of [goAccess, goStatus]) { if (window.ccAccess) f(); else document.addEventListener('cc-access-ready', f, { once: true }); }
   }
   async function saveModel() {
-    shellMount?.beforeSave();
+    ST.shellMount?.beforeSave();
     const name = safeName() + '.detailcraft.json';
-    const r = await fileHost.save({ target: saveTarget, data: model.toJSON(), name, types: MODEL_TYPES });
+    const r = await fileHost.save({ target: ST.saveTarget, data: ST.model.toJSON(), name, types: MODEL_TYPES });
     if (!r.ok) { if (!r.cancelled) print(tr('file.save.failed', { error: String(r.error?.message || r.error || '') })); return false; }
-    if (r.target?.writable) saveTarget = r.target;
-    model.markSaved();
+    if (r.target?.writable) ST.saveTarget = r.target;
+    ST.model.markSaved();
     renderBar();
     refreshAutosave();
     print(r.how === 'written' ? tr('file.save.written', { file: r.path || r.name || name }) : tr('app.file.saved', { file: name }));
+    return true;
+  }
+  /** 0.11 DC.27: Save for 0.10: a copy whose new ids are numbered again into the range 0.10 and older read (model.js olderCopy).
+   *  Only when someone picks it; Save (Ctrl+S) always writes the model as it is. The copy is not this model's file. */
+  async function saveOlder() {
+    ST.shellMount?.beforeSave();
+    let data;
+    try { data = olderCopy(ST.model.toJSON()); } catch { print(tr('file.older.full')); return false; }
+    const name = safeName() + ' (0.10).detailcraft.json';   // i18n-ignore: a file name
+    const r = await fileHost.save({ target: null, data, name, types: MODEL_TYPES });
+    if (!r.ok) { if (!r.cancelled) print(tr('file.save.failed', { error: String(r.error?.message || r.error || '') })); return false; }
+    print(tr('file.older.saved', { file: r.path || r.name || name }));
     return true;
   }
   async function pickAndOpen(types) {
@@ -1543,8 +1103,8 @@ async function start(root) {
   }
   fileHost.onOpenFiles(async (files) => { if (files?.[0]) await openFile(files[0]); });
   async function confirmDiscard() {
-    if (!model.dirty) return true;
-    const c = await ask({ title: tr('app.ask.unsaved.title'), text: tr('app.ask.unsaved.text', { name: model.state.name }), buttons: [['cancel', tr('app.ask.cancel'), 'btn-line'], ['discard', tr('app.ask.unsaved.discard'), 'btn-line'], ['save', tr('app.ask.unsaved.save'), 'btn-plot']] });
+    if (!ST.model.dirty) return true;
+    const c = await ask({ title: tr('app.ask.unsaved.title'), text: tr('app.ask.unsaved.text', { name: ST.model.state.name }), buttons: [['cancel', tr('app.ask.cancel'), 'btn-line'], ['discard', tr('app.ask.unsaved.discard'), 'btn-line'], ['save', tr('app.ask.unsaved.save'), 'btn-plot']] });
     if (c === 'save') return saveModel();
     return c === 'discard';
   }
@@ -1561,6 +1121,7 @@ async function start(root) {
     print(tr('app.file.sample'));
   }
   root.querySelectorAll('[data-sample-open]').forEach((b) => b.addEventListener('click', openSample));
+  // i18n-ignore: CSS, selector, class name or search keywords: no words a person reads (words-11)
   { const regSample = () => window.ccPalette?.register?.([{ id: 'detail-sample', label: tr('ui.hint.trysample'), group: 'file', keywords: 'sample example demo try frame', run: openSample }]); if (window.ccPalette) regSample(); else window.addEventListener('load', regSample); }
   ui.file.addEventListener('change', () => { const f = ui.file.files[0]; ui.file.value = ''; if (f) openFile(f); });
   /** A File or a host.js HostFile (both have name, size, text(); bytes from either). */
@@ -1578,11 +1139,11 @@ async function start(root) {
     if (/\.ccbundle$|ccbundle\.zip$/i.test(file.name)) return openBundleModel(file);
     if (/\.ifc$/i.test(file.name)) return openIfc(file);
     if (!/\.json$/i.test(file.name)) { print(tr('app.file.wrong-type')); return; }
-    if (file.size > 50 * 1024 * 1024) { print(tr('app.file.too-big')); return; }
+    if (file.size > 400 * 1024 * 1024) { print(tr('app.file.too-big')); return; }   // PERF.20 (scale-11): one string still fits at 400 MB; the model keeps its first 20,000 members and says so in a warning
     if (!(await confirmDiscard())) return;
     const text = await file.text();
     const m = new Model();
-    try { const { warnings } = m.load(text); setModel(m); saveTarget = file.writable ? file : null; setTool('select'); print(tr('app.file.opened', { file: file.name }) + (warnings.length ? ' ' + warnings.join(' ') : '')); }
+    try { const { warnings } = m.load(text); m.takeIdBlock(); setModel(m); ST.saveTarget = file.writable ? file : null; setTool('select'); print(tr('app.file.opened', { file: file.name }) + (warnings.length ? ' ' + warnings.join(' ') : '')); }
     catch (err) { print(tr('app.file.open.error', { file: file.name, error: err.message })); }
   }
   root.addEventListener('dragover', (e) => { if ([...(e.dataTransfer?.types || [])].includes('Files')) { e.preventDefault(); ui.drop.hidden = false; } });
@@ -1595,47 +1156,39 @@ async function start(root) {
   });
   // Leaving by a link on the page asks in the page; the browser's own "Leave site?" is left for what no page can
   // catch (closing the tab, reloading, typing an address). After "save first", wait for the download to start.
-  let leaving = false;
-  window.addEventListener('beforeunload', (e) => { if (model.dirty && !leaving) { e.preventDefault(); e.returnValue = ''; } });
+  ST.leaving = false;
+  window.addEventListener('beforeunload', (e) => { if (ST.model.dirty && !ST.leaving) { e.preventDefault(); e.returnValue = ''; } });
   document.addEventListener('click', async (e) => {
     const a = e.target.closest?.('a[href]');
-    if (!a || !model.dirty || e.defaultPrevented || e.button || e.ctrlKey || e.metaKey || e.shiftKey || e.altKey || a.hasAttribute('download') || (a.target && a.target !== '_self')) return;
+    if (!a || !ST.model.dirty || e.defaultPrevented || e.button || e.ctrlKey || e.metaKey || e.shiftKey || e.altKey || a.hasAttribute('download') || (a.target && a.target !== '_self')) return;
     const url = new URL(a.href, location.href);
     if (!/^https?:$/.test(url.protocol) || (url.hash && url.href.split('#')[0] === location.href.split('#')[0])) return;
     e.preventDefault();
     if (!(await confirmDiscard())) return;
-    leaving = true;
-    setTimeout(() => location.assign(url.href), model.dirty ? 0 : 800);
+    ST.leaving = true;
+    setTimeout(() => location.assign(url.href), ST.model.dirty ? 0 : 800);
   });
 
-  const { exportIfc, exportUsd, machinesReady, sendNc, exportNc, exportBom, exportNest, exportReport, exportReportPdf, exportKiss, exportBending } = mountExports({
-    print, safeName, download, nestResult, ask,
-    get built() { return built; },
-    get model() { return model; },
-    get rcb() { return rcb; },
-    get marks() { return marks; },
-    get schedule() { return schedule; },
-    get settings() { return settings; },
-  });
   // ---- clash check (D15): on demand, visible phases only; the result is kept until the model changes ----
-  let clashRes = null, clashTol = 1;
+  ST.clashRes = null;
+  ST.clashTol = 1;
   const { clashPanel } = mountClash({
     hiddenPhases, print, exists, setTool, setSelection, numIn, renderReport,
-    get model() { return model; },
-    get clashRes() { return clashRes; }, set clashRes(v) { clashRes = v; },
-    get built() { return built; },
-    get clashTol() { return clashTol; }, set clashTol(v) { clashTol = v; },
-    get reportTab() { return reportTab; }, set reportTab(v) { reportTab = v; },
-    get marks() { return marks; },
-    get tool() { return tool; },
-    get view() { return view; },
+    get model() { return ST.model; },
+    get clashRes() { return ST.clashRes; }, set clashRes(v) { ST.clashRes = v; },
+    get built() { return ST.built; },
+    get clashTol() { return ST.clashTol; }, set clashTol(v) { ST.clashTol = v; },
+    get reportTab() { return ST.reportTab; }, set reportTab(v) { ST.reportTab = v; },
+    get marks() { return ST.marks; },
+    get tool() { return ST.tool; },
+    get view() { return ST.view; },
   });
 
   /** Cut list (D24): the linear parts nested into stock lengths; the stock, kerf, trim and keep length are settings. */
-  function nestResult() { const o = settings.nest; return nestBars(piecesFromMarks(marks), { stock: o.stock, kerf: o.kerf, trim: o.trim, keep: o.keep }); }
+  function nestResult() { const o = ST.settings.nest; return nestBars(piecesFromMarks(ST.marks), { stock: o.stock, kerf: o.kerf, trim: o.trim, keep: o.keep }); }
   function nestPanel() {
-    const o = settings.nest;
-    const setN = (patch) => { setSetting('nest', { ...settings.nest, ...patch }); renderReport(); };
+    const o = ST.settings.nest;
+    const setN = (patch) => { setSetting('nest', { ...ST.settings.nest, ...patch }); renderReport(); };
     const stock = el('input', { type: 'text', className: 'dc-input', value: o.stock.join(' '), dataset: { nestStock: '' }, size: 18 });
     stock.addEventListener('change', () => { const v = stock.value.split(/[\s,;]+/).map(Number).filter((x) => x >= 100 && x <= 30000).slice(0, 8); if (v.length) setN({ stock: v }); else { stock.value = o.stock.join(' '); print(tr('nest.err.stock')); } });
     const form = el('div', { className: 'dc-props dc-nest-form' }, ...field(tr('nest.stock'), stock),
@@ -1651,34 +1204,33 @@ async function start(root) {
 
   const { openIfc } = mountIfcImport({
     print, setModel, setTool, table, confirmDiscard, bytesOf, restoreFocus, root,
-    get lastFocus() { return lastFocus; }, set lastFocus(v) { lastFocus = v; },
+    get lastFocus() { return ST.lastFocus; }, set lastFocus(v) { ST.lastFocus = v; },
   });
 
   // ---- drawings dialog: GA plans and elevations + assembly drawings, made from the model on every open ----
-  let dwgSet = null;
+  ST.dwgSet = null;
   const { makeDrawings, exportSet, openDrawings, openShop, drawList } = mountDrawings({
     ui, print, fillPaper, setSetting, edit, selectedPart, safeName, download, exportNc, exportIfc, restoreFocus, mm,
-    get settings() { return settings; },
-    get model() { return model; },
-    get built() { return built; },
-    get marks() { return marks; },
-    get lastFocus() { return lastFocus; }, set lastFocus(v) { lastFocus = v; },
-    get dwgSet() { return dwgSet; }, set dwgSet(v) { dwgSet = v; },
+    get settings() { return ST.settings; },
+    get model() { return ST.model; },
+    get built() { return ST.built; },
+    get marks() { return ST.marks; },
+    get lastFocus() { return ST.lastFocus; }, set lastFocus(v) { ST.lastFocus = v; },
+    get dwgSet() { return ST.dwgSet; }, set dwgSet(v) { ST.dwgSet = v; },
   });
 
-
   // ---- in-page question dialog (never window.confirm) ----
-  let lastFocus = null;
+  ST.lastFocus = null;
   function restoreFocus() {
-    const t = lastFocus && document.contains(lastFocus) && !lastFocus.disabled ? lastFocus : ui.tools.querySelector('[data-act="tool:select"]');
-    lastFocus = null;
+    const t = ST.lastFocus && document.contains(ST.lastFocus) && !ST.lastFocus.disabled ? ST.lastFocus : ui.tools.querySelector('[data-act="tool:select"]');
+    ST.lastFocus = null;
     if (!t) return;
     if (document.activeElement === t) t.blur();
     t.focus({ preventScroll: true });
   }
   function ask({ title, text, buttons }) {
     return new Promise((done) => {
-      lastFocus = document.activeElement;
+      ST.lastFocus = document.activeElement;
       const dlg = el('dialog', { className: 'dc-dialog dc-ask', 'aria-labelledby': 'dc-ask-h' },
         el('div', { className: 'dc-dlg-head' }, el('h2', { className: 'dc-h', id: 'dc-ask-h' }, title)),
         el('p', { className: 'dc-ask-text' }, text),
@@ -1719,7 +1271,7 @@ async function start(root) {
       }
       else if (k === 'v') {
         const area = storedArea();
-        if (area && tool !== 'paste' && areaClipNewer(area, currentClip(false))) { keyPasteArea(area); return; }   // D8.15: no preventDefault — the paste event decides
+        if (area && ST.tool !== 'paste' && areaClipNewer(area, currentClip(false))) { keyPasteArea(area); return; }   // D8.15: no preventDefault — the paste event decides
         e.preventDefault(); act('paste');
       }
       else if (k === 'd') { e.preventDefault(); act('duplicate'); }
@@ -1728,12 +1280,12 @@ async function start(root) {
     }
     if (typing || e.altKey) return;
     if (e.key === 'Escape') {
-      if (view?.cancelWindow()) { print(tr('sel.window.cancel')); return; }
-      if (view?.cancelDrag()) return;
-      if (tool === 'move') { const refs = moveRefs; setTool('select'); setSelection(refs || []); print(tr('xf.move.cancel')); return; }
-      if (pending) { pending = null; if (view) { view.rubberFrom = null; view.drawOverlay(); } print(tr('app.place.cancelled')); }
-      else if (tool === 'paste') { setTool('select'); print(tr('app.paste.cancelled')); }
-      else if (tool !== 'select') setTool('select');
+      if (ST.view?.cancelWindow()) { print(tr('sel.window.cancel')); return; }
+      if (ST.view?.cancelDrag()) return;
+      if (ST.tool === 'move') { const refs = ST.moveRefs; setTool('select'); setSelection(refs || []); print(tr('xf.move.cancel')); return; }
+      if (ST.pending) { ST.pending = null; if (ST.view) { ST.view.rubberFrom = null; ST.view.drawOverlay(); } print(tr('app.place.cancelled')); }
+      else if (ST.tool === 'paste') { setTool('select'); print(tr('app.paste.cancelled')); }
+      else if (ST.tool !== 'select') setTool('select');
       else if (selected().length) act('select-none');
       return;
     }
@@ -1744,33 +1296,33 @@ async function start(root) {
 
   window.detailcraft = {
     get exportSet() { return exportSet; },   // Finalize and export in SuperCad Studio (SC.7): the outputs with options, no dialogs
-    get model() { return model; }, get built() { return built; }, get marks() { return marks; }, get schedule() { return schedule; },
-    get view() { return view; }, get viewMode() { return viewMode; }, get selection() { return sel; }, get selected() { return selected(); }, get tool() { return tool; },
-    get settings() { return settings; }, get toolOptions() { return opts; }, clipboard: () => currentClip(),
-    get viewCube() { return viewCube; }, get axisIcon() { return axisIcon; }, cubeView: () => cubeOpts?.getView(),
-    setTool, select, setSelection, setView, act, nodeScreen: (p) => view?.toScreen(p),
-    drawings: () => makeDrawings(), get openDrawingSet() { return dwgSet; },
-    print: (m) => print(m),   // Studio Live (0.5 LV.22, live.js): its messages
-    get analysis() { return analysis; },
-    get erection() { return erection; },
-    get autopilot() { return autopilot; },
-    get congestion() { return congestion; },
-    get foundation() { return foundation; },
-    get framing() { return framing; },
-    get rc() { return rcUi; }, get rcBuild() { return rcb; },   // 0.9 RC.1 (tests)   // 0.8 EG.6 (tests)   // 0.8 EG.5 (tests)   // 0.8 EG.74 (tests)   // 0.8 EG.73 (tests)
+    get model() { return ST.model; }, get built() { return ST.built; }, get marks() { return ST.marks; }, get schedule() { return ST.schedule; },
+    get view() { return ST.view; }, get viewMode() { return ST.viewMode; }, get selection() { return ST.sel; }, get selected() { return selected(); }, get tool() { return ST.tool; },
+    get settings() { return ST.settings; }, get toolOptions() { return opts; }, clipboard: () => currentClip(),
+    get viewCube() { return ST.viewCube; }, get axisIcon() { return ST.axisIcon; }, cubeView: () => ST.cubeOpts?.getView(),
+    setTool, select, setSelection, setView, act, nodeScreen: (p) => ST.view?.toScreen(p),
+    drawings: () => makeDrawings(), get openDrawingSet() { return ST.dwgSet; },
+    print,   // Studio Live (0.5 LV.22, live.js): its messages
+    get analysis() { return ST.analysis; },
+    get erection() { return ST.erection; },
+    get autopilot() { return ST.autopilot; },
+    get congestion() { return ST.congestion; },
+    get foundation() { return ST.foundation; },
+    get framing() { return ST.framing; },
+    get rc() { return ST.rcUi; }, get rcBuild() { return ST.rcb; },   // 0.9 RC.1 (tests)   // 0.8 EG.6 (tests)   // 0.8 EG.5 (tests)   // 0.8 EG.74 (tests)   // 0.8 EG.73 (tests)
   };
   // the menu styles (0.5 IP.3, input-detailcraft.js + the shell's app-input-ui.js): their messages go to the status line, and
   // letters stay DetailCraft's while a placement or a paste is under way
-  window.ccInputHooks = { status: (text) => print(text || ''), busy: () => !!pending || tool === 'paste' || tool === 'move' };
+  window.ccInputHooks = { status: (text) => print(text || ''), busy: () => !!ST.pending || ST.tool === 'paste' || ST.tool === 'move' };
 
   // ---- autosave and crash recovery (0.4 1.2): the open model is the document ----
   const autosave = new Autosave({ app: 'detailcraft' });
   // 0.10 PERF.24: the first copy is the whole model, then only what each edit changed (lib/history; the open model is followed when a file opens)
-  const adoc = autosave.doc({ id: 'open', name: model.state.name, journal: followJournal(() => model.autosaveJournal()) });
-  let copyPending = false;
+  const adoc = autosave.doc({ id: 'open', name: ST.model.state.name, journal: followJournal(() => ST.model.autosaveJournal()) });
+  ST.copyPending = false;
   function refreshAutosave() {
-    if (model.dirty) { adoc.rename(model.state.name); adoc.changed(); copyPending = true; }
-    else if (copyPending) { adoc.clean(); copyPending = false; }
+    if (ST.model.dirty) { adoc.rename(ST.model.state.name); adoc.changed(); ST.copyPending = true; }
+    else if (ST.copyPending) { adoc.clean(); ST.copyPending = false; }
   }
   window.detailcraftAutosave = autosave;
   // automated browsers (tests, which leave edits open mid-run) see "Recover your work?" only when they ask: ?autosave=offer
@@ -1781,6 +1333,7 @@ async function start(root) {
       if (!(await confirmDiscard())) throw new Error('Kept the open model.');  // i18n-ignore: the copy stays, the shell says why
       const m = new Model();
       const { warnings } = m.load(text);
+      m.takeIdBlock();                      // 0.11 DC.27
       m.savedVersion = -1;                  // recovered work is not saved to a file yet
       setModel(m);
       setTool('select');
@@ -1792,15 +1345,17 @@ async function start(root) {
   setView('3d');
   print(tr('app.status.ready'));
   /** The model object an exported IFC element came from (0.7.1 71.25): ifc.js names parts 'part' + id and footings 'footing' + id. */
-  let guidMap = null, guidBuilt = null, guidName = null;
+  ST.guidMap = null;
+  ST.guidBuilt = null;
+  ST.guidName = null;
   function refOfGuid(g) {
-    if (guidBuilt !== built || guidName !== model.state.name) {
-      guidBuilt = built; guidName = model.state.name; guidMap = new Map();
-      const seed = (k) => guidFor(model.state.name + '|' + k);
-      for (const p of built.parts) { const r = p.member ? { kind: 'member', id: p.member } : p.conn ? { kind: 'conn', id: p.conn } : p.stair ? { kind: 'stair', id: p.stair } : null; if (r) guidMap.set(seed('part' + p.id), r); }
-      for (const f of model.state.footings) guidMap.set(seed('footing' + f.id), { kind: 'footing', id: f.id });
+    if (ST.guidBuilt !== ST.built || ST.guidName !== ST.model.state.name) {
+      ST.guidBuilt = ST.built; ST.guidName = ST.model.state.name; ST.guidMap = new Map();
+      const seed = (k) => guidFor(ST.model.state.name + '|' + k);
+      for (const p of ST.built.parts) { const r = p.member ? { kind: 'member', id: p.member } : p.conn ? { kind: 'conn', id: p.conn } : p.stair ? { kind: 'stair', id: p.stair } : null; if (r) ST.guidMap.set(seed('part' + p.id), r); }
+      for (const f of ST.model.state.footings) ST.guidMap.set(seed('footing' + f.id), { kind: 'footing', id: f.id });
     }
-    return guidMap.get(g) || null;
+    return ST.guidMap.get(g) || null;
   }
   // ---- SC.5 (sc-r5-select): the pick is announced to the page (SuperCad Studio hears `cc-pick` and keeps one selection across its panels) and a pick from another
   // panel comes back through window.ccPickers.detailcraft. Both are inert outside Super. Ids are the project's object registry's: a member by its id, `conn:<id>`,
@@ -1809,40 +1364,40 @@ async function start(root) {
   const PICK_PREFIX = { member: '', conn: 'conn:', footing: 'footing:', stair: 'stair:' };
   const pickRefKey = (r) => r.kind + '\u0001' + r.id;
   function guidsOfRef(r) {
-    if (!built) return [];
+    if (!ST.built) return [];
     refOfGuid('');   // (re)builds the map for the model as built now
-    if (pickGuids?.map !== guidMap) { pickGuids = { map: guidMap, by: new Map() }; for (const [g, x] of guidMap) { const k = pickRefKey(x); if (!pickGuids.by.has(k)) pickGuids.by.set(k, []); pickGuids.by.get(k).push(g); } }
-    return pickGuids.by.get(pickRefKey(r)) || [];
+    if (ST.pickGuids?.map !== ST.guidMap) { ST.pickGuids = { map: ST.guidMap, by: new Map() }; for (const [g, x] of ST.guidMap) { const k = pickRefKey(x); if (!ST.pickGuids.by.has(k)) ST.pickGuids.by.set(k, []); ST.pickGuids.by.get(k).push(g); } }
+    return ST.pickGuids.by.get(pickRefKey(r)) || [];
   }
   function pickRefs() {
     const list = selected().filter((r) => Object.hasOwn(PICK_PREFIX, r.kind)).slice(0, 2000);
     return list.map((r) => { const g = guidsOfRef(r); return { id: PICK_PREFIX[r.kind] + r.id, ...(g.length ? { guid: g[0] } : {}), ...(g.length > 1 ? { aka: g.slice(1, 9) } : {}) }; });
   }
   function announcePick() {
-    if (!pickReady) return;
+    if (!ST.pickReady) return;
     const refs = pickRefs();
     const key = refs.map((r) => r.id).join(',');
-    if (key === pickLast) return;
-    pickLast = key;
+    if (key === ST.pickLast) return;
+    ST.pickLast = key;
     try { window.dispatchEvent(new CustomEvent('cc-pick', { detail: { app: 'detailcraft', ids: refs.map((r) => r.id), refs } })); } catch { /* no window */ }
   }
   selListeners.add(announcePick);
-  pickReady = true;
+  ST.pickReady = true;
   const pickRefOf = (raw) => {
     const id = String(raw ?? '');
     for (const [kind, pre] of Object.entries(PICK_PREFIX)) {
       if (pre ? !id.startsWith(pre) : id.includes(':')) continue;
-      const own = id.slice(pre.length), list = kind === 'member' ? model.state.members : kind === 'conn' ? model.state.connections : kind === 'footing' ? model.state.footings : model.state.stairs;
+      const own = id.slice(pre.length), list = kind === 'member' ? ST.model.state.members : kind === 'conn' ? ST.model.state.connections : kind === 'footing' ? ST.model.state.footings : ST.model.state.stairs;
       const o = (list || []).find((x) => String(x.id) === own);
       if (o) return { kind, id: o.id };
     }
-    return built && /^[0-9A-Za-z_$]{22}$/.test(id) ? refOfGuid(id) : null;
+    return ST.built && /^[0-9A-Za-z_$]{22}$/.test(id) ? refOfGuid(id) : null;
   };
   /** Show a pick from another panel. → the ids shown, or false */
   function pickApply(refs) {
     const list = (refs || []).slice(0, 5000).map((r) => (r ? pickRefOf(r.id) : null)).filter(Boolean);
     if (!list.length) return false;
-    if (tool !== 'select') setTool('select');
+    if (ST.tool !== 'select') setTool('select');
     setSelection(list);
     return selected().filter((r) => Object.hasOwn(PICK_PREFIX, r.kind)).map((r) => PICK_PREFIX[r.kind] + r.id);
   }
@@ -1857,60 +1412,66 @@ async function start(root) {
       if (!P) return;
       const src = P.source({ id: 'detailcraft.build', kind: 'check', label: tr('problems.src.build') });
       const label = (r) => { try { return exists(r) ? describeRef(r).replace(/\.$/, '') : ''; } catch (e) { return ''; } };
-      problemsSync = () => {
-        src.set(dcProblems(built, model.state, { strings: langCatalog().strings, labelOf: label }));
-        P.store.loadAccepted(model.state.problems?.accepted || []);
+      ST.problemsSync = () => {
+        src.set(dcProblems(ST.built, ST.model.state, { strings: langCatalog().strings, labelOf: label }));
+        P.store.loadAccepted(ST.model.state.problems?.accepted || []);
       };
       // an IDS problem (0.7.1 71.25) names the exported element by GlobalId: back to the member, connection, stair or footing it came from
       const refs = (p) => p.about.map((r) => (r.kind === 'element' ? refOfGuid(r.id) : r)).filter((r) => r && ['member', 'conn', 'footing', 'stair', 'rc', 'rcbar'].includes(r.kind) && exists(r));
       P.adapter({
         t: tr,
-        file: () => model.state.name,
-        select: (p) => { const r = refs(p); if (!r.length) return; if (tool !== 'select') setTool('select'); setSelection(r); if (r.length === 1) print(describeRef(r[0])); },
-        focus: (p) => { const at = refs(p).map((r) => anchorOf(model.state, r) || rcAnchor(model.state, r)).find(Boolean); if (at) view?.focusPoint(at, 2500); },
+        file: () => ST.model.state.name,
+        select: (p) => { const r = refs(p); if (!r.length) return; if (ST.tool !== 'select') setTool('select'); setSelection(r); if (r.length === 1) print(describeRef(r[0])); },
+        focus: (p) => { const at = refs(p).map((r) => anchorOf(ST.model.state, r) || rcAnchor(ST.model.state, r)).find(Boolean); if (at) ST.view?.focusPoint(at, 2500); },
         saveAccepted: (list) => { edit(tr('problems.undo.accept'), (tx) => tx.setAcceptedProblems(list)); },
       });
-      if (view) P.markers({
+      if (ST.view) P.markers({
         stage: ui.stage,
-        anchor: (p) => refs(p).map((r) => anchorOf(model.state, r) || rcAnchor(model.state, r)).find(Boolean) || null,
-        toScreen: (pt) => view.toScreen(pt),
-        onView: (fn) => { const prev = view.onRender; view.onRender = () => { prev?.(); fn(); }; return () => { view.onRender = prev; }; },
+        anchor: (p) => refs(p).map((r) => anchorOf(ST.model.state, r) || rcAnchor(ST.model.state, r)).find(Boolean) || null,
+        // 0.11 UI.17: view.toScreen is canvas-relative and the markers layer sits on the stage; in a layout that puts a region left of or above the
+        // canvas (Toolbox, Vector, Pro) the ⚠ marks landed over the toolbox. Add the canvas's offset inside the stage (0 in the classic page).
+        toScreen: (pt) => {
+          const s = ST.view.toScreen(pt); if (!s) return s;
+          const c = ST.view.canvas?.getBoundingClientRect?.(), st = ui.stage.getBoundingClientRect();
+          return c ? { ...s, x: s.x + c.left - st.left - ui.stage.clientLeft, y: s.y + c.top - st.top - ui.stage.clientTop } : s;
+        },
+        onView: (fn) => { const prev = ST.view.onRender; ST.view.onRender = () => { prev?.(); fn(); }; return () => { ST.view.onRender = prev; }; },
       });
       const frameSrc = P.source({ id: 'detailcraft.frame', kind: 'engine', label: tr('problems.src.frame') });
       const extraSrc = P.source({ id: 'detailcraft.erection', kind: 'engine', label: tr('problems.src.erection') });
-      extraSet = (list) => extraSrc.set(list);
-      extraSet(erection.problems());
+      ST.extraSet = (list) => extraSrc.set(list);
+      ST.extraSet(ST.erection.problems());
       const autoSrc = P.source({ id: 'detailcraft.autopilot', kind: 'engine', label: tr('problems.src.autopilot') });
-      autoSet = (list) => autoSrc.set(list);
-      autoSet(autopilot.problems());
+      ST.autoSet = (list) => autoSrc.set(list);
+      ST.autoSet(ST.autopilot.problems());
       const congSrc = P.source({ id: 'detailcraft.congestion', kind: 'engine', label: tr('problems.src.congestion') });
-      congSet = (list) => congSrc.set(list);
-      congSet(congestion.problems());
+      ST.congSet = (list) => congSrc.set(list);
+      ST.congSet(ST.congestion.problems());
       const rcSrc = P.source({ id: 'detailcraft.rebar', kind: 'check', label: tr('problems.src.rebar') });   // 0.9 RC.1: laps, anchorage, cover, spacing, steel
-      rcSet = (list) => rcSrc.set(list);
-      rcSet(rcProblems(rcb));
+      ST.rcSet = (list) => rcSrc.set(list);
+      ST.rcSet(rcProblems(ST.rcb));
       // 0.10 BK.20: the shared LOD 350 interface rules, read on DetailCraft's walls with openings (framed panels, concrete walls): advisory
       const ifaceSrc = P.source({ id: 'detailcraft.interfaces', kind: 'check', label: tr('problems.src.interfaces') });
-      ifaceSet = (list) => ifaceSrc.set(list);
-      ifaceSet(dcInterfaces(model.state).problems);
+      ST.ifaceSet = (list) => ifaceSrc.set(list);
+      ST.ifaceSet(dcInterfaces(ST.model.state).problems);
       const fndSrc = P.source({ id: 'detailcraft.foundation', kind: 'engine', label: tr('problems.src.foundation') });
-      fndSet = (list) => fndSrc.set(list);
-      fndSet(foundation.problems());
+      ST.fndSet = (list) => fndSrc.set(list);
+      ST.fndSet(ST.foundation.problems());
       const brkSrc = P.source({ id: 'detailcraft.breakit', kind: 'engine', label: tr('problems.src.breakit') });
-      breakSet = (list) => brkSrc.set(list);
-      breakSet(breakProblems);
+      ST.breakSet = (list) => brkSrc.set(list);
+      ST.breakSet(ST.breakProblems);
       const supSrc = P.source({ id: 'detailcraft.supply', kind: 'engine', label: tr('problems.src.supply') });
-      supplySet = (list) => supSrc.set(list);
-      supplySet(supply ? supply.problems() : []);
+      ST.supplySet = (list) => supSrc.set(list);
+      ST.supplySet(ST.supply ? ST.supply.problems() : []);
       const frmSrc = P.source({ id: 'detailcraft.framing', kind: 'engine', label: tr('problems.src.framing') });
-      frmSet = (list) => frmSrc.set(list);
-      frmSet(framing.problems());
+      ST.frmSet = (list) => frmSrc.set(list);
+      ST.frmSet(ST.framing.problems());
       const consSrc = P.source({ id: 'detailcraft.constructability', kind: 'engine', label: tr('problems.src.constructability') });
-      consSet = (list) => consSrc.set(list);
-      consSet(constructability(model.state, built, { cache: consCache }));
-      frameProblemsSet = (list) => frameSrc.set(list);
-      if (frameProblems) frameProblemsSet(frameProblems);
-      problemsSync();
+      ST.consSet = (list) => consSrc.set(list);
+      ST.consSet(constructability(ST.model.state, ST.built, { cache: ST.consCache }));
+      ST.frameProblemsSet = (list) => frameSrc.set(list);
+      if (ST.frameProblems) ST.frameProblemsSet(ST.frameProblems);
+      ST.problemsSync();
       renderReport();
     };
     if (window.ccProblems) go(); else document.addEventListener('cc-problems-ready', go, { once: true });
@@ -1918,20 +1479,20 @@ async function start(root) {
   // ---- Check against IDS (0.7.1 71.25; ids-ui.js, cc-ids in ./ids/): the IFC this model exports (writeIfc, read back by cc-ifc) against the
   // client's IDS, remembered in the file (state.ids, one undo step); failures in the shell's Problems, named by the export's GlobalIds
   // (guidFor(model name | part id): stable, so refOfGuid finds the member, connection, stair or footing a click should select)
-  idsUi = mountIds({
+  ST.idsUi = mountIds({
     root, el, t: tr, print,
     ifc: async () => {
-      if (!built.parts.length && !model.state.footings.length && !rcb.items.length && !rcb.loose.length) throw new Error(tr('app.export.nothing'));
+      if (!ST.built.parts.length && !ST.model.state.footings.length && !ST.rcb.items.length && !ST.rcb.loose.length) throw new Error(tr('app.export.nothing'));
       const { IfcFile } = await import('./ifc/model.js');
-      return IfcFile.open(new TextEncoder().encode(writeIfc(model.state, built, marks, schedule, {})));
+      return IfcFile.open(new TextEncoder().encode(writeIfc(ST.model.state, ST.built, ST.marks, ST.schedule, {})));
     },
-    readRecord: () => (model.state.ids ? { ...model.state.ids, text: model.idsText() } : null),
+    readRecord: () => (ST.model.state.ids ? { ...ST.model.state.ids, text: ST.model.idsText() } : null),
     // the text once in model.idsTexts, the undo step holds only { name, hash } (lead 2026-10-26: no IDS text in the snapshots)
-    writeRecord: (rec) => edit(tr(rec ? 'ids.undo.set' : 'ids.undo.clear'), (tx) => tx.setIds(rec ? { name: rec.name, hash: model.idsTexts.put(rec.text) } : null)),
+    writeRecord: (rec) => edit(tr(rec ? 'ids.undo.set' : 'ids.undo.clear'), (tx) => tx.setIds(rec ? { name: rec.name, hash: ST.model.idsTexts.put(rec.text) } : null)),
   });
-  window.detailcraftIds = idsUi;   // for tests (tools/ids/browser-detailcraft.mjs)
+  window.detailcraftIds = ST.idsUi;   // for tests (tools/ids/browser-detailcraft.mjs)
   // workspace layouts (Settings › Global › Layout; 0.7 WS.13): the shell's engine builds the chosen layout, workspace-detailcraft.js fills it
-  import('./workspace-detailcraft.js').then((m) => m.mountDetailcraftWorkspace({ root, dc: window.detailcraft })).then((w) => { workspace = w; })
+  import('./workspace-detailcraft.js').then((m) => m.mountDetailcraftWorkspace({ root, dc: window.detailcraft })).then((w) => { ST.workspace = w; })
     .catch((err) => { console.warn('DetailCraft: no workspace layouts —', err?.message || err); document.documentElement.removeAttribute('data-cc-ws-boot'); });   // i18n-ignore: a console note
   // desktop: the file the app was started with (double-click, "Open with")
   fileHost.launchFiles().then((files) => { if (files?.[0]) openFile(files[0]); }).catch(() => {});

@@ -29,13 +29,9 @@
  */
 import { solids, depthIn, solidIndex } from './clash.js';
 import { membersOf } from './connections.js';
+import { add3 as add, cross3 as cross, dot3 as dot, scale3 as mul, sub3 as sub } from './geom-vec.js';   // shared helpers (0.11 PERF.74; tools/perf/util-copies.mjs)
 
 export const CONS_DEFAULTS = Object.freeze({ socketLength: 60, socketWall: 4, nutRatio: 0.8, headRatio: 0.65, cornersRatio: 1.96, torchRadius: 10, torchReach: 30, rules: ['access', 'bolts', 'weld', 'weldaccess', 'water'] });
-const add = (a, b) => [a[0] + b[0], a[1] + b[1], a[2] + b[2]];
-const mul = (a, s) => [a[0] * s, a[1] * s, a[2] * s];
-const dot = (a, b) => a[0] * b[0] + a[1] * b[1] + a[2] * b[2];
-const sub = (a, b) => [a[0] - b[0], a[1] - b[1], a[2] - b[2]];
-const cross = (a, b) => [a[1] * b[2] - a[2] * b[1], a[2] * b[0] - a[0] * b[2], a[0] * b[1] - a[1] * b[0]];
 const unit = (a) => { const n = Math.hypot(...a) || 1; return mul(a, 1 / n); };
 const r1 = (v) => Math.round(v * 10) / 10;
 

@@ -1,0 +1,19 @@
+{
+  "@locale": "it",
+  "@name": "Italiano",
+  "@note": "Draft translation, not yet reviewed by a native speaker",
+  "zeman.name": "Esportazione Zeman",
+  "zeman.label": "Zeman (XML + NC)",
+  "zeman.done": "File Zeman scritti per {marks}: un XML e i relativi file NC in una cartella per ciascuno, salvati come {file}.",
+  "zeman.none": "Esportazione Zeman: nessun file scritto.",
+  "zeman.empty": "Esportazione Zeman: non ci sono ancora parti in acciaio.",
+  "zeman.skipped": "Non scritti: {list}.",
+  "zeman.skipped.item": "{mark} ({why})",
+  "zeman.refuse.lead": "la sua parte principale {profile} non è un profilo a I",
+  "zeman.refuse.attached": "ha una parte collegata che non è una piastra: {profile}",
+  "zeman.refuse.nc": "{why}",
+  "zeman.loose": "Parti impostate come libere, non saldate, sono state escluse: {n}.",
+  "zeman.turned": "Le piastre identiche condividono un unico file NC; una piastra uguale ma capovolta ha una propria posizione nell'XML.",
+  "zeman.misfit": "Verificare le piastre che condividono una posizione: una differisce dal file NC che condivide di {mm} mm.",
+  "zeman.check": "Questa esportazione è stata generata da un unico set di file di esempio: verificare il primo nel proprio software prima della produzione."
+}

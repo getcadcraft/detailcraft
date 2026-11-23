@@ -1,0 +1,19 @@
+{
+  "@locale": "uz",
+  "@name": "Oʻzbekcha",
+  "@note": "Draft translation, not yet reviewed by a native speaker",
+  "zeman.name": "Zeman eksporti",
+  "zeman.label": "Zeman (XML + NC)",
+  "zeman.done": "Zeman fayllari {marks} uchun yozildi: har biri uchun bir XML va uning NC fayllari jildda. Saqlangan nom: {file}.",
+  "zeman.none": "Zeman eksporti: hech narsa yozilmadi.",
+  "zeman.empty": "Zeman eksporti: hozircha poʻlat detallar yoʻq.",
+  "zeman.skipped": "Yozilmadi: {list}.",
+  "zeman.skipped.item": "{mark} ({why})",
+  "zeman.refuse.lead": "asosiy detal {profile} I-shaklida emas",
+  "zeman.refuse.attached": "unga plastina boʻlmagan biriktirilgan detal bor: {profile}",
+  "zeman.refuse.nc": "{why}",
+  "zeman.loose": "Boʻsh oʻrnatilgan, payvandlanmagan detallar chiqarib tashlandi: {n}.",
+  "zeman.turned": "Bir xil plastinalar bitta NC faylni ulashadi; oʻsha detal agʻdarilgan boʻlsa, XML da oʻz oʻrniga ega boʻladi.",
+  "zeman.misfit": "Bir belgini ulashgan plastinalarni tekshiring: biri ulashgan NC fayldan {mm} mm farq qiladi.",
+  "zeman.check": "Bu eksport bitta namunaviy fayllar toʻplamidan tuzilgan: ishlab chiqarishdan oldin birinchisini qurilmangizdagi oʻz dasturida tekshiring."
+}

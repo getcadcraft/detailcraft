@@ -1,0 +1,19 @@
+{
+  "@locale": "sq",
+  "@name": "Shqip",
+  "@note": "Draft translation, not yet reviewed by a native speaker",
+  "zeman.name": "Eksporti Zeman",
+  "zeman.label": "Zeman (XML + NC)",
+  "zeman.done": "Skedarët Zeman u shkruan për {marks}: një XML dhe skedarët e tij NC në një dosje për secilin, të ruajtur si {file}.",
+  "zeman.none": "Eksporti Zeman: asgjë nuk u shkrua.",
+  "zeman.empty": "Eksporti Zeman: nuk ka ende pjesë çeliku.",
+  "zeman.skipped": "Nuk u shkrua: {list}.",
+  "zeman.skipped.item": "{mark} ({why})",
+  "zeman.refuse.lead": "pjesa e tij kryesore {profile} nuk është formë I",
+  "zeman.refuse.attached": "ka një pjesë të bashkangjitur që nuk është pllakë: {profile}",
+  "zeman.refuse.nc": "{why}",
+  "zeman.loose": "Pjesët e vendosura si të lira, jo të saldueme, u lanë jashtë: {n}.",
+  "zeman.turned": "Pllakat identike ndajnë një skedar NC të vetëm; një pllakë që është e njëjta copë e kthyer përmbys ka pozicionin e vet në XML.",
+  "zeman.misfit": "Kontrollo pllakat që ndajnë të njëjtën shenjë: një ndryshon nga skedari NC që ndan me {mm} mm.",
+  "zeman.check": "Ky eksport u ndërtua nga një grup mostrash skedarësh: kontrollo të parin në softuerin e makinës tënde para prodhimit."
+}

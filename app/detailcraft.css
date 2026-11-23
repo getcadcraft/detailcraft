@@ -146,6 +146,9 @@ body.app-shell .sp-tab { bottom: 15rem; }
 
 /* ---- Reports ---- */
 .dc-reports { grid-area: reports; display: flex; flex-direction: column; min-height: 0; min-width: 0; background: var(--sheet-2); border-top: var(--pen-2) solid var(--ink); }
+/* 0.11 UI.17: on a window under 900 px tall the reports row gives the drawing more room (13rem left the 3D view 18 % of a 1280 x 800 window in the
+   Toolbox layout); the tabs and three or four rows still show and the table scrolls */
+@media (max-height: 56.25rem) and (min-width: 48.0625rem) { .dc { grid-template-rows: auto minmax(0, 1fr) 9rem auto; } }
 .dc-tabs { display: flex; gap: 0; padding: 0 .5rem; border-bottom: var(--pen-1) solid var(--line); overflow-x: auto; flex: 0 0 auto; }
 .dc-tab { font: inherit; font-size: .8125rem; font-weight: 600; color: var(--ink-2); background: transparent; border: 0; border-bottom: var(--pen-3) solid transparent; padding: .35rem .75rem .25rem; white-space: nowrap; cursor: pointer; }
 .dc-tab:hover { color: var(--ink); }

@@ -1,103 +1,103 @@
 ---
-title: Nyheter i 0.9
-summary: Brittiska stålstorlekar från UK Blue Book och vinkelprofiler med ojämna ben, verkstadsritningar för varje del i en PDF-samling, Mina profiler för egna sektioner, P-Delta och egenfrekvenser, ASCE 7-vindlaster, seismisk plats och kombinationer, samt markörer i realtid och Följ.
-keywords: nyheter, vad är nytt, versionsinformation, ändringslogg, 0.9, brittiskt stål, blue book, ub, uc, pfc, shs, rhs, chs, ojämn vinkel, verkstadsritning, verkstadsritningar, ritningssamling, delmärkning, pdf, mina profiler, egen profil, p-delta, andra ordningen, egenfrekvens, finita element, modal massa, vindlast, asce 7, seism, markklass, usgs, lastkombinationer, lrfd, asd, live, markörer, följ, personer, verktygstips, vad är nytt, versionsinformation, ändringslogg, ändringar, 0.8, 0.8.1, version, nya funktioner, montage, kran, lastdiagram, film, autopilot, förbindelser, armering, trängsel, grundläggning, stomme, trä, lättregel, kapplista, konstruktionsbarhet, svetsåtkomst, leverantör, lager, leveranstid, vad brister först, betong, bjälklag, språk, assistent
-from: 4c95a2de
+title: Nyheter i 0.9 (tidigare)
+summary: Brittiska stålprofiler och ojämlika vinklar, verkstadsritningar för varje del i ett enda set PDF, Mina profiler för anpassade profiler, P-Delta och egenfrekvenser, vindlaster enligt ASCE 7, seismisk plats och kombinationer, samt levande markörer och Följ.
+keywords: nyheter 0.9, tidigare version, nyheter, versionsinformation, ändringslogg, 0.9, brittiskt stål, Blue Book, UB, UC, PFC, SHS, RHS, CHS, ojämlik vinkel, verkstadsritning, verkstadsritningar, bladset, positionsmärke, pdf, mina profiler, anpassad profil, P-Delta, andra ordningen, egenfrekvens, finita element, modal massa, vindlast, ASCE 7, seismisk, platsklass, USGS, lastkombinationer, LRFD, ASD, live, markörer, följ, personer, verktygstips, ändringar, 0.8, 0.8.1, version, nya funktioner, montage, kran, lasttabell, film, autopilot, förband, armering, trängsel, grundläggning, sättning, stomme, trä, lättprofil, kapplista, byggbarhet, svetsåtkomst, leverantör, lager, leveranstid, vad går sönder först, betong, seismisk, bjälklag, språk, assistent
+from: ab0c7f05
 ---
 
-Detta är vad som ändrades i DetailCraft 0.9, jämfört med 0.8.1. Version 0.9 ger de brittiska stålstorlekarna, en verkstadsritning för varje del på en gång, en större flik {{ui:Analys}} för ramar och en vy över varandras markörer när flera arbetar tillsammans.
+Det här är vad som ändrades i DetailCraft 0.9, jämfört med 0.8.1. 0.9 ger brittiska stålprofiler, en verkstadsritning för varje del i ett svep, en större flik {{ui:Analys}} för ramar och en vy över varandras markörer när ni arbetar tillsammans.
 
 ## Nytt
 
-### Brittiskt stål och verkstadsritningar
+### Brittiska stålprofiler och verkstadsritningar
 
-- **Brittiska stålstorlekar.** Profillistorna innehåller nu 976 storlekar från Steel for Life Blue Book: UB, UC, PFC, EA, UEA, CHS, SHS och RHS. De kallformade ihåliga profilerna hålls åtskilda, eftersom deras namn börjar med CF. Namnen skrivs släkte först, till exempel UB305x165x40 eller SHS100x100x5.0. Det fungerar också att skriva dem som ritningarna gör, till exempel 305x165x40 UB, L100x100x10 eller SHS100x5. Se [Profilkatalog](topic:profile-catalog).
-- **Vinkelprofiler med ojämna ben.** UEA-vinklar behåller båda benen genom IFC in och ut och genom NC-filer. En spegling vänder biten ände för ände.
-- **Alla verkstadsritningar på en gång.** Välj {{ui:Verkstadsritning}} i gruppen {{ui:Utdata}} när inget är markerat. Fönstret listar varje delmärkning och visar en förhandsvisning av valfri av dem. {{ui:Ladda ner alla}} sparar en PDF med en sida per delmärkning, var och en med titeln ”Blad 3 av 42”. {{ui:Ladda ner PDF}} sparar bladet du tittar på. U-profiler, vinkelprofiler och ihåliga profiler får nu blad också. Se [Gör verkstadsritningar](topic:shop-drawings).
-- **Egna profiler.** En egen profil kan nu behållas för varje ny modell. I formuläret för egen profil lämnar du {{ui:Behåll i Mina profiler}} ikryssad. Listan {{ui:Mina profiler}} under den har {{ui:Behåll}}, {{ui:Använd här}} och {{ui:Ta bort}}. Listan sparas i den här webbläsaren (upp till 200), inte på ditt konto. Se [Plåtar och profiler](topic:plates-and-profiles).
+- **Brittiska stålprofiler.** Profillistorna innehåller nu 976 dimensioner från Steel for Life Blue Book: UB, UC, PFC, EA, UEA, CHS, SHS och RHS, där de kallformade ihåliga profilerna hålls åtskilda (deras namn börjar med CF). Namnen skrivs med familjen först, till exempel UB305x165x40 eller SHS100x100x5.0, och det fungerar också att skriva dem som ritningar gör: 305x165x40 UB, L100x100x10, SHS100x5. Se [Profilkatalog](topic:profile-catalog).
+- **Ojämlika vinklar.** UEA-vinklar behåller båda benen genom IFC in och ut och genom NC-filer, och en spegling vänder biten ände för ände.
+- **Alla verkstadsritningar på en gång.** Välj {{ui:Verkstadsritning}} i gruppen {{ui:Utdata}} när inget är markerat. Fönstret listar varje positionsmärke, förhandsvisar vilket som helst av dem, och {{ui:Ladda ner alla}} sparar en PDF med en sida per märke, där varje sida har titeln "Blad 3 av 42". {{ui:Ladda ner PDF}} sparar det du tittar på. Kanaler, vinklar och ihåliga profiler får nu blad också. Se [Gör verkstadsritningar](topic:shop-drawings).
+- **Mina profiler.** En anpassad profil kan nu behållas för varje ny modell. I formuläret för anpassad profil, lämna {{ui:Behåll i Mina profiler}} ikryssat; listan {{ui:Mina profiler}} under den har {{ui:Behåll}}, {{ui:Använd här}} och {{ui:Ta bort}}. Listan sparas i den här webbläsaren (upp till 200), inte på ditt konto. Se [Plåtar och profiler](topic:plates-and-profiles).
 
 ### Analys
 
-- **Andra ordningen (P-Delta).** Kryssa i {{ui:Andra ordningen (P-Delta)}} bredvid {{ui:Kör}} i fliken {{ui:Analys}}, så verkar normalkrafterna på den deformerade ramen. Plåtar och styva bjälklag förblir förstaordning, med en varning. Se [Krafter, reaktioner och nedböjningar](topic:frame-analysis).
-- **Egenfrekvenser.** Blocket {{ui:Finita element: egenfrekvenser}} under resultaten hittar de lägsta svängningsformerna för samma modell, med period och effektiv modal massa. Det visar en svängningsform i modellen. Se [Krafter, reaktioner och nedböjningar](topic:frame-analysis).
-- **Vindlaster och seismisk plats.** Tre nya block i fliken {{ui:Analys}}: {{ui:Vindlaster (ASCE 7, riktningsmetoden)}}, {{ui:Seismisk plats och system (ASCE 7)}} och {{ui:ASCE 7-lastkombinationer}}. Se [Vind, seismisk plats och ASCE 7-kombinationer](topic:wind-seismic-combinations).
+- **Andra ordningen (P-Delta).** Kryssa i {{ui:Andra ordningen (P-Delta)}} bredvid Kör på fliken {{ui:Analys}} så verkar normalkrafterna på den deformerade ramen. Plåtar och styva bjälklag förblir av första ordningen, med en varning. Se [Krafter, reaktioner och nedböjningar](topic:frame-analysis).
+- **Egenfrekvenser.** Blocket {{ui:Finita element: egenfrekvenser}} under resultaten hittar de lägsta svängningsformerna för samma modell, med period och effektiv modal massa, och visar en svängningsform i modellen. Se [Krafter, reaktioner och nedböjningar](topic:frame-analysis).
+- **Vindlaster och seismisk plats.** Tre nya block på fliken {{ui:Analys}}: {{ui:Vindlaster (ASCE 7, riktningsmetoden)}}, {{ui:Seismisk plats och system (ASCE 7)}} och {{ui:ASCE 7-lastkombinationer}}. Se [Vind, seismisk plats och ASCE 7-kombinationer](topic:wind-seismic-combinations).
 
 ### Att arbeta tillsammans
 
-- **Markörer och namn.** I en Live-session ritas varje persons pekare i modellen med deras namn och färg. Det de markerat får en ruta.
-- **Följ en person.** Öppna {{ui:Deltagare}} i sessionen och välj {{ui:Följ}} vid ett namn. Din vy följer med deras. Värden kan välja {{ui:Be alla följa mig}}. Se [Följ en person i en Live-session](topic:follow-in-live).
+- **Markörer och namn.** I en Live-session ritas varje persons pekare i modellen med deras namn och färg, och det de har markerat får en ruta.
+- **Följ en person.** Öppna {{ui:Personer}} i sessionen och välj {{ui:Följ}} vid ett namn; din vy följer deras. Värden kan välja {{ui:Be alla följa mig}}. Se [Följ en person i en Live-session](topic:follow-in-live).
 
 ### I alla appar
 
-- Verktygstipsen är Bootstrap-verktygstips, startkortet för tips har en stängknapp, flikraderna rullar i sidled när de inte ryms, och webbläsarfliken visar namnet på det öppna dokumentet följt av DetailCraft och CadCraft.
+- Verktygstips är Bootstrap-tips, startkortet har en stängknapp, flikraderna rullar i sidled när de inte ryms, och webbläsarfliken visar det öppna dokumentet följt av DetailCraft och CadCraft.
 
 ## Åtgärdat
 
-- En egen profil försvann när du startade en ny modell.
-- U-profiler, vinkelprofiler och ihåliga profiler saknades i verkstadsritningssamlingen.
+- En anpassad profil försvann när du började en ny modell.
+- Kanaler, vinklar och ihåliga profiler saknades i verkstadsritningssetet.
 
 ## Ärliga begränsningar
 
-- Blocken för vind, seism och finita element är hjälpmedel för kontroll. Din ingenjör granskar resultaten. De är ingen normkontroll. USGS-uppslagningen testades mot en ersättning, inte mot den levande tjänsten.
-- Finita element och P-Delta har kontrollerats mot handräknade och slutna svar, inte mot en verklig byggnad. Knäckningsanalys är inte byggd.
-- Ingen brittisk tillverkare har ännu prövat de brittiska storlekarna, och NC-filer för ojämna vinklar har inte körts på en maskin.
-- Verkstadsritningssamlingen är endast PDF.
-- Språk utöver engelska är maskinella utkast.
-- Windows-installationsprogrammen är inte kodsignerade (Mer info, sedan Kör ändå). macOS-diskavbildningen är inte notariserad (högerklick, sedan Öppna).
+- Vind-, seismik- och finita element-blocken är hjälpmedel för kontroll. Din ingenjör granskar resultaten; de är inte en normkontroll. USGS-uppslaget testades på en ersättning, inte mot den riktiga tjänsten.
+- Finita element och P-Delta kontrollerades mot handberäkningar och slutna svar, inte mot en verklig byggnad. Knäckningsanalys är inte byggd.
+- Ingen brittisk tillverkare har ännu provat de brittiska profilerna, och NC-filer för ojämlika vinklar har inte körts på någon maskin.
+- Verkstadsritningssetet är endast PDF.
+- Språk utöver engelska är maskinöversättningar i utkastform.
+- Windows-installerarna är inte kodsignerade (Mer information, sedan Kör ändå); macOS-diskavbildningen är inte notariserad (högerklicka, sedan Öppna).
 
-Tidigare ändringar finns i anteckningarna för 0.8 och 0.8.1 längre ner på sidan.
+Tidigare ändringar finns i 0.8- och 0.8.1-noterna längre ner på den här sidan.
 
 ## Tidigare: 0.8 och 0.8.1
 
-Detta är vad som ändrades i DetailCraft 0.8 (1 november 2026) och 0.8.1 (2 november 2026), jämfört med 0.7. Version 0.7 kontrollerade stålstänger. Version 0.8 planerar lyften, föreslår förbindelserna, kontrollerar grunderna och armeringen, och bygger stommar av trä och lättregel för väggar, bjälklag och tak.
+Det här är vad som ändrades i DetailCraft 0.8 (1 november 2026) och 0.8.1 (2 november 2026), jämfört med 0.7. 0.7 kontrollerade stålstänger; 0.8 planerar lyften, föreslår förbanden, kontrollerar grunderna och armeringen, och bygger upp trä- och lättprofilsväggar, bjälklag och tak.
 
 ### Nytt
 
 **Montage**
 
-- **Monteringsplan och film.** I fliken {{ui:Montage}} beskriver du en kran (var den står, dess högsta krok och riggningen som inte finns i lastdiagrammet) och skriver in raderna i dess lastdiagram. DetailCraft lyfter modellen en sammanställning i taget, i fasordning och nivå för nivå. Varje lyft kontrolleras mot diagrammet vid sin radie och mot den marginal du angett. {{ui:Spara film}} skriver en HTML-fil som spelas upp offline i vilken webbläsare som helst, även i en telefon. Lyft som ligger över diagrammet, bortom det eller för högt finns i {{ui:Problem}}. Det är en plan utifrån dina siffror, inte en lyftplan. Se [Monteringsplan och film](topic:erection-movie).
+- **Monteringsplan och film.** På fliken {{ui:Montage}} beskriver du en kran (var den står, dess högsta krok, lyftredskapen som inte finns i lasttabellen) och skriver in raderna i dess lasttabell. DetailCraft lyfter modellen en sammanställning i taget, i fasordning och nivå för nivå, och kontrollerar varje lyft mot tabellen vid dess radie och mot marginalen du angett. {{ui:Spara film}} skriver en HTML-fil som spelas upp offline i vilken webbläsare som helst, även i en telefon. Lyft som ligger utanför tabellen, bortom den eller för höga finns i {{ui:Problem}}. Det är en plan utifrån dina värden, inte en lyftplan. Se [Monteringsplan och film](topic:erection-movie).
 
-**Förbindelser**
+**Förband**
 
-- **Autopilot för förbindelser.** Fliken {{ui:Autopilot}} tittar på varje skarv som saknar förbindelse och föreslår en utifrån profilerna: fotplåtar, skjuvflikar, ändplattor för balkar du markerat som momentbalkar, skarvar och knutplåtar. Ange en jämnt fördelad last eller en ändskjuvkraft, så följer antalet bultar bultens dimensioneringshållfasthet. {{ui:Lägg till alla}} lägger till förslagen som ett steg att ångra. De är startvärden att granska, inte en förbindelsedimensionering.
-- **Konstruktionsbarhetskontroller.** {{ui:Problem}} för en bult som en skiftnyckel inte når, bultar för nära för hylsan, kälsvetsar utanför sina storleksgränser och ihåliga profiler som samlar vatten. Svetsåtkomst är ny: en runtomgående kälsvets som en svetsares brännare inte når listas med delen i vägen och andelen av svetsen som påverkas. Se [Konstruktionsbarhetskontroller](topic:constructability).
+- **Autopilot för förband.** Fliken {{ui:Autopilot}} tittar på varje knut som saknar förband och föreslår ett utifrån profilerna: fotplåtar, skjuvflikar, ändplattor för de balkar du markerar som momentbalkar, skarvar och knutplåtar. Ge en jämnt fördelad last eller en ändskjuvkraft, så följer antalet bultar bultens dimensionerande hållfasthet. {{ui:Lägg till alla}} lägger till förslagen som ett enda steg att ångra. De är startvärden att granska, inte en förbandsdimensionering.
+- **Byggbarhetskontroller.** {{ui:Problem}} för en bult som en skiftnyckel inte når, bultar för nära för hylsan, kälsvetsar utanför deras storleksgränser och ihåliga profiler som håller vatten. Svetsåtkomst är ny: en rundsvets som en svetsares brännare inte når listas, med delen som står i vägen och andelen av svetsen som påverkas. Se [Byggbarhetskontroller](topic:constructability).
 
-**Grunder och armering**
+**Grundläggning och armering**
 
-- **Grundkontroller.** Fliken {{ui:Grundläggning}} kontrollerar grundsulor, sammansatta grundsulor och plattgrunder på den jord du beskriver. Bärighet, glidning och vält kontrolleras från bruksbelastningar, och böjning, skjuvning, genomstansning, förankring och minsta armering från dimensionerande laster (ACI 318-19). En pelare nära en kant eller ett hörn kontrolleras med tvärsnittet avskuret av grundens kant. Sättningen kommer från jordens modul. En flexibel platta löses på fjädrar utifrån en underbäddsmodul, och pålgrupper och stödmurar har egna paneler. Pelarlaster kan skrivas in eller hämtas från {{ui:Analys}}. Se [Grundkontroller](topic:foundation-checks).
-- **Karta över armeringstrångsel.** Fliken {{ui:Trängsel}} ritar en värmekarta över varje grund sedd uppifrån. Den visar var armeringen lämnar för lite utrymme för betongen att komma ner, mot regeln om fritt avstånd och, om du anger dem, största ballast och vibratorhuvudet. Se [Karta över armeringstrångsel](topic:rebar-congestion).
+- **Grundkontroller.** Fliken {{ui:Grundläggning}} kontrollerar grundsulor, sammansatta grundsulor och plattor på den jord du beskriver: bärighet, glidning och vält från bruksgränslaster; böjning, skjuvning, genomstansning, förankring och minsta armering från dimensionerande laster (ACI 318-19). En pelare nära en kant eller ett hörn kontrolleras med tvärsnittet avskuret vid grundsulans kant. Sättning beräknas från jordens modul, en flexibel platta löses på fjädrar utifrån en undergrundsmodul, och pelargrupper och stödmurar har egna paneler. Pelarlaster kan skrivas in eller hämtas från {{ui:Analys}}. Se [Grundkontroller](topic:foundation-checks).
+- **Karta över armeringstrångsel.** Fliken {{ui:Trängsel}} ritar en värmekarta över varje grundsula sedd uppifrån: var stängerna lämnar för lite utrymme för betongen att ta sig ner, mot regeln för fritt avstånd och, om du anger dem, största ballast och vibratorhuvudet. Se [Karta över armeringstrångsel](topic:rebar-congestion).
 
 **Stomme och leverans**
 
-- **Trä- och lättreglestomme.** Fliken {{ui:Stomme}} bygger vägg-, bjälklags- och takpaneler med varje stycke, en kapplista, virket att köpa och en verkstadsritning i skala. {{ui:Placera som element}} lägger stycket i modellen, och {{ui:PDF-blad}} sparar ett blad för varje panel. Dimensionerna, avstånden och överliggarna bestämmer du. DetailCraft kontrollerar inte att de bär lasten. Se [Trä- och lättregelpaneler](topic:framing-panels).
-- **Leverantörslager och leveranstider.** Fliken {{ui:Leverans}} läser en leverantörs lagerlista (CSV) och visar för varje profil som kapplistan köper om det finns tillräckligt på lager och hur lång väntan är. Brister och sena profiler finns i {{ui:Problem}}. Inget beställs. Se [Leverantörslager och leveranstider](topic:supplier-stock).
+- **Stomme i trä och lättprofil.** Fliken {{ui:Stomme}} bygger upp väggs-, golvs- och takpaneler med varje del, en kapplista, lagret att köpa och en verkstadsritning i skala. {{ui:Placera som element}} lägger delarna i modellen, och {{ui:PDF-blad}} sparar ett blad för varje panel. Dimensionerna, avstånden och överliggarna är dina: DetailCraft kontrollerar inte att de bär lasten. Se [Stompaneler i trä och lättprofil](topic:framing-panels).
+- **Leverantörslager och leveranstider.** Fliken {{ui:Leverans}} läser en leverantörs lagerlista (CSV) och visar, för varje profil som kapplistan köper, om det finns tillräckligt i lager och hur lång väntan är. Brister och sena profiler finns i {{ui:Problem}}. Inget beställs. Se [Leverantörslager och leveranstider](topic:supplier-stock).
 
 **Analys och dimensionering**
 
-- **Vad brister först?** I fliken {{ui:Analys}} hittar knappen den hållfasthetskombination som styr, den svagaste stången och hur mycket lasterna kan växa innan första stången når sin gräns. Den visar även den svagaste ändplattan eller skjuvfliken där bultarnas skjuvhållfasthet är känd. Knappen behöver först kombinationerna och en dimensioneringsnorm. Bärighet, blockskjuvning, svetsar och hävverkan kontrolleras inte. Din anslutna assistent kan begära samma sak.
-- **Live.** Kryssa i {{ui:Live: lös om efter varje ändring}}, så löses ramen om efter varje ändring.
-- **Betong, mer.** En smal pelare i en ram utan sidoförskjutning dimensioneras för sitt förstorade moment (ACI 318-19 6.6.4.5). Den seismiska perioden kan tas från analysen med Rayleighs metod. Ett bjälklag av plåtar får den stålarmering varje lager behöver utifrån sina moment, samt enkelriktad skjuvning. Se [Kontrollera betongdelar och gör seismiska laster](topic:concrete-and-seismic).
-- **För en ingenjör att granska.** Resultaten för grunder, betong och Vad brister först är hjälpmedel. Vindlaster finns inte ännu.
+- **Vad går sönder först?** På fliken {{ui:Analys}} hittar knappen den hållfasthetskombination som styr, den svagaste stången, hur mycket lasterna kan öka innan den första stången når sin gräns, och den svagaste ändplattan eller skjuvfliken där bultarnas skjuvhållfasthet är känd. Den kräver kombinationerna och en dimensioneringsnorm först. Bärighet, blockskjuvning, svetsar och hävning av bultar kontrolleras inte. Din anslutna assistent kan fråga samma sak.
+- **Live.** Kryssa i {{ui:Live: lös om efter varje ändring}} så löses ramen om efter varje ändring.
+- **Betong och mer.** En slank pelare i en icke-sidoförskjutbar ram dimensioneras för sitt förstorade moment (ACI 318-19 6.6.4.5). Den seismiska perioden kan tas från analysen med Rayleighs metod. En platta av plåtar får den armering varje lager behöver utifrån sina moment, och envägsskjuvningen. Se [Kontrollera betongstänger och skapa seismiska laster](topic:concrete-and-seismic).
+- **För en ingenjör att granska.** Resultaten för grund, betong och Vad går sönder först är hjälpmedel. Vindlaster är inte byggda.
 
 **I alla appar**
 
-- **Språk.** Hjälpen finns på 54 språk. De utöver engelska är maskinella utkast tills en infödd talare har läst dem. Tio är nya: litauiska, lettiska, bosniska, marathi, telugu, albanska, afrikaans, filippinska, swahili och uzbekiska.
-- **Verktygsfältsrader.** {{ui:Inställningar}} › {{ui:Allmänt}} › {{ui:Verktygsfältsrader}} väljer radbrytning, 2 rader eller 1 rad. Ett fält som redan ryms står kvar som det är, och resten rullar i sidled.
-- **Egenskapsrutnät.** Grundens fält använder det gemensamma rutnätet, med hopfällbara kategorier och kompakt täthet. Inskrivna uträkningar som 2*450 fungerar fortfarande.
-- **Inmatningsenheter.** Styrplatta, penna, 3D-mus, handkontroll och MIDI kan styra apparna. Se [Navigera i 3D](topic:navigate-3d).
+- **Språk.** Hjälpen finns på 54 språk. De utöver engelska är maskinöversättningar i utkastform tills en modersmålstalare har läst dem; tio är nya (litauiska, lettiska, bosniska, marathi, telugu, albanska, afrikaans, filippinska, swahili, uzbekiska).
+- **Verktygsfältsrader.** {{ui:Inställningar}} › {{ui:Allmänt}} › {{ui:Verktygsfältsrader}} väljer radbrytning, 2 rader eller 1 rad. Ett fält som redan ryms behålls som det är; resten rullar i sidled.
+- **Egenskapsrutnät.** Fältet för grunden använder det gemensamma rutnätet: hopfällbara kategorier och kompakt täthet. Skriven aritmetik som 2*450 fungerar fortfarande.
+- **Indataenheter.** Styrplatta, penna, 3D-mus, handkontroll och MIDI kan styra apparna. Se [Navigera i 3D](topic:navigate-3d).
 - **Problempanelen.** Varningarna från de nya kontrollerna ovan visas i samma {{ui:Problem}}-panel som tidigare.
-- **Anslut din AI.** Din egen assistent, ansluten via CadCraft Studio, fungerar med alla åtta apparna och ser bara det du tillåter. Anslutning med ett klick, den värdbaserade kopplingen och din egen API-nyckel i Studio kommer ännu. Se [Använd DetailCraft med en AI-assistent](topic:use-with-ai-assistants).
+- **Koppla din AI.** Din egen assistent, ansluten via CadCraft Studio, fungerar med alla åtta apparna och ser bara det du tillåter. Enklickskoppling, den hostade kopplingen och din egen API-nyckel i Studio återstår. Se [Använd DetailCraft med en AI-assistent](topic:use-with-ai-assistants).
 
 ### Åtgärdat i 0.8.1
 
-- **Språk i Studio.** Studio och de paketerade utgåvorna kan byta språk när de körs. Tidigare var de bara på engelska. Det är ännu inte prövat på alla plattformar, så säg till om språket inte ändras.
-- **Markering med korsande fönster.** 0.8.1-installationsprogrammen har redan rätt beteende för markering med korsande fönster från 0.8-webbversionen. Ett äldre installationsprogram hade det inte.
-- **Surfplattor i porträttläge.** Ledig rutnätshöjd går till ritytan, och bladlayouten börjar vid 760 px eller mindre.
+- **Språk i Studio.** Studio och de paketerade utgåvorna kan byta språk vid körning; tidigare fanns de bara på engelska. Det är inte testat på alla plattformar än: säg till om språket inte ändras.
+- **Markering med korsande fönster.** Installerarna för 0.8.1 har redan med sig beteendet för markering med fönster som fanns i webbversionen av 0.8; en äldre installerare hade inte det.
+- **Surfplattor i porträttläge.** Ledigt rutnätsutrymme går till arbetsytan, och bladlayouten börjar vid 760 px eller mindre.
 
 ### Inte i den här versionen ännu
 
 - **Skicka NC till en maskin** är inte släppt.
-- **Vindlaster** för betong finns inte ännu, och betong- och grundkontrollerna är för en ingenjör att granska.
-- **Kodsignering.** Windows-installationsprogrammen och macOS .dmg-filen är inte signerade. Windows kan därför varna, och macOS begär högerklick och sedan Öppna.
+- **Vindlaster** för betong är inte byggda, och betong- och grundkontrollerna är till för en ingenjör att granska.
+- **Kodsignering.** Windows-installerarna och macOS .dmg-filen är inte signerade, så Windows kan varna och macOS begär högerklick, sedan Öppna.
 
 Tidigare ändringar finns i [Nyheter i 0.7](topic:whats-new-0-7).

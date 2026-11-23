@@ -1,46 +1,46 @@
 ---
-title: Çelik elemanları bir tasarım yönetmeliğine göre kontrol edin
-summary: ASCE 7 veya EN 1990'dan yük kombinasyonları oluşturun, her çelik I profilini AISC 360 ya da EN 1993-1-1'e göre kontrol edin ve her elemanın kapasitesinin ne kadarını kullandığını görün. Bir mühendis incelemeden önce yardımcı bir araçtır.
-keywords: tasarım, tasarım kontrolü, çelik tasarım, kullanım oranı, kapasite kullanımı, kapasite, AISC 360, ASCE 7, EN 1990, EN 1993-1-1, Eurocode, yük kombinasyonları, LRFD, Ulusal Ek, burkulma, yanal-burulmalı burkulma, kesme, eğilme, etkileşim, yapısal, öğrenciler, mühendis
-from: 66b6d545
+title: Çelik elemanları bir tasarım yönetmeliğine göre denetleyin
+summary: ASCE 7 veya EN 1990'dan yük birleşimleri oluşturun, her çelik I profilini AISC 360 veya EN 1993-1-1'e göre denetleyin ve her elemanın kapasitesinin ne kadarını kullandığını görün. Bir mühendis gözden geçirene kadar yardımcı bir araçtır.
+keywords: tasarım, tasarım denetimi, çelik tasarımı, kullanım oranı, kapasite kullanımı, kapasite, AISC 360, ASCE 7, EN 1990, EN 1993-1-1, Eurocode, yük birleşimleri, LRFD, Ulusal Ek, burkulma, yanal-burulmalı burkulma, kesme, eğilme, etkileşim, yapısal, öğrenciler, mühendis
+from: 15685c4e
 ---
 
-Analizi çalıştırdıktan sonra, {{ui:Analiz}} sekmesindeki {{ui:Tasarım denetimleri}} bloğu kuvvetlerini her çelik eleman için bir karara dönüştürür: en kötü kombinasyonun kapasitenin ne kadarını kullandığı.
+Analizi çalıştırdıktan sonra, {{ui:Analiz}} sekmesindeki {{ui:Tasarım denetimleri}} bloğu kuvvetlerini her çelik eleman için bir sonuca dönüştürür: en elverişsiz birleşimin kapasitenin ne kadarını kullandığı.
 
 :::warning
-Bu, **bir mühendis tarafından incelenene kadar yardımcı bir araçtır**. Yalnızca birinci mertebe kuvvetlerini kullanır (ikinci mertebe etkileri yoktur); burulmayı, narin (4. sınıf) parçaları, kaynaklı kesitleri ve bağlantıları kontrol etmez; kontrol edemediği şeyleri de dışarıda bırakır ve bunu belirtir. Bir mühendisin kontrolünün yerini tutmaz ve sonuçları bir onay mührü değildir.
+Bu, **bir mühendis gözden geçirene kadar yardımcı bir araçtır**. Yalnızca birinci mertebe kuvvetlerini kullanır (ikinci mertebe etkileri yoktur), burulmayı, narin (sınıf 4) parçaları, kaynaklı profilleri ve bağlantıları denetlemez; denetleyemediği şeyleri dışarıda bırakır ve bunu belirtir. Bir mühendisin denetimini yerine koymaz; sonuçları bir onay damgası değildir.
 :::
 
 ## Bir yönetmelik seçin
 
 {{ui:Tasarım yönetmeliği}} modelle birlikte kaydedilir; iki aileden birini seçin:
 
-- **ASCE 7 + AISC 360** (ABD, LRFD): ASCE 7-16 §2.3.1 yük kombinasyonları ve ANSI/AISC 360-16 eleman kontrolleri.
-- **EN 1990 + EN 1993-1-1** (Eurocode): EN 1990 kombinasyonları (Eş. 6.10 veya 6.10a ve 6.10b) ve EN 1993-1-1 eleman kontrolleri.
+- **ASCE 7 + AISC 360** (ABD, LRFD): ASCE 7-16 §2.3.1'in yük birleşimleri ve ANSI/AISC 360-16'nın eleman denetimleri.
+- **EN 1990 + EN 1993-1-1** (Eurocode): EN 1990'ın birleşimleri (Eş. 6.10 veya 6.10a ve 6.10b) ve EN 1993-1-1'in eleman denetimleri.
 
-Sonra {{ui:Çelik sınıfı}} seçin (A992, A36 ve diğerleri; ya da 40 mm üzerinde alt akma dayanımıyla S235'ten S450'ye kadar).
+Ardından {{ui:Çelik sınıfı}} seçin (A992, A36 ve diğerleri; ya da S235 ile S450 arası, 40 mm üzerinde alt akma dayanımı ile).
 
-## Kombinasyonları oluşturun
+## Birleşimleri oluşturun
 
-Yük durumu listesinde her yük durumuna bir **tür** verin (sabit, hareketli, çatı hareketli, kar, rüzgâr, deprem) ve {{ui:Birleşimleri oluştur}} öğesine basın. DetailCraft, yönetmeliğin kombinasyonlarını yük durumlarınızın kombinasyonları olarak yazar: sahip olduğunuz türler için yönetmeliğin listelediği her dayanım kombinasyonunu ve sehim için kullanılabilirlik kombinasyonlarını. Kendi yazdıklarınız kalır; bunlar yönetmeliğe karşı denetlenmez. {{ui:Diğer}} türündeki bir yük durumu birleştirilmez.
+Yük durumu listesinde her yük durumuna **türünü** verin (sabit, hareketli, çatı hareketlisi, kar, rüzgâr, deprem), sonra {{ui:Birleşimleri oluştur}} düğmesine basın. DetailCraft, yönetmeliğin birleşimlerini yük durumlarınızın birleşimleri olarak yazar: sahip olduğunuz türler için yönetmeliğin listelediği her dayanım birleşimini ve sehim için kullanılabilirlik birleşimlerini. Kendiniz yazdığınız birleşimler yerinde kalır; bunlar yönetmeliğe göre denetlenmez. {{ui:Diğer}} türündeki bir yük durumu birleşime alınmaz.
 
-Eurocode için katsayılar, EN 1990 Ek A1'in **önerilen değerleridir** (γG 1.35, γQ 1.5, uygulanan, kar ve rüzgâr yüklerinin ψ değerleri) ve EN 1993-1-1'in (γM0 = γM1 = 1.0). Ülkenizin Ulusal Eki bunların bazılarını değiştirir: {{ui:Ulusal Ek değerleri}} bölümünü açın, kendi değerlerinizi girin ve kombinasyonları yeniden oluşturun. Bunlar modelde kaydedilir.
+Eurocode için katsayılar, EN 1990 Ek A1'in **önerilen değerleridir** (γG 1.35, γQ 1.5, hareketli, kar ve rüzgâr yüklerinin ψ değerleri) ve EN 1993-1-1'in (γM0 = γM1 = 1.0). Ülkenizin Ulusal Eki bunların bir kısmını değiştirir: {{ui:Ulusal Ek değerleri}} bölümünü açın, sizinkini yazın ve birleşimleri yeniden oluşturun. Değerler modelle birlikte kaydedilir.
 
-## Elemanları kontrol edin
+## Elemanları denetleyin
 
-{{ui:Elemanları denetle}} öğesine basın. Her I profili için tablo **kullanım oranını** (talep bölü kapasite: %100 sınırdır), geçip geçmediğini, hangi kontrolün belirleyici olduğunu ve hangi kombinasyonu gösterir. Elemanlar modelde renklendirilir: mavi az kullanılmış, yeşil yaklaşık yarısı, okr sınıra yakın, kırmızı aşılmış, gri kontrol edilmemiş. Bir elemanın adına tıklayarak onu seçin.
+{{ui:Elemanları denetle}} düğmesine basın. Her çelik I profili için tablo, **kullanım oranını** (talep, kapasiteye bölünmüş: sınır %100'dür), geçip geçmediğini, hangi denetimin belirleyici olduğunu ve hangi birleşimi gösterir. Elemanlar modelde renklendirilir: mavi az kullanılan, yeşil yaklaşık yarı, sarı-kahve (okr) sınıra yakın, kırmızı sınırın üzerinde, gri denetlenmemiş. Seçmek için bir elemanın adına tıklayın.
 
-Kontroller, her birinin izlediği madde ile birlikte listelenir (raporda da yer alırlar):
+Denetimler, her birinin izlediği madde ile birlikte (raporda listelenirler):
 
-- çekme; eğilme burkulması ve burulma burkulması ile basınç; her iki eksende eğilme ile yanal-burulmalı burkulma; kesme; eksenel kuvvetle eğilme;
-- kullanılabilirlik kombinasyonlarının sehimi, ayarladığınız {{ui:Sehim sınırı}} ile karşılaştırılır (başlangıçta L/360; bu bir proje değeridir, yönetmelik değeri değildir).
+- çekme; eğilme ve burulma burkulmasıyla basınç; yanal-burulmalı burkulmayla iki eksende eğilme; kesme; ve eksenel kuvvetle eğilme;
+- kullanılabilirlik birleşimlerinin sehimi, sizin belirlediğiniz {{ui:Sehim sınırı}} ile karşılaştırılarak (başlangıç olarak L/360; yönetmelik değeri değil, proje değeri).
 
-**Uzunluklar.** Yanal destekli uzunluk, analiz edilen her parçanın bir payıdır (1 = desteksiz); destekler başlangıçtan itibaren eşit aralıklı kabul edilir. K katsayıları, burkulma için uzunluğu çarpar. Başka bir elemanın bağlandığı bir birleşim bir elemanı böler ve her parça kendi uzunluğunda, orada desteklenmiş gibi kontrol edilir.
+**Boylar.** Destekli boy, analiz edilen her parçanın bir oranıdır (1 = destekisiz); destekler başlangıçtan eşit aralıklı kabul edilir. K katsayıları burkulma için boyu çarpar. Başka bir elemanın bağlandığı bir düğüm bir elemanı böler ve her parça kendi boyunda, orada destekli olarak denetlenir.
 
-## Neyin kontrol edilmediği
+## Denetlenmeyenler
 
-Bir elemanın sayı yerine **kontrol edilmedi** ve nedeni gösterdiği durumlar şunlardır: kesiti kontrollerin bildiği bir I profili değilse (borular, köşebentler, kanallar), özel (kaynaklı) bir kesitse ya da eğilmede bir parçası narinse (AISC) veya 4. sınıfsa (Eurocode). Basınçta narin bir parça basınç kontrollerini dışarıda bırakır ve eleman *geçti, kısmen kontrol edildi* olarak görünür. Ayrıca yapılmadı: ikinci mertebe etkileri, burulma, eğilmeyle birlikte kesme burkulması, bağlantılar, yorulma, yangın ve deprem detaylandırması. Betonarme elemanlar ve deprem yükleri [kendi denetimlerine](topic:concrete-and-seismic) sahiptir. Bkz. [Henüz yapılmadı](topic:not-built-yet).
+Bir eleman, bir sayı yerine nedeniyle birlikte **denetlenmedi** gösterir; bölümü denetimlerin bildiği bir şekil değilse (açılar, U profiller; dikdörtgen ve yuvarlak borular duvarları kompakt olduğunda denetlenir), özel (kaynaklı) bir şekilse ya da bir parçası eğilmede narinse (AISC) veya sınıf 4 ise (Eurocode). Basınçta narin bir parça basınç denetimlerini dışarıda bırakır ve eleman *geçti, kısmen denetlendi* olarak okunur. Düğümlerdeki kaynaklar [kendi denetimlerine](topic:weld-checks) sahiptir. Henüz yapılmayanlar: ikinci mertebe etkileri, burulma, eğilmeyle birlikte kesme burkulması, cıvatalı bağlantılar, yorulma, yangın ve deprem detaylandırması. Beton elemanlar ve deprem yükleri [kendi denetimlerine](topic:concrete-and-seismic) sahiptir. Bkz. [Henüz yapılmadı](topic:not-built-yet).
 
 ## Rapor
 
-{{ui:Rapor (PDF)}} ve {{ui:Rapor (CSV)}}, kontrol ettikten sonra tasarım tablolarını içerir: yönetmelik sürümleri, ayarlar ve Ulusal Ek değerleri, elemana göre kullanım oranı, kullanılan her madde ve her eleman için belirleyici kombinasyondaki her kontrolün talebi, kapasitesi ve kullanım oranı.
+Denetlediğinizde {{ui:Rapor (PDF)}} ve {{ui:Rapor (CSV)}} tasarım tablolarını kazanır: yönetmelik sürümleri, ayarlar ve Ulusal Ek değerleri, elemana göre kullanım oranı, kullanılan her madde ve her eleman için belirleyici birleşimde her denetimin talebi, kapasitesi ve kullanım oranı.

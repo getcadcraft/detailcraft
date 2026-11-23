@@ -1,0 +1,19 @@
+{
+  "@locale": "fi",
+  "@name": "Suomi",
+  "@note": "Draft translation, not yet reviewed by a native speaker",
+  "zeman.name": "Zeman-vienti",
+  "zeman.label": "Zeman (XML + NC)",
+  "zeman.done": "Zeman-tiedostot kirjoitettu kohteille {marks}: kullekin yksi XML ja sen NC-tiedostot omassa kansiossaan. Tiedosto: {file}.",
+  "zeman.none": "Zeman-vienti: mitään ei kirjoitettu.",
+  "zeman.empty": "Zeman-vienti: teräsosia ei ole vielä.",
+  "zeman.skipped": "Ei kirjoitettu: {list}.",
+  "zeman.skipped.item": "{mark} ({why})",
+  "zeman.refuse.lead": "pääosa {profile} ei ole I-profiili",
+  "zeman.refuse.attached": "siinä on kiinnitetty osa, joka ei ole levy: {profile}",
+  "zeman.refuse.nc": "{why}",
+  "zeman.loose": "Irrallisina asetetut, ei hitsattuina olevat osat jätettiin pois: {n}.",
+  "zeman.turned": "Samanlaiset levyt jakavat yhden NC-tiedoston. Levy, joka on sama kappale käännettynä, saa oman paikkansa XML:ssä.",
+  "zeman.misfit": "Tarkista saman tunnuksen levyt: yksi poikkeaa siihen jaetusta NC-tiedostosta {mm} mm.",
+  "zeman.check": "Tämä vienti on luotu yhdestä esimerkkitiedostojoukosta. Tarkista ensimmäinen omalla ohjelmistollasi ennen tuotantoa."
+}

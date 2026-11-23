@@ -1,0 +1,19 @@
+{
+  "@locale": "nb",
+  "@name": "Norsk bokmål",
+  "@note": "Draft translation, not yet reviewed by a native speaker",
+  "zeman.name": "Zeman-eksport",
+  "zeman.label": "Zeman (XML + NC)",
+  "zeman.done": "Zeman-filer er skrevet for {marks}: én XML-fil og tilhørende NC-filer i en mappe for hver, lagret som {file}.",
+  "zeman.none": "Zeman-eksport: ingenting ble skrevet.",
+  "zeman.empty": "Zeman-eksport: det finnes ingen stålstykker ennå.",
+  "zeman.skipped": "Ikke skrevet: {list}.",
+  "zeman.skipped.item": "{mark} ({why})",
+  "zeman.refuse.lead": "hovedstykket {profile} er ikke en I-profil",
+  "zeman.refuse.attached": "det har et tilknyttet stykke som ikke er en plate: {profile}",
+  "zeman.refuse.nc": "{why}",
+  "zeman.loose": "Deler som er satt løse, ikke sveiset, er utelatt: {n}.",
+  "zeman.turned": "Identiske plater deler én NC-fil. En plate som er samme stykke snudd, har sin egen posisjon i XML-filen.",
+  "zeman.misfit": "Kontroller platene som har samme delenummer: én avviker med {mm} mm fra NC-filen den deler.",
+  "zeman.check": "Denne eksporten er laget fra ett eksempelsett med filer: kontroller den første i maskinens egen programvare før produksjon."
+}
